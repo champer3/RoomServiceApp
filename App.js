@@ -1,17 +1,21 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
-import { Provider as PaperProvider } from "react-native-paper";
-import Recent from "./components/Category/Recent";
+import BoxItemCategory from "./components/Category/BoxItemCategory";
+// import { Provider as PaperProvider } from "react-native-paper";
+
+
+
 
 export default function App() {
   return (
-    <PaperProvider >
+    // <PaperProvider >
     <View style={styles.container}>
       <Text>Open up App.js to start working on your app!</Text>
       <Text>New Code</Text>
+      <BoxItemCategory/>
       <StatusBar style="auto" />
     </View>
-    </PaperProvider>
+    // </PaperProvider>
   );
 }
 
@@ -22,4 +26,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  
 });
