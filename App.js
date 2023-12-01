@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
 import Recent from "./components/Category/Recent";
+import CartModal from "./components/Cart/CartModal";
 
 export default function App() {
   return (
@@ -9,6 +10,7 @@ export default function App() {
     <View style={styles.container}>
       <Text>Open up App.js to start working on your app!</Text>
       <Text>New Code</Text>
+      <CartModal />
       <StatusBar style="auto" />
     </View>
     </PaperProvider>
