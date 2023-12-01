@@ -1,10 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
-import BoxItemCategory from "./components/Category/BoxItemCategory";
-// import { Provider as PaperProvider } from "react-native-paper";
-
-
-
+import { Provider as PaperProvider } from "react-native-paper";
 
 export default function App() {
   return (

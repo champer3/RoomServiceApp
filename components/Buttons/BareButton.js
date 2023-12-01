@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View, Text } from "react-native";
 
-function BareButton({ children, borderRadius, color, opacity }) {
+function BareButton({ children, borderRadius, background, color, opacity }) {
   return (
     <View
       style={[
@@ -8,7 +8,8 @@ function BareButton({ children, borderRadius, color, opacity }) {
         {
           opacity: opacity,
           borderColor: color,
-          borderRadius: borderRadius ? borderRadius : 30
+          borderRadius: borderRadius ? borderRadius : 30,
+          backgroundColor: background ? background : "white"
         },
       ]}
     >
