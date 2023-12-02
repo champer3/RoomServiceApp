@@ -1,16 +1,15 @@
-import { StyleSheet, View, Text } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { StyleSheet, View, Text, Image } from "react-native";
 import { RadioButton } from "react-native-paper";
 
-function Address({ title, address }) {
+function CardStore({ card, number }) {
   return (
     <View style={styles.container}>
       <View style={styles.icon}>
-        <MaterialIcons name="location-on" size={34} color="grey" />
+      <Image style={styles.image} source={require("../assets/mastercard.png")} />
       </View>
       <View style={styles.textContainer}>
         <Text style={{ fontWeight: "bold", fontSize: "18", marginBottom: 5 }}>
-          {title}
+          {card}
         </Text>
         <Text
           style={{
@@ -20,12 +19,13 @@ function Address({ title, address }) {
             marginTop: 5,
           }}
         >
-          {address}
+          {number} **** **** ****
         </Text>
       </View>
       <View style={styles.radio}>
         <RadioButton
           value="second"
+          //   status={checked === "first" ? "checked" : "unchecked"}
           status="checked"
         />
       </View>
@@ -33,7 +33,7 @@ function Address({ title, address }) {
   );
 }
 
-export default Address;
+export default CardStore;
 
 const styles = StyleSheet.create({
   container: {
@@ -49,7 +49,9 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     justifyContent: "space-between",
+    flex: 4,
     alignItems: "flex-start",
+    marginLeft: 8
   },
   radio: {
     borderWidth: 2,
@@ -61,10 +63,17 @@ const styles = StyleSheet.create({
   },
   icon: {
     backgroundColor: "#FAFAFA",
+    flex: 1,
     height: "100%",
     width: 60,
     borderRadius: "50%",
     justifyContent: "center",
     alignItems: "center",
+  },
+  image: {
+    width: "75%",
+    height: "50%",
+    backgroundColor: "white",
+    marginBottom: 12
   },
 });

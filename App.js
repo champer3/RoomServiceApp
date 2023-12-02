@@ -7,13 +7,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function App() {
   return (
-    // <PaperProvider >
-    <SafeAreaView style={styles.container}>
+    <PaperProvider >
+    <View style={styles.container}>
       <Text>Open up App.js to start working on your app!</Text>
       <Text>New Code</Text>
       <StatusBar style="auto" />
-    </SafeAreaView>
-    // </PaperProvider>
+    </View>
+    </PaperProvider>
   );
 }
 
@@ -23,10 +23,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+
   },
-  holder : {
-    flexDirection: 'row',
-    width: 'auto',
-  }
-  
 });
