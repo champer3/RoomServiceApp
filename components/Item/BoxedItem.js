@@ -1,41 +1,47 @@
-import { Image, Pressable } from "react-native"
-import { StyleSheet, Text, View } from "react-native"
-import {useFonts, Poppins_700Bold} from '@expo-google-fonts/poppins';
-  
+import { Image, Pressable } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { useFonts, Poppins_700Bold } from "@expo-google-fonts/poppins";
 
-function BoxedItem({text, image}){
-    let [fontsLoaded] = useFonts({
-        Poppins_700Bold,
-      });
-    return <Pressable style={({pressed}) => pressed && {opacity: 0.5} }>
-        <View style = {styles.container}>
-        <View style = {styles.imageContainer} >
-           <Image style = {styles.image} source={{uri: image}}/>   
+function BoxedItem({ text, image }) {
+  let [fontsLoaded] = useFonts({
+    Poppins_700Bold,
+  });
+  return (
+    <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
+      <View style={styles.container}>
+        <View style={styles.imageContainer}>
+          <Image style={styles.image} source={{ uri: image }} />
         </View>
-        <View style = {styles.textContainer}>
-        <Text style = {[styles.text, {fontFamily: 'Poppins_700Bold'}]} >{text ? text.replace(/\b\w/g, (char) => char.toUpperCase()) : ''}</Text>
+        <View style={styles.textContainer}>
+          <Text style={[styles.text, { fontFamily: "Poppins_700Bold" }]}>
+            {text ? text.replace(/\b\w/g, (char) => char.toUpperCase()) : ""}
+          </Text>
         </View>
-    </View>
+      </View>
     </Pressable>
+  );
 }
 
-export default BoxedItem
+export default BoxedItem;
 
 const styles = StyleSheet.create({
-    imageContainer: { 
-                      flex: 1.5,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      
-                    },
-    textContainer:{flex:1.5,
-                    paddingHorizontal: 10},
-    container :{ alignItems: 'center',
-                 borderWidth: 2,
-                 borderColor: 'rgba(0,0,0,0.05)',
-                 borderRadius: 10,
-                 height: 135,
-                 marginHorizontal: 20, marginTop: 20, flexDirection: "row", width: 250},
-    image: {maxWidth: 100, height: 130, resizeMode: 'contain' },
-    text : {fontSize: 20 , color: 'rgba(0,0,0,0.8)',}
-})
+  imageContainer: {
+    flex: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textContainer: { flex: 1.5, paddingHorizontal: 10 },
+  container: {
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "rgba(0,0,0,0.05)",
+    borderRadius: 10,
+    height: 135,
+    marginHorizontal: 20,
+    marginTop: 20,
+    flexDirection: "row",
+    width: 250,
+  },
+  image: { maxWidth: 100, height: 130, resizeMode: "contain" },
+  text: { fontSize: 20, color: "rgba(0,0,0,0.8)" },
+});
