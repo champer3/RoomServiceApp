@@ -26,7 +26,6 @@ function Address({ title, address }) {
       <View style={styles.radio}>
         <RadioButton
           value="second"
-          //   status={checked === "first" ? "checked" : "unchecked"}
           status="checked"
         />
       </View>
