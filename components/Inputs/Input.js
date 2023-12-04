@@ -3,7 +3,7 @@ import { Feather } from '@expo/vector-icons';
 import { Octicons } from '@expo/vector-icons';
 
 import { useState } from "react";
-import BareButton from "../Buttons/BareButton";
+import FlexButton from "../Buttons/FlexButton";
 
 
 function Input({text, length, icon, type = 'none', secured = false, keyboard = 'default', buttonText, children}){
@@ -35,7 +35,7 @@ function Input({text, length, icon, type = 'none', secured = false, keyboard = '
                     style={styles.icon} 
                     onPress={toggleShowPassword} 
                 /> }
-        {buttonText && <View style={{ height: 90}}><BareButton background="#35530A" color="#35530A" opacity={1} borderRadius={10}><Text style={{color: 'white'}}>{buttonText}</Text></BareButton></View>}
+        {buttonText && <View style={{ height: 50}}><FlexButton background="#283618" color="#283618" opacity={1} borderRadius={10}><Text style={{color: 'white'}}>{buttonText}</Text></FlexButton></View>}
         </View>
         </View>
         <View style={{flexDirection: "row-reverse", alignItems:'center', gap: 4, justifyContent: 'flex-start'}}>{children}
