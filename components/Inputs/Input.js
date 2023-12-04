@@ -3,7 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
 
 import { useState } from "react";
-import BareButton from "../Buttons/BareButton";
+import FlexButton from "../Buttons/FlexButton";
 
 function Input({
   text,
@@ -62,6 +62,7 @@ function Input({
           {icon}
           {content}
         </View>
+<<<<<<< HEAD
         <View
           style={[
             styles.subContainer,
@@ -95,6 +96,19 @@ function Input({
               </BareButton>
             </View>
           )}
+=======
+        <View style = {[styles.subContainer, {justifyContent: 'flex-end',flexShrink: 1}]}>
+        {type == 'address' && <><Octicons name="location" size={24} color="#BC6C25"/>
+        <Text style={{color: '#BC6C25'}}>Get location</Text></>}
+        { type == 'password' && <Feather 
+                    name={showPassword ? 'eye-off' : 'eye'} 
+                    size={24} 
+                    color="#aaa"
+                    style={styles.icon} 
+                    onPress={toggleShowPassword} 
+                /> }
+        {buttonText && <View style={{ height: 50}}><FlexButton background="#283618" color="#283618" opacity={1} borderRadius={10}><Text style={{color: 'white'}}>{buttonText}</Text></FlexButton></View>}
+>>>>>>> 80c7a315fabe16e68922b8a571e16dde9439a195
         </View>
       </View>
       <View
