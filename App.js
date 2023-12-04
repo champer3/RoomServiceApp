@@ -1,8 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
-import BareButton from "./components/Buttons/BareButton";
-import CardCat from "./components/CardCat";
 import DeliveryMode from "./components/DeliveryMode";
 
 export default function App() {
