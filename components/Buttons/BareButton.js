@@ -1,6 +1,20 @@
+import { useState } from "react";
 import { Pressable, StyleSheet, View, Text } from "react-native";
 
 function BareButton({ children, borderRadius, background, color, opacity }) {
+  const [pressed, setPressed] = useState(false)
+
+  function pressHandler(){
+    setPressed(true)
+    // setPressed(false)
+    console.log("pressed")
+  }
+  function pressOut(){
+    setPressed(false)
+    // setPressed(false)
+    console.log("pressedOut")
+  }
+
   return (
     <View
       style={[
@@ -10,10 +24,10 @@ function BareButton({ children, borderRadius, background, color, opacity }) {
           borderColor: color,
           borderRadius: borderRadius ? borderRadius : 30,
           backgroundColor: background ? background : "white"
-        },
+        },{backgroundColor: pressed ? "blue" : "white"}
       ]}
     >
-      <Pressable>
+      <Pressable onPressIn={pressHandler} onPressOut={pressOut}>
         <View style={styles.buttonText}>{children}</View>
       </Pressable>
     </View>
@@ -28,7 +42,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     marginHorizontal: 15,
     backgroundColor: "white",
-    borderWidth: 2,
+    borderWidth: 1,
     padding: 10,
     borderRadius: 30,
     alignItems: "center",
