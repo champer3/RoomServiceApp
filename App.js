@@ -19,26 +19,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  payment: {
-    height: 96,
-    width: "50%",
-    alignSelf: 'flex-start',
-    marginLeft: 45
-  },
-  cart: {
-    width: "40%",
-    height: "8%"
-  },
-  button: {
-    height: 100,
-    width: "80%"
-  },
-  image: {
-    resizeMode: "contain",
-    width: "80%",
-    opacity: 1
-  },
-  google: {
-
-  }
 });
