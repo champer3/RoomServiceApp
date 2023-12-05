@@ -6,13 +6,9 @@ function BareButton({ children, borderRadius, background, color, opacity }) {
 
   function pressHandler(){
     setPressed(true)
-    // setPressed(false)
-    console.log("pressed")
   }
   function pressOut(){
     setPressed(false)
-    // setPressed(false)
-    console.log("pressedOut")
   }
 
   return (
@@ -24,7 +20,7 @@ function BareButton({ children, borderRadius, background, color, opacity }) {
           borderColor: color,
           borderRadius: borderRadius ? borderRadius : 30,
           backgroundColor: background ? background : "white"
-        },{backgroundColor: pressed ? "blue" : "white"}
+        },
       ]}
     >
       <Pressable onPressIn={pressHandler} onPressOut={pressOut}>

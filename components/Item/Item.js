@@ -6,7 +6,7 @@ function Item({text, image}){
     return <Pressable style={({pressed}) => pressed && {opacity: 0.5} }>
         <View style = {styles.container}>
         <View style = {styles.imageContainer} >
-           <Image style = {styles.image} source={{uri: image}}/>   
+           <Image style = {styles.image} source={image}/>
         </View>
         <Text style = {styles.text} >{text}</Text>
     </View>
@@ -17,7 +17,7 @@ export default Item
 
 const styles = StyleSheet.create({
     imageContainer: { width: 120,
-                      height: 120, 
+                      height: 120,
                       backgroundColor: '#f7eebe',
                       borderRadius: 100,
                       alignItems: 'center',

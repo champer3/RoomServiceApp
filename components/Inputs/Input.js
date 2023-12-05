@@ -45,7 +45,7 @@ function Input({
   }
   let width = 347;
   if (length) {
-    width /= 6 / length;
+    width /= 7 / length;
   }
   return (
     <View
@@ -62,65 +62,60 @@ function Input({
           {icon}
           {content}
         </View>
-<<<<<<< HEAD
         <View
           style={[
             styles.subContainer,
             { justifyContent: "flex-end", flexShrink: 1 },
           ]}
         >
-          {type == "address" && (
-            <>
-              <Octicons name="location" size={24} color="#BC6C25" />
-              <Text style={{ color: "#BC6C25" }}>Get location</Text>
-            </>
-          )}
-          {type == "password" && (
-            <Feather
-              name={showPassword ? "eye-off" : "eye"}
-              size={24}
-              color="#aaa"
-              style={styles.icon}
-              onPress={toggleShowPassword}
-            />
-          )}
-          {buttonText && (
-            <View style={{ height: 90 }}>
-              <BareButton
-                background="#35530A"
-                color="#35530A"
-                opacity={1}
-                borderRadius={10}
-              >
-                <Text style={{ color: "white" }}>{buttonText}</Text>
-              </BareButton>
-            </View>
-          )}
-=======
-        <View style = {[styles.subContainer, {justifyContent: 'flex-end',flexShrink: 1}]}>
-        {type == 'address' && <><Octicons name="location" size={24} color="#BC6C25"/>
-        <Text style={{color: '#BC6C25'}}>Get location</Text></>}
-        { type == 'password' && <Feather 
-                    name={showPassword ? 'eye-off' : 'eye'} 
-                    size={24} 
-                    color="#aaa"
-                    style={styles.icon} 
-                    onPress={toggleShowPassword} 
-                /> }
-        {buttonText && <View style={{ height: 50}}><FlexButton background="#283618" color="#283618" opacity={1} borderRadius={10}><Text style={{color: 'white'}}>{buttonText}</Text></FlexButton></View>}
->>>>>>> 80c7a315fabe16e68922b8a571e16dde9439a195
+
+          <View
+            style={[
+              styles.subContainer,
+              { justifyContent: "flex-end", flexShrink: 1 },
+            ]}
+          >
+            {type == "address" && (
+              <>
+                <Octicons name="location" size={24} color="#BC6C25" />
+                <Text style={{ color: "#BC6C25" }}>Get location</Text>
+              </>
+            )}
+            {type == "password" && (
+              <Feather
+                name={showPassword ? "eye-off" : "eye"}
+                size={24}
+                color="#aaa"
+                style={styles.icon}
+                onPress={toggleShowPassword}
+              />
+            )}
+            {buttonText && (
+              <View style={{ height: 50 }}>
+                <FlexButton
+                  background="#283618"
+                  color="#283618"
+                  opacity={1}
+                  borderRadius={10}
+                >
+                  <Text style={{ color: "white" }}>{buttonText}</Text>
+                </FlexButton>
+              </View>
+            )}
+          </View>
         </View>
+
       </View>
       <View
-        style={{
-          flexDirection: "row-reverse",
-          alignItems: "center",
-          gap: 4,
-          justifyContent: "flex-start",
-        }}
-      >
-        {children}
-      </View>
+          style={{
+            flexDirection: "row-reverse",
+            alignItems: "center",
+            gap: 4,
+            justifyContent: "flex-start",
+          }}
+        >
+          {children}
+        </View>
     </View>
   );
 }
@@ -130,7 +125,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "rgba(0,0,0,0.03)",
     borderRadius: 10,
-    padding: 20,
+    padding: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
