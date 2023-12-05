@@ -5,7 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 
 
-function Product({image, width = 450 }) {
+function Product({ image, width = 450 }) {
     let text = 'Hot Pockets Hot Ones Frozen Fiery Hot Pepperoni - 2ct 9oz'
     let size = width / 1.8
     console.log(size)
