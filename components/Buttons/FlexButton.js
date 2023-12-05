@@ -28,9 +28,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
     borderWidth: 1,
-    padding: 10,
+    paddingHorizontal: 24,
     borderRadius: 30,
     alignItems: "center",
+    marginVertical: 4
   },
   buttonText: {
     flex: 1,

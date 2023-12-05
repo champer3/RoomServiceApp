@@ -10,7 +10,7 @@ function BoxedItem({ text, image }) {
     <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
       <View style={styles.container}>
         <View style={styles.imageContainer}>
-          <Image style={styles.image} source={{ uri: image }} />
+          <Image style={styles.image} source={image} />
         </View>
         <View style={styles.textContainer}>
           <Text style={[styles.text, { fontFamily: "Poppins_700Bold" }]}>
