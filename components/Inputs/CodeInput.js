@@ -10,7 +10,7 @@ const CodeInput = ({ length = 8 }) => {
       setPasscode(value);
 
       // If the input length reaches the specified length, trigger onInputComplete callback
-     
+
   };}
 
   return (
@@ -34,12 +34,13 @@ export default CodeInput;
 const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
+    width: "100%",
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   input: {
-    width: 40,
-    height: 40,
+    width: "14%",
+    height: 52,
     borderColor: 'gray',
     borderWidth: 1,
     textAlign: 'center',

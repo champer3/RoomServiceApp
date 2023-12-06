@@ -35,8 +35,8 @@ export default BareButton;
 const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
-    marginVertical: 20,
-    marginHorizontal: 15,
+    // marginVertical: 20,
+    // marginHorizontal: 15,
     backgroundColor: "white",
     borderWidth: 1,
     padding: 10,

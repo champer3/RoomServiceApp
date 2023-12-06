@@ -12,17 +12,19 @@ export default Info
 
 const styles = StyleSheet.create({
     container: {
-        padding: 16,
-        marginTop: 16,
+        paddingVertical: 16,
+        paddingHorizontal: 16,
         backgroundColor: "#FEFAE0",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         borderRadius: 10,
-        width: "100%"
+        width: "100%",
+        opacity: 0.7
     },
     text: {
-        paddingLeft: 16,
-        fontSize: 12,
+        paddingLeft: 10,
+        paddingRight: 10,
+        fontSize: 14,
     }
 })

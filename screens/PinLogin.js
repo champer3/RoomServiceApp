@@ -1,40 +1,34 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-
+import { StyleSheet, Image, Text, View } from "react-native";
+import CodeInput from "../components/Inputs/CodeInput";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
+import Info from "../components/Info";
 
-function StartScreen() {
+function PinLogin() {
   return (
     <View style={styles.container}>
-      <Text style={{color: "#333333", opacity: 0.7, fontSize: 16, fontWeight: "500", alignSelf: "flex-end"}}>Skip Registration</Text>
-      <View style={styles.imageContainer}>
-        <Image
-          style={styles.image}
-          source={require("../assets/startimage.png")}
-        />
+      <View style={styles.welcomeView}>
+        <Text style={styles.text}>Hello,</Text>
+        <Text style={styles.text}>Welcome Back😍</Text>
       </View>
-      <View style={styles.description}>
-        <Text style={{color: "#333333", fontSize: 24, fontWeight: "800", marginVertical: 4}}>Welcome to RoomService</Text>
-        <Text style={{color: "#333333", fontSize: 14, fontWeight: "500", marginVertical: 8, textAlign: "center"}}>
-          Enjoy the ease of ordering food, groceries, and related items from the
-          comfort of your home
-        </Text>
-      </View>
-      <View style={styles.buttonContainer}>
+      <View style={{marginBottom: 32}}></View>
+      <CodeInput length={6} />
+      <View style={[styles.buttonContainer, {marginTop: 20, marginBottom: 16}]}>
         <Button>
-          <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
+          <Text style={{ fontSize: 16, color: "white" }}>Login </Text>
           <Image
             style={styles.vector}
             source={require("../assets/Vector.png")}
           />
         </Button>
       </View>
+      <Info text="Enter the five-digit code that was sent to your registered phone number." />
       <View style={styles.threeContainer}>
         <View style={styles.line}></View>
         <Text>or continue with</Text>
         <View style={styles.line}></View>
       </View>
-      <View style={[styles.buttonContainer, {marginBottom: 8}]}>
+      <View style={[styles.buttonContainer, { marginBottom: 24 }]}>
         <BareButton borderRadius={24} color="#EEEEEE">
           <Image
             style={styles.facebook}
@@ -43,7 +37,7 @@ function StartScreen() {
           <Text> Continue with facebook</Text>
         </BareButton>
       </View>
-      <View style={[styles.buttonContainer, {marginBottom: 24}]}>
+      <View style={[styles.buttonContainer, { marginBottom: 24 }]}>
         <BareButton borderRadius={24} color="#EEEEEE">
           <Image
             style={styles.facebook}
@@ -53,35 +47,39 @@ function StartScreen() {
         </BareButton>
       </View>
       <View style={styles.textContainer}>
-        <Text style={{color: "#333333", opacity: 0.5}}>Already have an account?</Text>
-        <Text style={{color: "#BC6C25", fontWeight: "700", opacity: 1}}> Sign In</Text>
+        <Text style={{ color: "#333333", opacity: 0.5 }}>
+          New to RoomService?
+        </Text>
+        <Text style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}>
+          {" "}
+          Sign Up
+        </Text>
       </View>
     </View>
   );
 }
 
-export default StartScreen;
+export default PinLogin;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
     justifyContent: "center",
-    alignItems: "center",
+    // alignItems: "center",
     marginHorizontal: "5%",
-    marginTop: -50
+    marginVertical: 80,
+    marginTop: 200
   },
-  imageContainer: {
-    width: "100%",
-    height: "30%",
-    marginTop: 6,
-    marginBottom: 32
+  welcomeView: {
+    marginBottom: 42,
+    marginTop: -70,
   },
   description: {
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 10
+    marginBottom: 10,
   },
   image: {
     flex: 1,
@@ -91,7 +89,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     height: 65,
-    // marginBottom: 20
+    marginBottom: -20,
   },
   vector: {
     width: "22%",
@@ -106,7 +104,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: 26
+    marginBottom: 30,
+    marginTop: 70
+
   },
   line: {
     height: 2,
@@ -115,6 +115,12 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flexDirection: "row",
-    justifyContent: "center"
-  }
+    justifyContent: "center",
+  },
+  text: {
+    color: "#333333",
+    fontSize: 32,
+    fontWeight: "500",
+    letterSpacing: 2,
+  },
 });
