@@ -5,7 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 
 function Product({ image, width = 450 }) {
-  let text = "Hot Pockets Hot Ones Frozen Fiery Hot Pepperoni - 2ct 9oz";
+  let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
   let size = width / 1.8;
   console.log(size);
   return (
@@ -47,7 +47,7 @@ function Product({ image, width = 450 }) {
           </View>
         </View>
       <View style={styles.imageContainer}>
-        <View style={[{ flex: 1, justifyContent: "center", marginRight: 20 }]}>
+        <View style={[{flex: 1, justifyContent: "center", alignItems: 'center', marginRight: 20 }]}>
           <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <Image
               style={styles.image}
@@ -56,7 +56,7 @@ function Product({ image, width = 450 }) {
           </Pressable>
         </View>
 
-        <View style={{ flex: -1.5, width: size, gap: 10, paddingTop: 2 }}>
+        <View style={{ flex: -1.5, width: size, gap: 10, paddingTop: 12 }}>
           <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <View style={styles.textContainer}>
               <Text
@@ -119,9 +119,8 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   image: {
-    maxWidth: 80,
-    height: 80,
-    resizeMode: "contain",
+    maxWidth: 120,
+    height: 120,
     alignSelf: "center",
   },
   text: { fontSize: 14, fontWeight: 500 },

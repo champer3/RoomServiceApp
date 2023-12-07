@@ -9,6 +9,10 @@ export default function App() {
     <PaperProvider>
       <View style={styles.container}>
         <StatusBar style="auto" />
+        <View style={{flexDirection: 'row', width: 410}}>
+          <Product/>
+          <Product/>
+          </View>
       </View>
     </PaperProvider>
   );
