@@ -7,18 +7,16 @@ function BoxedItem({ text, image }) {
     Poppins_700Bold,
   });
   return (
-    <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
       <View style={styles.container}>
         <View style={styles.imageContainer}>
           <Image style={styles.image} source={{ uri: image }} />
         </View>
         <View style={styles.textContainer}>
-          <Text style={[styles.text, { fontFamily: "Poppins_700Bold" }]}>
+          <Text style={[styles.text, ]}>
             {text ? text.replace(/\b\w/g, (char) => char.toUpperCase()) : ""}
           </Text>
         </View>
       </View>
-    </Pressable>
   );
 }
 
@@ -36,12 +34,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "rgba(0,0,0,0.05)",
     borderRadius: 10,
-    height: 135,
-    marginHorizontal: 20,
+    padding: 16,
+    marginHorizontal: "3%",
     marginTop: 20,
     flexDirection: "row",
-    width: 250,
+    width: '43%',
+    height: "100%"
   },
-  image: { maxWidth: 100, height: 130, resizeMode: "contain" },
+  image: { width: "150%", height: "110%", resizeMode: "contain" },
   text: { fontSize: 20, color: "rgba(0,0,0,0.8)" },
 });
