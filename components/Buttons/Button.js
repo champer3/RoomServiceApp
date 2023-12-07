@@ -23,8 +23,8 @@ export default Button;
 const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
-    marginVertical: 20,
-    marginHorizontal: 15,
+    // marginVertical: 20,
+    // marginHorizontal: 15,
     backgroundColor: "#283618",
     padding: 10,
     borderRadius: 24,

@@ -50,15 +50,15 @@ function Input({
   return (
     <View
       style={{
-        width: width,
+        width: "100%",
         flexDirection: "row",
         alignItems: "center",
-        margin: 15,
+        marginTop: 25,
         gap: 5,
       }}
     >
       <View style={styles.container}>
-        <View style={[styles.subContainer, { flex: 1 }]}>
+        <View style={[styles.subContainer, { flex: 1 , paddingVertical: 4,}]}>
           {icon}
           {content}
         </View>
@@ -68,7 +68,6 @@ function Input({
             { justifyContent: "flex-end", flexShrink: 1 },
           ]}
         >
-
           <View
             style={[
               styles.subContainer,
@@ -104,18 +103,17 @@ function Input({
             )}
           </View>
         </View>
-
       </View>
       <View
-          style={{
-            flexDirection: "row-reverse",
-            alignItems: "center",
-            gap: 4,
-            justifyContent: "flex-start",
-          }}
-        >
-          {children}
-        </View>
+        style={{
+          flexDirection: "row-reverse",
+          alignItems: "center",
+          gap: 4,
+          justifyContent: "flex-start",
+        }}
+      >
+        {children}
+      </View>
     </View>
   );
 }
@@ -123,14 +121,15 @@ export default Input;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: "rgba(0,0,0,0.03)",
     borderRadius: 10,
     padding: 16,
+    marginVertical: -6,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 6,
-    flex: 1,
   },
   subContainer: {
     flexDirection: "row",
@@ -139,7 +138,8 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    minWidth: "22.5%",
+    // minWidth: "22.5%",
+    width: "100%",
     flex: 1,
   },
 });
