@@ -1,17 +1,43 @@
 import {
   FlatList,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, EvilIcons } from "@expo/vector-icons";
+import BoxItemCategory from "../../components/Category/BoxItemCategory";
 
 function Category() {
+    let browse = <><View style={styles.browseView}>
+    <Text style={styles.browseText}>Browse All Categories</Text>
+  </View>
+  <View style={{ flex: 1, justifyContent: "flex-start"}}>
+  <BoxItemCategory
+  items={[
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+    { text: "hbjdbc", image: require("../../assets/snack.png") },
+  ]}
+/>
+</View>
+</>
   return (
+    <SafeAreaProvider>
     <SafeAreaView style={styles.container}>
       <View style={styles.search}>
         <View style={styles.input}>
@@ -26,11 +52,10 @@ function Category() {
           </Pressable>
         </View>
       </View>
-      <View>
-        <Text>Browse All Categories</Text>
-      </View>
-      <FlatList />
+      {browse}
+
     </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -39,11 +64,12 @@ export default Category;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginHorizontal: 32
+    marginHorizontal: "2%",
+    marginTop: "10%"
   },
   search: {
     flexDirection: "row",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   input: {
     flexDirection: "row",
@@ -51,11 +77,22 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     paddingLeft: 16,
-    marginRight: 16,
-    borderRadius: 12
+    // marginRight: 16,
+    borderRadius: 16
   },
   cart: {
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    borderWidth: 1,
+    padding: 16,
+    borderRadius: 16,
+    marginLeft: 8
+  },
+  browseText: {
+    fontSize: 24,
+    fontWeight: "800"
+  },
+  browseView: {
+    marginVertical: 8
   }
 });
