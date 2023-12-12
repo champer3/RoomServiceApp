@@ -7,42 +7,39 @@ function BoxedItem({ text, image }) {
     Poppins_700Bold,
   });
   return (
-   
-      <View style={styles.container}>
+
+      <Pressable style={styles.container}>
         <View style={styles.imageContainer}>
           <Image style={styles.image} source={image} />
         </View>
         <View style={styles.textContainer}>
-        <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-          <Text style={[styles.text, ]}>
+          <Text style={[styles.text]}>
             {text ? text.replace(/\b\w/g, (char) => char.toUpperCase()) : ""}
           </Text>
-          </Pressable>
         </View>
-      </View>
+      </Pressable>
   );
 }
 
 export default BoxedItem;
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "rgba(0,0,0,0.05)",
+    borderRadius: 12,
+    marginHorizontal: "1%",
+    marginTop: 20,
+    flexDirection: "row",
+    width: "48%",
+  },
   imageContainer: {
     flex: 1.5,
     alignItems: "center",
     justifyContent: "center",
   },
-  textContainer: { flex: 1.5, paddingHorizontal: '10%', paddingVertical: '20%' },
-  container: {
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "rgba(0,0,0,0.05)",
-    borderRadius: 10,
-    padding: 16,
-    marginHorizontal: "3%",
-    marginTop: 20,
-    flexDirection: "row",
-    width: '43%',
-  },
-  image: { width: "150%", height: "110%", resizeMode: "contain" },
+  textContainer: {  flex: 1.5, paddingHorizontal: 10 },
+  image: { width: 80, height: 100, resizeMode: "contain" },
   text: { fontSize: 20, color: "rgba(0,0,0,0.8)" },
 });
