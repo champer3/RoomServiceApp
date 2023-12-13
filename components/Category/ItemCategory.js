@@ -15,5 +15,8 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         flexWrap: 'nowrap',
+        width: "100%",
+        height: "45%",
+        paddingRight: 10
     }
 })

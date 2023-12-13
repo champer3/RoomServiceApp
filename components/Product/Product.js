@@ -7,51 +7,39 @@ import { AntDesign } from "@expo/vector-icons";
 function Product({ image, width = 450 }) {
   let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
   let size = width / 1.8;
-  console.log(size);
   return (
     <View style={styles.container}>
-      <View style={{ position: "absolute",top:15, zIndex: 2 , left: 15}}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignSelf: "flex-start",
-              gap: 5,
-              backgroundColor: "#283618",
-              padding: 0.5,
-              paddingHorizontal: 6,
-              borderRadius: 30,
-              zIndex: 1,
-            }}
+      <View style={{ position: "absolute", top: 15, zIndex: 2, left: 15 }}>
+        <View
+          style={styles.priceView}
+        >
+          <Text
+            style={styles.priceText}
           >
-            <Text
-              style={{
-                color: "white",
-                fontWeight: "900",
-                fontStyle: "italic",
-                fontSize: 14,
-              }}
-            >
-              $2.99
-            </Text>
-            <Text
-              style={{
-                color: "#aaa",
-                fontWeight: "700",
-                fontStyle: "italic",
-                textDecorationLine: "line-through",
-                fontSize: 14,
-              }}
-            >
-              $5.00
-            </Text>
-          </View>
+            $2.99
+          </Text>
+          <Text
+            style={styles.crossPrice}
+          >
+            $5.00
+          </Text>
         </View>
+      </View>
       <View style={styles.imageContainer}>
-        <View style={[{flex: 1, justifyContent: "center", alignItems: 'center', marginRight: 20 }]}>
+        <View
+          style={[
+            {
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 20,
+            },
+          ]}
+        >
           <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <Image
               style={styles.image}
-              source={require("../../assets/dsBuffer.bm.png")}
+              source={require("../../assets/snack.png")}
             />
           </Pressable>
         </View>
@@ -94,19 +82,12 @@ function Product({ image, width = 450 }) {
             </FlexButton>
           </View>
         </View>
-
       </View>
     </View>
   );
 }
 export default Product;
 const styles = StyleSheet.create({
-  imageContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-  },
-  textContainer: { marginBottom: 5 },
   container: {
     borderWidth: 2,
     borderColor: "rgba(0,0,0,0.05)",
@@ -114,14 +95,43 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginTop: 20,
     padding: 16,
-    flex: 1,
-    overflow: "scroll",
+    // flex: 1,
+    // overflow: "scroll",
     backgroundColor: "white",
   },
+  imageContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  textContainer: { marginBottom: 5 },
   image: {
     maxWidth: 120,
     height: 120,
     alignSelf: "center",
   },
   text: { fontSize: 14, fontWeight: 500 },
+  priceView: {
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    gap: 5,
+    backgroundColor: "#283618",
+    padding: 0.5,
+    paddingHorizontal: 6,
+    borderRadius: 30,
+    zIndex: 1,
+  },
+  priceText: {
+    color: "white",
+    fontWeight: "900",
+    fontStyle: "italic",
+    fontSize: 14,
+  },
+  crossPrice: {
+    color: "#aaa",
+    fontWeight: "700",
+    fontStyle: "italic",
+    textDecorationLine: "line-through",
+    fontSize: 14,
+  }
 });

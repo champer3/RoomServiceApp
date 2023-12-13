@@ -18,9 +18,9 @@ export default Pill;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#f9f3cf59",
-    marginVertical: 10,
-    marginHorizontal: 10,
-    padding: 17,
+    marginVertical: 6,
+    marginHorizontal: 6,
+    padding: 12,
     alignItems: "center",
   },
   pressed: {

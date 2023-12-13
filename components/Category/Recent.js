@@ -11,8 +11,8 @@ export default Recent
 
 const styles = StyleSheet.create({
     container: {
-        height: 50,
-        marginTop: 24,
+        height: 40,
+        marginTop: 16,
         width: "100%",
         justifyContent: "space-between",
         alignItems: "flex-start"
@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
         width: "100%"
     },
     text: {
-        fontSize: 20
+        fontSize: 20,
+        fontWeight: "300"
     }
 })

@@ -3,19 +3,17 @@ import { StyleSheet, Text, View } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
 import BoxItemCategory from "./components/Category/BoxItemCategory";
 import Category from "./screens/category/Category";
+import CategorySearch from "./screens/category/CategorySearch";
 
 export default function App() {
   return (
-    <Category />
+    <PaperProvider>
+      <View style={styles.container}>
+        <Text>Code this shit</Text>
+        <StatusBar style="auto" />
+      </View>
+    </PaperProvider>
   );
-  // return (
-  //   <PaperProvider>
-  //     <View style={styles.container}>
-  //       <Text>Code this shit</Text>
-  //       <StatusBar style="auto" />
-  //     </View>
-  //   </PaperProvider>
-  // );
 }
 
 const styles = StyleSheet.create({
