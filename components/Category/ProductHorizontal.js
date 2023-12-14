@@ -1,13 +1,15 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native"
+import { ScrollView, StyleSheet, Text, View, Dimensions } from "react-native"
 import Item from "../Item/Item"
 import Product from "../Product/Product"
+
+const { width, height } = Dimensions.get("window");
 
 
 function ProductHorizontal({items}){
 
     return <ScrollView style={styles.container} horizontal={true}>
-        {items.map((index) =><View  key={index}   style={{width: 300}} >
-                <Product widths={500}  /> 
+        {items.map((index) =><View  key={index}   style={{width: width / 2}} >
+                <Product widths={width}  />
                 </View>)}
     </ScrollView>
 }

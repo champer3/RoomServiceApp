@@ -1,6 +1,6 @@
 import { Image, StyleSheet, Text, View, Pressable, Dimensions } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import Carousel from 'react-bootstrap/Carousel';
+// import Carousel from 'react-bootstrap/Carousel';
 import { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Pill from '../components/Pills/Pills'
@@ -21,7 +21,7 @@ function ProductDisplay() {
         </View>
         <View>
             <View style={{alignItems: 'center', backgroundColor: "#FAFAFA", paddingBottom:'6%'}}>
-                
+
                 <Image  source={require("../assets/snack.png")} style ={{width: width/2, height: height/4 }} />
                 <View
                     style={{
@@ -54,7 +54,7 @@ function ProductDisplay() {
                     }}
                     >Nerds Gummy Clusters Candy 5oz </Text></View>
                 <View style = {{flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 0.5, borderBottomColor:'#aaa', paddingBottom: '3%'}}>
-                    
+
                     <View >
                     <Pill text ="9289 Sold" type="null"/>
                     </View>
@@ -79,7 +79,7 @@ function ProductDisplay() {
             </View>
         </View>
         <View>
-            
+
         </View>
     </SafeAreaView>
   );

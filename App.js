@@ -11,7 +11,7 @@ import ProductDisplay from "./screens/ProductDisplay";
 export default function App() {
   return (
     <>
-    <ProductDisplay/>
+    <Home />
     </>
   );
   // return (
