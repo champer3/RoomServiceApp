@@ -9,6 +9,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, EvilIcons } from "@expo/vector-icons";
 import Product from "../../components/Product/Product";
+import ProductCategory from "../../components/Category/ProductCategory";
 
 
 function CategorySearch() {
@@ -40,10 +41,11 @@ function CategorySearch() {
             </Text>
           </Pressable>
         </View>
-        <View>
+        <ProductCategory items={[1,2,3,4,5,6,7]} />
+        {/* <View>
         <Product />
         <Product />
-        </View>
+        </View> */}
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -78,5 +80,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 8
   },
 });

@@ -1,15 +1,16 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native"
 import Item from "../Item/Item"
+import Product from "../Product/Product"
 
 
-function ItemCategory({items}){
+function ProductHorizontal({items}){
 
     return <ScrollView style={styles.container} horizontal={true}>
-        {items.map(({text, image},index) => <Item key={index} text={text} image={image}/>)}
+        {items.map((index) => <Product key={index} />)}
     </ScrollView>
 }
 
-export default ItemCategory
+export default ProductHorizontal
 
 const styles = StyleSheet.create({
     container: {

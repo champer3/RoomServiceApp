@@ -104,7 +104,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: "2%",
     marginTop: "10%",
-
   },
   search: {
     flexDirection: "row",

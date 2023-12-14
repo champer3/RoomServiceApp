@@ -1,40 +1,30 @@
-import { Image, Pressable } from "react-native";
+import { Image, Pressable, Dimensions } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 import FlexButton from "../Buttons/FlexButton";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+
+const { width, height } = Dimensions.get("window");
+
+
 
 function Product({ image, width = 450 }) {
   let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
   let size = width / 1.8;
   return (
     <View style={styles.container}>
-      <View style={{ position: "absolute", top: 15, zIndex: 2, left: 15 }}>
-        <View
-          style={styles.priceView}
-        >
-          <Text
-            style={styles.priceText}
-          >
-            $2.99
-          </Text>
-          <Text
-            style={styles.crossPrice}
-          >
-            $5.00
-          </Text>
-        </View>
+      <View style={styles.priceView}>
+        <Text style={styles.priceText}>$2.99</Text>
+        <Text style={styles.crossPrice}>$5.00</Text>
       </View>
       <View style={styles.imageContainer}>
         <View
-          style={[
-            {
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 20,
-            },
-          ]}
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginRight: 20,
+          }}
         >
           <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <Image
@@ -72,7 +62,7 @@ function Product({ image, width = 450 }) {
               </Text>
             </View>
           </Pressable>
-          <View style={{ flex: -1, height: 50 }}>
+          <View style={{ height: height / 20 }}>
             <FlexButton color={"#aaa"} borderRadius={5} width={1.5}>
               <Text style={{ fontSize: 10 }}>
                 {" "}
@@ -93,25 +83,31 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.05)",
     borderRadius: 10,
     marginHorizontal: 8,
-    marginTop: 20,
-    padding: 16,
-    // flex: 1,
-    // overflow: "scroll",
+    // marginTop: 20,
+    padding: 12,
+    width: width / 2.35,
+    height: height / 3.2,
     backgroundColor: "white",
+    justifyContent: "space-around"
   },
   imageContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
+    // borderWidth: 2
   },
   textContainer: { marginBottom: 5 },
   image: {
-    maxWidth: 120,
-    height: 120,
+    maxWidth: width / 3.7,
+    height: height / 8,
     alignSelf: "center",
   },
   text: { fontSize: 14, fontWeight: 500 },
   priceView: {
+    position: "absolute",
+    top: 15,
+    zIndex: 2,
+    left: 15,
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
@@ -133,5 +129,5 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textDecorationLine: "line-through",
     fontSize: 14,
-  }
+  },
 });

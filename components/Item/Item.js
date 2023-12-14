@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // marginHorizontal: 10,
     height: "100%",
-    width: width / 3.5
+    width: width / 3.5,
   },
   pressed: {
     width: "86%",
