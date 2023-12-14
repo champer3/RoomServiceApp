@@ -10,9 +10,9 @@ const { width, height } = Dimensions.get("window");
 
 function Product({ image, widths = 90 }) {
   let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
-  let size = widths 
+  let size = widths;
   return (
-    <View style={[styles.container, ]}>
+    <View style={[styles.container]}>
       <View style={styles.priceView}>
         <Text style={styles.priceText}>$2.99</Text>
         <Text style={styles.crossPrice}>$5.00</Text>
@@ -24,6 +24,7 @@ function Product({ image, widths = 90 }) {
             justifyContent: "center",
             alignItems: "center",
             marginRight: 20,
+            // width: "10%"
           }}
         >
           <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
@@ -78,7 +79,7 @@ function Product({ image, widths = 90 }) {
 }
 export default Product;
 const styles = StyleSheet.create({
-  container: { 
+  container: {
     borderWidth: 2,
     borderColor: "rgba(0,0,0,0.05)",
     borderRadius: 10,
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     // marginTop: 20,
     padding: 12,
     backgroundColor: "white",
-    justifyContent: "space-around"
+    justifyContent: "space-around",
   },
   imageContainer: {
     flexDirection: "row",

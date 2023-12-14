@@ -24,7 +24,7 @@ function ProductDisplay() {
         </View>
         <View style= {{marginBottom: 120}}>
             <View style={{alignItems: 'center', backgroundColor: "#FAFAFA", paddingBottom:'6%'}}>
-                
+
                 <Image  source={require("../assets/snack.png")} style ={{width: width/2, height: height/4 }} />
                 <View
                     style={{
@@ -57,7 +57,7 @@ function ProductDisplay() {
                     }}
                     >Nerds Gummy Clusters Candy 5oz </Text></View>
                 <View style = {{flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 0.5, borderBottomColor:'#aaa', paddingBottom: '3%'}}>
-                    
+
                     <View >
                     <Pill text ="9289 Sold" type="null"/>
                     </View>
