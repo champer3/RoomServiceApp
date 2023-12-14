@@ -19,8 +19,14 @@ const styles = StyleSheet.create({
   container: {
     flex: -1,
     backgroundColor: "#f9f3cf59",
+<<<<<<< HEAD
     marginVertical: 10,
     padding: 17,
+=======
+    marginVertical: 6,
+    marginHorizontal: 6,
+    padding: 12,
+>>>>>>> 413e93100796a5d736697758c9766bc137e1b26f
     alignItems: "center",
   },
   pressed: {

@@ -1,5 +1,4 @@
 import {
-  FlatList,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,12 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, EvilIcons } from "@expo/vector-icons";
 import BoxItemCategory from "../../components/Category/BoxItemCategory";
+import ItemCategory from "../../components/Category/ItemCategory";
+import SearchCat from "../../components/Category/SearchCat";
+import Pill from "../../components/Pills/Pills";
+import Search from "../../components/Search/Search";
+import RecentList from "../../components/RecentList";
+
 
 function Category() {
     let browse = <><View style={styles.browseView}>
@@ -36,13 +41,41 @@ function Category() {
 />
 </View>
 </>
+
+let check = <View style={styles.browseView}>
+<View style={styles.horizontalCat}>
+  <Text style={styles.text}>Categories</Text>
+  <ItemCategory
+  items={[
+    { text: "Snacks", image: require("../../assets/snack.png") },
+    { text: "Snacks", image: require("../../assets/snack.png") },
+    { text: "Snacks", image: require("../../assets/snack.png") },
+    { text: "Snacks", image: require("../../assets/snack.png") },
+    { text: "Snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+    { text: "snacks", image: require("../../assets/snack.png") },
+  ]}
+   />
+</View>
+<View style={styles.history}>
+  <Text style={styles.text}>Most Searched</Text>
+  <Search items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
+</View>
+</View>
   return (
     <SafeAreaProvider>
     <SafeAreaView style={styles.container}>
       <View style={styles.search}>
         <View style={styles.input}>
           <EvilIcons name="search" size={24} color="#aaa" />
-          <TextInput placeholder="Search" />
+          <TextInput placeholder="Search                                                                          " />
         </View>
         <View style={styles.cart}>
           <Pressable>
@@ -52,7 +85,12 @@ function Category() {
           </Pressable>
         </View>
       </View>
-      {browse}
+      {/* {check} */}
+      <View style={styles.recentView}>
+        <Text style={styles.text}>Recent</Text>
+        <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
+      </View>
+
 
     </SafeAreaView>
     </SafeAreaProvider>
@@ -65,7 +103,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginHorizontal: "2%",
-    marginTop: "10%"
+    marginTop: "10%",
   },
   search: {
     flexDirection: "row",
@@ -94,5 +132,20 @@ const styles = StyleSheet.create({
   },
   browseView: {
     marginVertical: 8
-  }
+  },
+  searchView: {
+    flex: 1,
+  },
+  recentView: {
+    flex: 1,
+    marginTop: 16
+  },
+  horizontalCat: {
+    width: "100%"
+  },
+  history: {
+    flex: 1,
+
+  },
+  text: {fontWeight: "500", fontSize: 20, marginBottom: 20}
 });
