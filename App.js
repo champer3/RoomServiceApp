@@ -5,10 +5,14 @@ import BoxItemCategory from "./components/Category/BoxItemCategory";
 import Category from "./screens/category/Category";
 import CategorySearch from "./screens/category/CategorySearch";
 import Home from "./screens/Home";
+import Deal from "./components/Category/Deal";
+import ProductDisplay from "./screens/ProductDisplay";
 
 export default function App() {
   return (
-    <Home />
+    <>
+    <ProductDisplay/>
+    </>
   );
   // return (
   //   <PaperProvider>

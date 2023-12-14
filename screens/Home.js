@@ -12,6 +12,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
 import ItemCategory from "../components/Category/ItemCategory";
 import ProductHorizontal from "../components/Category/ProductHorizontal";
+import Deal from "../components/Category/Deal";
 
 const { width, height } = Dimensions.get("window");
 
@@ -55,15 +56,15 @@ function Home() {
                 { text: "Snacks", image: require("../assets/snack.png") },
                 { text: "Snacks", image: require("../assets/snack.png") },
                 { text: "Snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
-                { text: "snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
+                { text: "Snacks", image: require("../assets/snack.png") },
               ]}
             />
           </View>
@@ -75,6 +76,9 @@ function Home() {
             <Text style={styles.text}>Snacks For You</Text>
             <ProductHorizontal items={[1,2,3,4,5,6,7,8,9]} />
           </View>
+          <View  style={[styles.recommendedView, {alignItems: 'center'}]}>
+          <Deal text={'Best Grocery Deals!'}/>
+          </View >
         </ScrollView>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -101,6 +105,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     // marginRight: 16,
     borderRadius: 16,
+    alignItems: 'center'
   },
   cart: {
     justifyContent: "center",

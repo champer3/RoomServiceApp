@@ -8,11 +8,11 @@ const { width, height } = Dimensions.get("window");
 
 
 
-function Product({ image, width = 450 }) {
+function Product({ image, widths = 95 }) {
   let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
-  let size = width / 1.8;
+  let size = widths 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, ]}>
       <View style={styles.priceView}>
         <Text style={styles.priceText}>$2.99</Text>
         <Text style={styles.crossPrice}>$5.00</Text>
@@ -20,7 +20,7 @@ function Product({ image, width = 450 }) {
       <View style={styles.imageContainer}>
         <View
           style={{
-            flex: 1,
+            flex: -1,
             justifyContent: "center",
             alignItems: "center",
             marginRight: 20,
@@ -34,7 +34,7 @@ function Product({ image, width = 450 }) {
           </Pressable>
         </View>
 
-        <View style={{ flex: -1.5, width: size, gap: 10, paddingTop: 12 }}>
+        <View style={{ flex: -1.5, width: `${size < 50 ? 100 : size * 2/3 }%`, gap: 10, paddingTop: 12 }}>
           <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <View style={styles.textContainer}>
               <Text
@@ -78,15 +78,13 @@ function Product({ image, width = 450 }) {
 }
 export default Product;
 const styles = StyleSheet.create({
-  container: {
+  container: { 
     borderWidth: 2,
     borderColor: "rgba(0,0,0,0.05)",
     borderRadius: 10,
     marginHorizontal: 8,
     // marginTop: 20,
     padding: 12,
-    width: width / 2.35,
-    height: height / 3.2,
     backgroundColor: "white",
     justifyContent: "space-around"
   },

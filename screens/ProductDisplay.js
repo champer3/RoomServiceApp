@@ -1,13 +1,14 @@
-import { Image, StyleSheet, Text, View, Pressable } from "react-native";
+import { Image, StyleSheet, Text, View, Pressable, Dimensions } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import Carousel from 'react-bootstrap/Carousel';
 import { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Pill from '../components/Pills/Pills'
 import { AntDesign } from "@expo/vector-icons";
+import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 function ProductDisplay() {
   const [index, setIndex] = useState(0);
-
+  const { width, height } = Dimensions.get("window");
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
   };
@@ -21,7 +22,7 @@ function ProductDisplay() {
         <View>
             <View style={{alignItems: 'center', backgroundColor: "#FAFAFA", paddingBottom:'6%'}}>
                 
-                <Image  source={require("../assets/snack.png")} />
+                <Image  source={require("../assets/snack.png")} style ={{width: width/2, height: height/4 }} />
                 <View
                     style={{
                     flexDirection: "row",
@@ -62,10 +63,15 @@ function ProductDisplay() {
                     <Text>4.0</Text>
                     <Text>(53 Reviews)</Text>
                     </View>
-                    <Text>See Reviews</Text>
+                    <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }} >
+                    <Text style={{color: "#BC6C25", fontSize: 12, fontWeight: 'bold'}}>See Reviews</Text>
+                    </Pressable>
                 </View>
                 <View>
-
+                    <Text>Quantity</Text>
+                    <View style ={{alignSelf: 'flex-start'}}>
+                    <IncrementDecrementBtn/>
+                    </View>
                 </View>
                 <View>
 
