@@ -7,11 +7,12 @@ import CategorySearch from "./screens/category/CategorySearch";
 import Home from "./screens/Home";
 import Deal from "./components/Category/Deal";
 import ProductDisplay from "./screens/ProductDisplay";
+import DealsScreen from "./screens/DealsScreen";
 
 export default function App() {
   return (
     <>
-    <Home />
+    <DealsScreen />
     </>
   );
   // return (

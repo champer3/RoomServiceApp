@@ -1,0 +1,75 @@
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  TextInput,
+  Text,
+  Dimensions,
+  Pressable,
+} from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons, EvilIcons } from "@expo/vector-icons";
+import Deal from "../components/Category/Deal";
+
+const { width, height } = Dimensions.get("window");
+function DealsScreen() {
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <ScrollView>
+          <View style={styles.input}>
+            <EvilIcons name="search" size={24} color="#aaa" />
+            <TextInput placeholder="Search deals                                                                        " />
+          </View>
+          <View style={styles.catHead}>
+            <Text style={styles.text}>Available Deals</Text>
+            <Pressable>
+              <Text style={{ color: "#BC6C25" }}>
+                {" "}
+                <Ionicons name="filter" size={16} color="#BC6C25" /> Filter By
+              </Text>
+            </Pressable>
+          </View>
+          <View style={[styles.recommendedView, { alignItems: "center" }]}>
+            <Deal text={"Best Meal Deals!"} />
+          </View>
+          <View style={[styles.recommendedView, { alignItems: "center" }]}>
+            <Deal text={"Best Meal Deals!"} />
+          </View>
+          <View style={[styles.recommendedView, { alignItems: "center" }]}>
+            <Deal text={"Best Meal Deals!"} />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+}
+
+export default DealsScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginHorizontal: "2%",
+    marginTop: "5%",
+  },
+  input: {
+    flexDirection: "row",
+    backgroundColor: "#EFEEEE",
+    // flex: 1,
+    paddingVertical: height / 45,
+    paddingLeft: 16,
+    // marginRight: 16,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  catHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  text: { fontWeight: "600", fontSize: 20, marginBottom: 20 },
+  recommendedView: {
+    marginBottom: 20
+  }
+});

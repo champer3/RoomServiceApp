@@ -46,7 +46,7 @@ function Home() {
             <View style={styles.catHead}>
               <Text style={styles.text}>Popular Categories</Text>
               <Pressable>
-              <Text style={{color: "#BC6C25", fontSize: 12}}>See All</Text>
+                <Text style={{ color: "#BC6C25", fontSize: 12 }}>See All</Text>
               </Pressable>
             </View>
             <ItemCategory
@@ -70,15 +70,26 @@ function Home() {
           </View>
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Recommended Foods</Text>
-            <ProductHorizontal items={[1,2,3,4,5,6,7,8,9]} />
+            <ProductHorizontal items={[1, 2, 3, 4, 5, 6, 7, 8, 9]} />
           </View>
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Snacks For You</Text>
-            <ProductHorizontal items={[1,2,3,4,5,6,7,8,9]} />
+            <ProductHorizontal items={[1, 2, 3, 4, 5, 6, 7, 8, 9]} />
           </View>
-          <View  style={[styles.recommendedView, {alignItems: 'center'}]}>
-          <Deal text={'Best Grocery Deals!'}/>
-          </View >
+          <View style={[styles.recommendedView, { alignItems: "center" }]}>
+            <Deal text={"Best Grocery Deals!"} />
+          </View>
+          <View style={styles.recommendedView}>
+            <Text style={styles.text}>Recommended Foods</Text>
+            <ProductHorizontal items={[1, 2, 3, 4, 5, 6, 7, 8, 9]} />
+          </View>
+          <View style={styles.recommendedView}>
+            <Text style={styles.text}>Snacks For You</Text>
+            <ProductHorizontal items={[1, 2, 3, 4, 5, 6, 7, 8, 9]} />
+          </View>
+          <View style={[styles.recommendedView, { alignItems: "center" }]}>
+            <Deal text={"Best Meal Deals!"} />
+          </View>
         </ScrollView>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -105,7 +116,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     // marginRight: 16,
     borderRadius: 16,
-    alignItems: 'center'
+    alignItems: "center",
   },
   cart: {
     justifyContent: "center",
@@ -132,6 +143,6 @@ const styles = StyleSheet.create({
   },
   text: { fontWeight: "600", fontSize: 20, marginBottom: 20 },
   recommendedView: {
-    marginTop: 16
-  }
+    marginTop: 16,
+  },
 });
