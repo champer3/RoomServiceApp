@@ -5,10 +5,13 @@ import BoxItemCategory from "./components/Category/BoxItemCategory";
 import Category from "./screens/category/Category";
 import CategorySearch from "./screens/category/CategorySearch";
 import Home from "./screens/Home";
+import OnBoard1 from "./screens/onBoarding/OnBoard1";
+import OnBoard2 from "./screens/onBoarding/OnBoard2";
+import OnBoard3 from "./screens/onBoarding/onBoard3";
 
 export default function App() {
   return (
-    <Home />
+    <OnBoard2 />
   );
   // return (
   //   <PaperProvider>
