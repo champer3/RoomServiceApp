@@ -41,5 +41,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     alignItems: "center",
     justifyContent: "center",
+    gap: 6
   },
 });

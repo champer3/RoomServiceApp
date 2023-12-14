@@ -8,7 +8,7 @@ const { width, height } = Dimensions.get("window");
 
 
 
-function Product({ image, widths = 95 }) {
+function Product({ image, widths = 90 }) {
   let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
   let size = widths 
   return (
@@ -34,7 +34,7 @@ function Product({ image, widths = 95 }) {
           </Pressable>
         </View>
 
-        <View style={{ flex: -1.5, width: `${size < 50 ? 100 : size * 2/3 }%`, gap: 10, paddingTop: 12 }}>
+        <View style={{ flex: -1.5, width: `${size < 50 ? 100 : size * 3.75/6 }%`, gap: 10, paddingTop: 12 }}>
           <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <View style={styles.textContainer}>
               <Text

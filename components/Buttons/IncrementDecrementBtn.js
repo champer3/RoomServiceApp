@@ -24,15 +24,17 @@ function IncrementDecrementBtn({ minValue = 0, maxValue = 100 }) {
         styles.buttonContainer
        }
     >
-      <Pressable>
-        <View><Feather name="minus" size={24} color="black" /></View>
+      <Pressable onPress={
+          handleDecrementCounter
+        }>
+        <View><Feather name="minus" size={30} color="black" /></View>
         
       </Pressable>
       <Text>{count}</Text>
-      <Pressable onPress={() => {
-          handleIncrementCounter;
-        }}>
-        <View><MaterialIcons name="add" size={24} color="black" /></View>
+      <Pressable onPress={
+          handleIncrementCounter
+        }>
+        <View><MaterialIcons name="add" size={30} color="black" /></View>
       </Pressable>
     </View>
   );
@@ -45,11 +47,14 @@ const styles = StyleSheet.create({
     flex: -1,
     // marginVertical: 20,
     // marginHorizontal: 15,
-    backgroundColor: "#283618",
-    padding: 10,
+    backgroundColor: "#F9F9F9",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 24,
     alignItems: "center",
     flexDirection: "row",
+    justifyContent: 'space-between',
+    width: '30%'
   },
   buttonText: {
     

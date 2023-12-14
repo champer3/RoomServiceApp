@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 30,
         backgroundColor: '#283618',
-        borderRadius: 30,
+        borderRadius: 10,
         alignItems: 'center'
     },
     catHead: {

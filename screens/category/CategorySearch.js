@@ -9,6 +9,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, EvilIcons } from "@expo/vector-icons";
 import Product from "../../components/Product/Product";
+import Input from "../../components/Inputs/Input"
 import ProductCategory from "../../components/Category/ProductCategory";
 
 
@@ -25,13 +26,14 @@ function CategorySearch() {
             <Text style={styles.text}>Snacks</Text>
           </View>
         </ImageBackground>
-        <View style={styles.input}>
+        <Input icon={<EvilIcons name="search" size={24} color="#aaa" />} text={'Search'}/>
+        {/* <View style={styles.input}>
           <EvilIcons name="search" size={24} color="#aaa" />
           <TextInput
             style={{ fontSize: 16 }}
             placeholder="Search                                                                          "
           />
-        </View>
+        </View> */}
         <View style={styles.topList}>
           <Text style={{ fontWeight: "700", fontSize: 20 }}>All Snacks</Text>
           <Pressable>
@@ -80,6 +82,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8
+    marginVertical: 16
   },
 });
