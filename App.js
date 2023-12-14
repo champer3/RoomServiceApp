@@ -3,10 +3,12 @@ import { StyleSheet, Text, View } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
 import BoxItemCategory from "./components/Category/BoxItemCategory";
 import Category from "./screens/category/Category";
+import ProductDisplay from "./screens/ProductDisplay";
 
 export default function App() {
   return (
-    <Category />
+    // <Category />
+    <ProductDisplay/>
   );
   // return (
   //   <PaperProvider>

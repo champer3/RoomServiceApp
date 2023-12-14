@@ -17,9 +17,9 @@ function Pill({ text, type = "pill" }) {
 export default Pill;
 const styles = StyleSheet.create({
   container: {
+    flex: -1,
     backgroundColor: "#f9f3cf59",
     marginVertical: 10,
-    marginHorizontal: 10,
     padding: 17,
     alignItems: "center",
   },
