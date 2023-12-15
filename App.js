@@ -8,11 +8,13 @@ import Home from "./screens/Home";
 import Deal from "./components/Category/Deal";
 import ProductDisplay from "./screens/ProductDisplay";
 import DealsScreen from "./screens/DealsScreen";
+import NumberLogin from "./screens/NumberLogin";
+import PinLogin from "./screens/PinLogin";
 
 export default function App() {
   return (
     <>
-    <DealsScreen />
+    <Home />
     </>
   );
   // return (

@@ -6,17 +6,28 @@ import {
   Text,
   Dimensions,
   Pressable,
+  FlatList,
+  Platform
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, EvilIcons } from "@expo/vector-icons";
 import Deal from "../components/Category/Deal";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 function DealsScreen() {
+  const data = [
+    { key: "1", text: "Best Meal Deal" },
+    { key: "2", text: "Best Snack Deal" },
+    { key: "3", text: "Best Alcohol Deal" },
+  ];
+  const renderItem = ({ item }) => (
+    <View style={[styles.recommendedView, { alignItems: "center" }]}>
+      <Deal text={item.text} />
+    </View>
+  );
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-        <ScrollView>
           <View style={styles.input}>
             <EvilIcons name="search" size={24} color="#aaa" />
             <TextInput placeholder="Search deals                                                                        " />
@@ -30,16 +41,12 @@ function DealsScreen() {
               </Text>
             </Pressable>
           </View>
-          <View style={[styles.recommendedView, { alignItems: "center" }]}>
-            <Deal text={"Best Meal Deals!"} />
-          </View>
-          <View style={[styles.recommendedView, { alignItems: "center" }]}>
-            <Deal text={"Best Meal Deals!"} />
-          </View>
-          <View style={[styles.recommendedView, { alignItems: "center" }]}>
-            <Deal text={"Best Meal Deals!"} />
-          </View>
-        </ScrollView>
+          <FlatList
+            data={data}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.key}
+            // style={{marginBottom: 20}}
+          />
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -70,6 +77,6 @@ const styles = StyleSheet.create({
   },
   text: { fontWeight: "600", fontSize: 20, marginBottom: 20 },
   recommendedView: {
-    marginBottom: 20
-  }
+    marginBottom: Platform.OS === 'ios' ? 20 : -30,
+  },
 });
