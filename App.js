@@ -7,23 +7,14 @@ import CategorySearch from "./screens/category/CategorySearch";
 import Home from "./screens/Home";
 import Deal from "./components/Category/Deal";
 import ProductDisplay from "./screens/ProductDisplay";
-import ReviewScreen from "./screens/ReviewScreen";
-import CartDisplay from "./screens/CartDisplay";
-import CheckoutScreen from "./screens/CheckoutScreen";
-import AddressConfirm from "./screens/AddressConfirm";
-import PaymentScreen from "./screens/PaymentScreen";
-import ConfirmPaymentMethod from "./screens/ConfirmPaymentMethod";
-import RecieptScreen from "./screens/RecieptScreen";
-import AccountDisplay from "./screens/AccountDisplay";
-import ProfileDisplay from "./screens/ProfileDisplay";
-import PaymentsDisplay from "./screens/PaymentsDisplay";
-import AddressDisplay from "./screens/AddressDisplay";
-
+import DealsScreen from "./screens/DealsScreen";
+import NumberLogin from "./screens/NumberLogin";
+import PinLogin from "./screens/PinLogin";
 
 export default function App() {
   return (
     <>
-      <AddressDisplay/>
+    <Home />
     </>
   );
   // return (
