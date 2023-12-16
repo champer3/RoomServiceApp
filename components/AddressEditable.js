@@ -1,19 +1,20 @@
 import { StyleSheet, View, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 
-function Address({ title, address, active= false }) {
+function AddressEditable({ title, address }) {
   return (
-    <View style={[styles.container, {borderColor: active ? 'black' : 'rgba(0,0,0,0.05)'} ]}>
+    <View style={styles.container}>
       <View style={styles.icon}>
-      <View style ={{ backgroundColor: "#FAFAFA",
+        <View style ={{ backgroundColor: "#FAFAFA",
             padding: 10,
             borderRadius: 50,
             justifyContent: "center",
             alignItems: "center",}}>
         <MaterialIcons name="location-on" size={30} color="grey" />
         </View>
-      <View style={styles.textContainer}>
+        <View style={styles.textContainer}>
+        
         <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 5 }}>
           {title}
         </Text>
@@ -29,14 +30,15 @@ function Address({ title, address, active= false }) {
         </Text>
       </View>
       </View>
+      
       <View style={styles.radio}>
-      <Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={30} color="black" />
+      <Feather name="edit-3" size={30} color="#BC6C25" />
       </View>
     </View>
   );
 }
 
-export default Address;
+export default AddressEditable;
 
 const styles = StyleSheet.create({
   container: {
@@ -64,4 +66,3 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
 });
-

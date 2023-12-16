@@ -10,9 +10,7 @@ function Deal({text}){
     if (items.length % 2 == 1){
         odd = items.splice(0, 1)[0]
     }
-    return <SafeAreaProvider>
-    <SafeAreaView><ScrollView>
-        <View  style={styles.container}>
+    return <View  style={styles.container}>
             <View style={styles.catHead}>
                 <Text style={styles.text}>{text}</Text>
                 <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }} >
@@ -25,11 +23,7 @@ function Deal({text}){
                     <Product widths={200}/></View>)}
         </View>
         </View>
-       
-    </ScrollView>
-    
-     </SafeAreaView>
-     </SafeAreaProvider>
+
 }
 
 export default Deal

@@ -26,14 +26,14 @@ function IncrementDecrementBtn({ minValue = 0, maxValue = 100 }) {
     >
       <Pressable onPress={
           handleDecrementCounter
-        }>
+        } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50 }}>
         <View><Feather name="minus" size={30} color="black" /></View>
         
       </Pressable>
       <Text>{count}</Text>
       <Pressable onPress={
           handleIncrementCounter
-        }>
+        } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50 }}>
         <View><MaterialIcons name="add" size={30} color="black" /></View>
       </Pressable>
     </View>
@@ -44,7 +44,7 @@ export default IncrementDecrementBtn;
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    flex: -1,
+    flex: 1,
     // marginVertical: 20,
     // marginHorizontal: 15,
     backgroundColor: "#F9F9F9",
@@ -53,8 +53,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: "center",
     flexDirection: "row",
-    justifyContent: 'space-between',
-    width: '30%'
+    justifyContent: 'space-around',
   },
   buttonText: {
     

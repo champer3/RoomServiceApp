@@ -8,6 +8,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import ProductCategory from "../components/Category/ProductCategory";
 import FlexButton from "../components/Buttons/FlexButton";
+import Deal from "../components/Category/Deal";
 function ProductDisplay() {
   const [index, setIndex] = useState(0);
   const { width, height } = Dimensions.get("window");
@@ -76,7 +77,7 @@ function ProductDisplay() {
                         fontWeight: "bold",
                         fontSize: 16,
                     }} >Quantity</Text>
-                    <View style ={{alignSelf: 'flex-start'}}>
+                    <View style ={{height: 'auto', width: '30%'}}>
                     <IncrementDecrementBtn/>
                     </View>
                     <View style = {{paddingVertical: 15, gap: 10}}>
@@ -99,6 +100,9 @@ function ProductDisplay() {
                         fontSize: 16,
                     }} >Shop Related Products</Text>
                         <ProductCategory items={[1,2,3,4]}/>
+                    </View>
+                    <View style={styles.catHead}>
+                        <Deal text={'Shop Related Products'}/>
                     </View>
                 </View>
                 <View>

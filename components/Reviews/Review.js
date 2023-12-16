@@ -10,8 +10,8 @@ function Review({ name, review, rate, date }) {
         </View>
         <View style={styles.bottomView}>
           <AntDesign name="star" size={18} color="#BC6C25" />
-          <Text style={{color: "#BC6C25"}}>{rate}</Text>
-          <Text style={{color: "#BC6C25"}}>stars</Text>
+          <Text style={{color: "#BC6C25"}}>{` ${rate}`}</Text>
+          <Text style={{color: "#BC6C25"}}> stars</Text>
         </View>
       </View>
       <View style={styles.review}>
@@ -48,12 +48,13 @@ const styles = StyleSheet.create({
   bottomView: {
     flex: 1,
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "flex-end",
     alignItems: "center",
   },
   review: {
     // flex: 3
-    marginVertical: 8
+    marginVertical: 20,
+    marginTop: 10,
   },
   reviewText: {
     color: "#333333",
@@ -70,9 +71,9 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
   line: {
-    height: 1,
+    height: 0.5,
     width: "100%",
-    opacity: 0.5,
+    opacity: 0.1,
     backgroundColor: "#333333",
   },
 });
