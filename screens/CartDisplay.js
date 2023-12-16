@@ -29,7 +29,7 @@ function CartDisplay() {
         
         
         <View style={{marginHorizontal: '10%', paddingTop: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
-            <ProductAction action={<Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={45} color="#B22334" /></Pressable>}><IncrementDecrementBtn/></ProductAction>
+            <ProductAction  action={<Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={45} color="#B22334" /></Pressable>}><IncrementDecrementBtn/></ProductAction>
             <ProductAction action={<Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={45} color="#B22334" /></Pressable>}><IncrementDecrementBtn/></ProductAction>
         </View>
         <View  style={{paddingHorizontal: '5%', paddingVertical: '10%'}}>

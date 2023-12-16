@@ -26,5 +26,5 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.5,
   },
-  text: { fontSize: 16, color: "#333333" },
+  text: { fontSize: 15, color: "#333333" },
 });

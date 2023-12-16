@@ -10,11 +10,12 @@ import ProductDisplay from "./screens/ProductDisplay";
 import DealsScreen from "./screens/DealsScreen";
 import NumberLogin from "./screens/NumberLogin";
 import PinLogin from "./screens/PinLogin";
+import OrderDisplay from "./screens/OrderDisplay";
 
 export default function App() {
   return (
     <>
-    <Home />
+    <OrderDisplay/>
     </>
   );
   // return (
