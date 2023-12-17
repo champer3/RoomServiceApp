@@ -10,12 +10,14 @@ import ProductDisplay from "./screens/ProductDisplay";
 import DealsScreen from "./screens/DealsScreen";
 import NumberLogin from "./screens/NumberLogin";
 import PinLogin from "./screens/PinLogin";
-import OrderDisplay from "./screens/OrderDisplay";
+import ReviewScreen from "./screens/ReviewScreen";
+import CartDisplay from "./screens/CartDisplay";
+import ConfirmPaymentMethod from "./screens/ConfirmPaymentMethod";
 
 export default function App() {
   return (
     <>
-    <OrderDisplay/>
+    <ConfirmPaymentMethod/>
     </>
   );
   // return (
