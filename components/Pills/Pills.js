@@ -6,7 +6,7 @@ function Pill({ text, type = "pill" }) {
   return (
     <Pressable style={({ pressed }) => pressed && styles.pressed}>
       <View style={[styles.container, { borderRadius: radius }]}>
-        <Text style={[styles.text, { fontWeight: weight }]}>
+        <Text style={[styles.text]}>
           {text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : null}
         </Text>
       </View>
@@ -19,12 +19,15 @@ const styles = StyleSheet.create({
   container: {
     flex: -1,
     backgroundColor: "#f9f3cf59",
-    marginVertical: 10,
-    padding: 17,
+    marginVertical: 8,
+    marginRight: 5,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     alignItems: "center",
+    borderWidth: 2
   },
   pressed: {
     opacity: 0.5,
   },
-  text: { fontSize: 16, color: "#333333" },
+  text: { fontSize: 16, color: "#333333", fontWeight: "600" },
 });

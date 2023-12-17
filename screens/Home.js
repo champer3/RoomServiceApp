@@ -20,20 +20,20 @@ function Home() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-        <ScrollView>
           <View style={styles.search}>
             <View style={styles.input}>
-              <EvilIcons name="search" size={24} color="#aaa" />
-              <TextInput placeholder="Search                                                                          " />
+              <EvilIcons name="search" size={24} color="black" />
+              <TextInput style={{fontSize: 16}} placeholderTextColor="black" placeholder="Search RoomService                                                                         " />
             </View>
             <View style={styles.cart}>
               <Pressable>
                 <View>
-                  <Feather name="shopping-cart" size={24} color="black" />
+                  <Feather name="shopping-cart" size={16} color="black" />
                 </View>
               </Pressable>
             </View>
           </View>
+        <ScrollView style={{backgroundColor: "white"}}>
           <View style={styles.deals}>
             <Pressable>
               <Image
@@ -101,18 +101,21 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginHorizontal: "2%",
-    marginTop: "5%",
+    backgroundColor: "#283618"
   },
   search: {
+    paddingTop: "5%",
     flexDirection: "row",
     justifyContent: "space-between",
+    paddingHorizontal: "2%",
+    paddingBottom: "5%"
+
   },
   input: {
     flexDirection: "row",
     backgroundColor: "#EFEEEE",
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingLeft: 16,
     // marginRight: 16,
     borderRadius: 16,
@@ -121,10 +124,12 @@ const styles = StyleSheet.create({
   cart: {
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    padding: 16,
+    // borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingRight: 18,
     borderRadius: 16,
     marginLeft: 8,
+    backgroundColor: "white"
   },
   image: {
     resizeMode: "contain",
@@ -133,16 +138,20 @@ const styles = StyleSheet.create({
   },
   deals: {
     marginVertical: 16,
+    marginHorizontal: "2%",
   },
   horizontalCat: {
     width: "100%",
+    paddingHorizontal: "2%",
   },
   catHead: {
     flexDirection: "row",
     justifyContent: "space-between",
+    // alignItems: "center"
   },
   text: { fontWeight: "600", fontSize: 20, marginBottom: 20 },
   recommendedView: {
     marginTop: 16,
+    marginHorizontal: "2%",
   },
 });
