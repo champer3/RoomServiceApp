@@ -31,11 +31,13 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     height: height / 9,
-    backgroundColor: "#E1F2CD",
+    backgroundColor: "#f9f3cf59",
     borderRadius: 100,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
+    borderWidth: 2,
+    borderColor: "#283618"
   },
   image: { width: "90%", height: "70%", resizeMode: "contain", },
   text: { fontWeight: "600", fontSize: 20, textAlign: "center" },
