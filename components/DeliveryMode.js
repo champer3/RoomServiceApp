@@ -1,23 +1,22 @@
 import { StyleSheet, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Fontisto } from '@expo/vector-icons';
-import { RadioButton } from "react-native-paper";
+import { Ionicons } from '@expo/vector-icons';
 
-function DeliveryMode({ mode, time }) {
+function DeliveryMode({ mode, time, active= false, special}) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {borderColor: active ? 'black' : 'rgba(0,0,0,0.05)'}]}>
       <View style={styles.topView}>
         <MaterialIcons name="timer" size={24} color="black" />
-        <RadioButton value="second" status="checked" />
+        <Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="black" />
       </View>
       <View>
         <Text style={styles.text}>{mode}</Text>
       </View>
       <View style={styles.downView}>
-      <Fontisto name="flash" size={24} color="black" />
+      <Fontisto name="flash" size={24} color={`${special ? "green" : "black"  }`} />
       <View style={styles.innerView}>
-        <Text style={styles.text}>{time}</Text>
-        <Text style={styles.text}>Minutes</Text>
+        <Text style={[styles.minitext, {color: special ? 'green' : 'black'}]}>{time}</Text>
       </View>
       </View>
     </View>
@@ -28,12 +27,12 @@ export default DeliveryMode;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 16,
-    borderWidth: 1,
-    width: 150,
-    borderColor: "black",
+    borderWidth: 2,
     borderRadius: 16,
-    opacity: 0.8,
+    gap: 10,
+    height: '100%',
   },
   topView: {
     flexDirection: "row",
@@ -42,21 +41,18 @@ const styles = StyleSheet.create({
   },
   downView: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap: 15,
     alignItems: "center",
   },
   innerView: {
-    // marginLeft: 8
-  },
-  radio: {
-    borderWidth: 1,
-    borderColor: "black",
-    borderRadius: "50%",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 8,
+    overflow: 'hidden',
+    paddingRight: 10
   },
   text: {
-    fontSize: 20
-  }
+    fontSize: 14,
+    fontWeight: 'bold'
+  },
+  minitext: {
+    fontSize: 12
+  },
 });

@@ -1,11 +1,14 @@
-import { Image, StyleSheet, Text, View, Pressable, Dimensions } from "react-native";
+import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-// import Carousel from 'react-bootstrap/Carousel';
 import { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Pill from '../components/Pills/Pills'
 import { AntDesign } from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
+import ProductCategory from "../components/Category/ProductCategory";
+import FlexButton from "../components/Buttons/FlexButton";
+import Deal from "../components/Category/Deal";
 function ProductDisplay() {
   const [index, setIndex] = useState(0);
   const { width, height } = Dimensions.get("window");
@@ -14,12 +17,13 @@ function ProductDisplay() {
   };
   return (
     <SafeAreaView>
-        <View style={{paddingLeft: '5%', paddingTop: '6%', backgroundColor: "#FAFAFA"}}>
+        <ScrollView>
+        <View style={{paddingLeft: '5%', paddingVertical: '6%'}}>
         <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <Ionicons name="md-arrow-back-outline" size={40} color="black" />
         </Pressable>
         </View>
-        <View>
+        <View style= {{marginBottom: 120}}>
             <View style={{alignItems: 'center', backgroundColor: "#FAFAFA", paddingBottom:'6%'}}>
 
                 <Image  source={require("../assets/snack.png")} style ={{width: width/2, height: height/4 }} />
@@ -67,10 +71,38 @@ function ProductDisplay() {
                     <Text style={{color: "#BC6C25", fontSize: 12, fontWeight: 'bold'}}>See Reviews</Text>
                     </Pressable>
                 </View>
-                <View>
-                    <Text>Quantity</Text>
-                    <View style ={{alignSelf: 'flex-start'}}>
+                <View style = {{gap: 15, marginVertical: 30}}>
+                    <Text style={{
+                        color: "black",
+                        fontWeight: "bold",
+                        fontSize: 16,
+                    }} >Quantity</Text>
+                    <View style ={{height: 'auto', width: '30%'}}>
                     <IncrementDecrementBtn/>
+                    </View>
+                    <View style = {{paddingVertical: 15, gap: 10}}>
+                    <Text style={{
+                        color: "black",
+                        fontWeight: "bold",
+                        fontSize: 16,
+                    }} >Description</Text>
+                    <Text style={{
+                        color: "#aaa",
+                        fontSize: 16,
+                        lineHeight: 35,
+                    }} >Rainbow NERDS surround fruity, gummy centers. Those sweet little sparks are fantastic inventors. A poppable cluster, packed with tangy, crunchy NERDS. A candy so tasty, there aren’t even words.
+                    NUTRITIONAL INFO</Text>
+                    </View>
+                    <View style={styles.catHead}>
+                        <Text style={{
+                        color: "black",
+                        fontWeight: "bold",
+                        fontSize: 16,
+                    }} >Shop Related Products</Text>
+                        <ProductCategory items={[1,2,3,4]}/>
+                    </View>
+                    <View style={styles.catHead}>
+                        <Deal text={'Shop Related Products'}/>
                     </View>
                 </View>
                 <View>
@@ -78,10 +110,39 @@ function ProductDisplay() {
                 </View>
             </View>
         </View>
-        <View>
-
+        </ScrollView>
+        <View style={{flex: 1, width: "100%", paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
+            <View style={{height: '150%', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                <Text
+                style={{
+                    color: "#aaa",
+                    fontWeight: "bold",
+                    fontSize: 20,
+                }}
+                > Total Payment</Text>
+                <Text
+                    style={{
+                        color: "black",
+                        fontWeight: "600",
+                        fontSize: 20,
+                        
+                    }}
+                    > $3.69
+                    </Text>
+            </View>
+            <View style ={{width: '40%', height: '130%'}}>
+                <FlexButton background={'#283618'}><FontAwesome name="shopping-bag" size={24} color="white" /><Text style={{color: 'white'}}>Add to cart</Text></FlexButton>
+            </View>
         </View>
+        
     </SafeAreaView>
   );
 }
 export default ProductDisplay
+
+const styles = StyleSheet.create({
+    catHead: {
+        justifyContent: "space-between",
+        gap: 19
+      },
+})

@@ -8,7 +8,8 @@ function ProductCategory({items}){
 
     return <ScrollView style={{flex: 1}}>
         <View style={styles.container}>
-        {items.map((index) => <Product key={index} />)}
+        {items.map((index) =><View key={index} style={{width: '50%', marginBottom: 15}}>
+                    <Product widths={200}/></View>)}
     </View>
     </ScrollView>
 }

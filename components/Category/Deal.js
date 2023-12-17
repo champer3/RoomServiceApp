@@ -41,9 +41,6 @@ function Deal({ text }) {
     odd = items.splice(0, 1)[0];
   }
   return (
-    // <SafeAreaProvider>
-    //   <SafeAreaView>
-    //     <ScrollView>
           <View style={styles.container}>
             <View style={styles.catHead}>
               <Text style={styles.text}>{text}</Text>
@@ -62,9 +59,6 @@ function Deal({ text }) {
               ))}
             </View>
           </View>
-    //     </ScrollView>
-    //   </SafeAreaView>
-    // </SafeAreaProvider>
   );
 }
 

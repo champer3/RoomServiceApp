@@ -1,11 +1,11 @@
 import { Image, View, Text, StyleSheet, Dimensions } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get("window");
 
-function CreditCard({ card, number }) {
+function CreditCardSelect({ card, number, active= false }) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{borderColor: active ? 'black' : 'rgba(0,0,0,0.05)'}]}>
       <View style={styles.left}>
         <View style={styles.imageContainer}>
           <Image style={styles.image} source={require("../assets/mastercard.png")} />
@@ -16,13 +16,13 @@ function CreditCard({ card, number }) {
         </View>
       </View>
       <View style={styles.right}>
-        <AntDesign name="edit" size={30} color="#BC6C25" />
+        <Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={30} color="black" />
       </View>
     </View>
   );
 }
 
-export default CreditCard;
+export default CreditCardSelect;
 
 const styles = StyleSheet.create({
   container: {

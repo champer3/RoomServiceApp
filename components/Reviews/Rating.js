@@ -1,15 +1,14 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 
-function Rating({rate, color}) {
+function Rating({rate, color, active = false}) {
   return (
-    <View style={styles.container}>
-      <Pressable>
+    <View style={[styles.container, {
+      backgroundColor: active ? '#283618' : "#FAFAFA",}]}>
         <View style={styles.innerContainer}>
-          <AntDesign name="star" size={24} color={color} />
-          <Text style={styles.text}>{rate}</Text>
+          <AntDesign name="star" size={24} color={active ? 'white' : 'black'} />
+          <Text style={[styles.text, {color : active ? 'white' : 'black'}]}>{rate}</Text>
         </View>
-      </Pressable>
     </View>
   );
 }
@@ -18,8 +17,7 @@ export default Rating;
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#FAFAFA",
-        borderRadius: "50%",
+        borderRadius: 50,
         justifyContent: "center",
         alignItems: "center",
         padding: 16
