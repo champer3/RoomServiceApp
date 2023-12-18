@@ -15,8 +15,8 @@ import { useRoute } from "@react-navigation/native";
 
 function CategorySearch() {
   const route = useRoute()
-  const name = route.params.name
-  const cat = {}
+  const name = route.params.cat
+  const cat = {'Alcohol' : [], 'Frozen': [], 'IceCream': [], 'Food': [], 'Snack': []}
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -46,7 +46,7 @@ function CategorySearch() {
             </Text>
           </Pressable>
         </View>
-        <ProductCategory items={[1,2,3,4,5,6,7]} />
+        {/* <ProductCategory items={[1,2,3,4,5,6,7]} /> */}
         {/* <View>
         <Product />
         <Product />

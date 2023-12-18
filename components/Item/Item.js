@@ -5,12 +5,12 @@ import { useNavigation } from "@react-navigation/native";
 const { width, height } = Dimensions.get('window');
 function Item({ text, image , onPress}) {
   const navigation = useNavigation()
-  function pressHandler (cat){
-    navigation.navigate('Category', {cat})
+  function pressHandler (){
+    navigation.navigate('Category', {cat: text})
   }
     // console.log(width)
   return (
-      <Pressable onPress={onPress} style={ ({ pressed }) => pressed && { opacity: 0.5 }}>
+      <Pressable onPress={pressHandler} style={ ({ pressed }) => pressed && { opacity: 0.5 }}>
        
         <View style={styles.imageContainer}>
           <Image style={styles.image} source={image} />

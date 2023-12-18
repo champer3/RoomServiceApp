@@ -8,8 +8,8 @@ function ProductCategory({items}){
 
     return <ScrollView style={{flex: 1}}>
         <View style={styles.container}>
-        {items.map((index) =><View key={index} style={{width: '50%', marginBottom: 15}}>
-                    <Product widths={200}/></View>)}
+        {items.map(({title, oldPrice, image}, index) =><View key={index} style={{width: '50%', marginBottom: 15}}>
+                    <Product widths={200}  title={title} oldPrice={oldPrice} image={image} /></View>)}
     </View>
     </ScrollView>
 }
