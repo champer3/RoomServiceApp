@@ -15,7 +15,7 @@ import NavBar from "../components/NavBar";
 function AccountDisplay() {
   return (
     <SafeAreaView style ={{flex: 1}}>
-        
+
         <View style={{paddingLeft: '5%', paddingTop: '7%', paddingBottom: '3%', flexDirection: 'row', alignItems: 'center', gap: 20}}>
         <Text style ={{fontWeight: 'bold', fontSize: 20}}>My Account</Text>
         </View>
@@ -35,14 +35,14 @@ function AccountDisplay() {
         </View>
 
         </ScrollView>
-        
+
         <View style={{paddingHorizontal: '5%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , justifyContent: "space-between", flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)'}}>
             <NavBar/>
         </View>
-        
+
         </View>
-        
-       
+
+
     </SafeAreaView>
   );
 }

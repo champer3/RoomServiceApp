@@ -19,11 +19,15 @@ import OnBoard3 from "./screens/onBoarding/onBoard3";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import EmailLogin from "./screens/EmailLogin";
+import StartScreen from "./screens/StartScreen";
+import EmailSignUp from "./screens/EmailSignUp";
+import AddNumber from "./screens/AddNumber";
+import CreatePassword from "./screens/CreatePassword";
+import AccountDisplay from "./screens/AccountDisplay";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-
-
 
 function OnBoarding() {
   return (
@@ -41,6 +45,52 @@ function OnBoarding() {
       <Stack.Screen
         name="OnBoard1"
         component={OnBoard1}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function Authentication() {
+  return (
+    <Stack.Navigator
+      screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}
+    >
+      <Stack.Screen
+        name="NumberLogin"
+        component={NumberLogin}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="PinLogin"
+        component={PinLogin}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EmailLogin"
+        component={EmailLogin}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="StartScreen"
+        component={StartScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EmailSignUp"
+        component={EmailSignUp}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AddNumber"
+        component={AddNumber}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CreatePassword"
+        component={CreatePassword}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -80,6 +130,16 @@ function HomeTabs() {
           ),
         }}
       />
+      <Tab.Screen
+        name="Account"
+        component={AccountDisplay}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={24} color="black" />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -89,6 +149,11 @@ export default function App() {
     <NavigationContainer>
       <StatusBar style="light" />
       <Stack.Navigator>
+        <Stack.Screen
+          name="Authentication"
+          component={Authentication}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="OnBoarding"
           component={OnBoarding}
@@ -101,7 +166,8 @@ export default function App() {
         />
       </Stack.Navigator>
     </NavigationContainer>
-  )}
+  );
+}
 
 const styles = StyleSheet.create({
   container: {

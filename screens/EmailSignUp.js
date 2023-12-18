@@ -11,7 +11,7 @@ function EmailSignUp() {
     <View style={styles.container}>
       <View style={styles.welcomeView}>
         <Text style={styles.text}>Hello,</Text>
-        <Text style={styles.text}>Welcome Back😍</Text>
+        <Text style={styles.text}>Create An Account😍</Text>
       </View>
       <View
         style={{
