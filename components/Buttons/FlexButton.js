@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, View, Text } from "react-native";
 
-function FlexButton({ children, borderRadius, background, color, opacity, width }) {
+function FlexButton({ children, borderRadius, background, color, opacity, width , onPress}) {
   return (
-    <View
+    <Pressable
+    onPress={onPress}
       style={[
         styles.buttonContainer,
         {
@@ -14,10 +15,9 @@ function FlexButton({ children, borderRadius, background, color, opacity, width 
         },
       ]}
     >
-      <Pressable >
         <View style={styles.buttonText}>{children}</View>
-      </Pressable>
-    </View>
+
+    </Pressable>
   );
 }
 

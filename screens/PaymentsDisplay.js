@@ -24,15 +24,9 @@ function PaymentsDisplay() {
 ]
    
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <View style={{flex: 1}}>
         <View>
         
-        <View style={{paddingLeft: '5%', paddingVertical: '7%', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-        <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Ionicons name="md-arrow-back-outline" size={40} color="black" />
-        </Pressable>
-        <Text style ={{fontWeight: 'bold', fontSize: 20}}>Payments</Text>
-        </View>
         <ScrollView style={{marginBottom: '50%' }}>
         
         <View style={styles.recommendedView}>
@@ -55,7 +49,7 @@ function PaymentsDisplay() {
     
         </View>
 
-    </SafeAreaView>
+    </View>
   );
 }
 export default PaymentsDisplay;

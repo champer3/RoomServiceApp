@@ -11,10 +11,15 @@ import Button from "../components/Buttons/Button";
 import Info from "../components/Info";
 import Input from "../components/Inputs/Input";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 function CreatePassword() {
   function handleScreenPress() {
     Keyboard.dismiss();
+  }
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('NumberLogin')
   }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
@@ -35,12 +40,14 @@ function CreatePassword() {
           <View style={{ flex: 3 }}>
             <Input
               type="password"
-              text="password"
+              text="Password"
+              secured={true}
               icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
             />
             <Input
               type="password"
-              text="password"
+              text="Confirm Password"
+              secured={true}
               icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
             />
             <View style={{ marginTop: 20 }}>
@@ -49,7 +56,7 @@ function CreatePassword() {
           </View>
           <View style={{ flex: 2, justifyContent: "flex-end" }}>
             <View style={styles.buttonContainer}>
-              <Button>
+              <Button onPress={pressHandler}>
                 <Text style={{ fontSize: 16, color: "white" }}>
                   Create Password{" "}
                 </Text>

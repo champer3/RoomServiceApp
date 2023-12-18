@@ -12,6 +12,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, EvilIcons } from "@expo/vector-icons";
 import Deal from "../components/Category/Deal";
+import Input from "../components/Inputs/Input";
 
 const { height } = Dimensions.get("window");
 function DealsScreen() {
@@ -28,10 +29,8 @@ function DealsScreen() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-          <View style={styles.input}>
-            <EvilIcons name="search" size={24} color="#aaa" />
-            <TextInput placeholder="Search deals                                                                        " />
-          </View>
+        
+            <Input text={'Search deals'} icon={<EvilIcons name="search" size={24} color="#aaa" />}/>
           <View style={styles.catHead}>
             <Text style={styles.text}>Available Deals</Text>
             <Pressable>

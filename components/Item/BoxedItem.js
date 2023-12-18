@@ -2,13 +2,13 @@ import { Image, Pressable } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 import { useFonts, Poppins_700Bold } from "@expo-google-fonts/poppins";
 
-function BoxedItem({ text, image }) {
+function BoxedItem({ text, image, onPress }) {
   let [fontsLoaded] = useFonts({
     Poppins_700Bold,
   });
   return (
 
-      <Pressable style={styles.container}>
+      <Pressable style={styles.container} onPress = {onPress}>
         <View style={styles.imageContainer}>
           <Image style={styles.image} source={image} />
         </View>
@@ -41,5 +41,5 @@ const styles = StyleSheet.create({
   },
   textContainer: {  flex: 1.5, paddingHorizontal: 10 },
   image: { width: 80, height: 100, resizeMode: "contain" },
-  text: { fontSize: 20, color: "rgba(0,0,0,0.8)" },
+  text: { fontSize: 14,fontWeight: 'bold', color: "rgba(0,0,0,0.8)" },
 });

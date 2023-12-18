@@ -14,8 +14,17 @@ import SearchCat from "../../components/Category/SearchCat";
 import Pill from "../../components/Pills/Pills";
 import Search from "../../components/Search/Search";
 import RecentList from "../../components/RecentList";
+import Input from "../../components/Inputs/Input";
+import { useNavigation } from "@react-navigation/native";
 
 function Category() {
+  const navigation = useNavigation()
+    function pressHandler (){
+        navigation.navigate('CategorySearch')
+    }
+    function cartHandler (){
+      navigation.navigate('Cart')
+    }
   let browse = (
     <>
       <View style={styles.browseView}>
@@ -49,23 +58,15 @@ function Category() {
       <View style={styles.horizontalCat}>
         <Text style={styles.text}>Categories</Text>
         <ItemCategory
-          items={[
-            { text: "Snacks", image: require("../../assets/snack.png") },
-            { text: "Snacks", image: require("../../assets/snack.png") },
-            { text: "Snacks", image: require("../../assets/snack.png") },
-            { text: "Snacks", image: require("../../assets/snack.png") },
-            { text: "Snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-            { text: "snacks", image: require("../../assets/snack.png") },
-          ]}
-        />
+              items={[
+                { text: "Alcohol", image: require("../../assets/Alcohol.png") },
+                { text: "Frozen", image: require("../../assets/frozen.png") },
+                { text: "Ice Cream", image: require("../../assets/icecream.png") },
+                { text: "Food", image: require("../../assets/food.png") },
+                { text: "Snacks", image: require("../../assets/snack.png") }
+              ]}
+              onPress = {pressHandler}
+            />
       </View>
       <View style={styles.history}>
         <Text style={styles.text}>Most Searched</Text>
@@ -85,7 +86,7 @@ function Category() {
             "gifts",
             "diary",
             "hat",
-          ]}
+          ]} onPress ={pressHandler}
         />
       </View>
     </View>
@@ -94,10 +95,13 @@ function Category() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <View style={styles.search}>
-          <View style={styles.input}>
-            <EvilIcons name="search" size={24} color="#aaa" />
-            <TextInput placeholder="Search                                                                          " />
-          </View>
+        <Input text={'Search'} icon={<EvilIcons name="search" size={24} color="#aaa" />} ><View style={styles.cart}>
+              <Pressable onPress={cartHandler}>
+                <View>
+                  <Feather name="shopping-cart" size={24} color="black" />
+                </View>
+              </Pressable>
+            </View></Input>
           <View style={styles.cart}>
             <Pressable>
               <View>
@@ -161,6 +165,8 @@ const styles = StyleSheet.create({
   },
   horizontalCat: {
     width: "100%",
+    height: '29%'
+    
   },
   history: {
     marginTop: "10%"

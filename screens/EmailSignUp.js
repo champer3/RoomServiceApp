@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Pressable } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
@@ -6,18 +6,34 @@ import BareButton from "../components/Buttons/BareButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { Dimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 function EmailSignUp() {
   function handleScreenPress() {
     Keyboard.dismiss();
   }
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('AddNumber')
+  }
+  function signInHandler (){
+    navigation.navigate('NumberLogin')
+  }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
-          <View style={styles.welcomeView}>
+        <View style={styles.welcomeView}>
             <Text style={styles.text}>Hello,</Text>
-            <Text style={styles.text}>Create An Account😍</Text>
+            <Text style={styles.text}>Create An Account🤩</Text>
+            <View style={styles.lineContainer}>
+              <View style={[styles.line, { backgroundColor: "#283618" }]}></View>
+              <View
+                style={[styles.line]}
+              ></View>
+              <View style={styles.line}></View>
+              <View style={styles.line}></View>
+            </View>
           </View>
           <View
             style={{
@@ -28,6 +44,7 @@ function EmailSignUp() {
               justifyContent: "flex-start",
               //   borderWidth: 2,
               //   borderColor: "black",
+              marginTop: 35
             }}
           >
             <Input
@@ -36,16 +53,15 @@ function EmailSignUp() {
               icon={<MaterialIcons name="email" size={24} color="#aaa" />}
             />
             <Input
-              type="password"
               text="First Name"
-              icon={<Ionicons name="person" size={24} color="black" />}
+              icon={<Ionicons name="person" size={24} color="#aaa" />}
             />
             <Input
               text="Last Name"
-              icon={<Ionicons name="person" size={24} color="black" />}
+              icon={<Ionicons name="person" size={24} color="#aaa" />}
             />
 
-            <Text
+            {/* <Text
               style={{
                 textAlign: "right",
                 paddingRight: 8,
@@ -54,18 +70,18 @@ function EmailSignUp() {
               }}
             >
               Forgot Password?
-            </Text>
+            </Text> */}
 
             <View style={styles.buttonContainer}>
-              <Button>
-                <Text style={{ fontSize: 16, color: "white" }}>Login </Text>
+              <Button onPress={pressHandler}>
+                <Text style={{ fontSize: 16, color: "white" }}>Continue  </Text>
                 <Image
                   style={styles.vector}
                   source={require("../assets/Vector.png")}
                 />
               </Button>
             </View>
-
+{/*
             <Text
               style={{
                 color: "#BC6C25",
@@ -75,7 +91,7 @@ function EmailSignUp() {
               }}
             >
               Login with your mobile number
-            </Text>
+            </Text> */}
           </View>
 
           <View
@@ -111,9 +127,7 @@ function EmailSignUp() {
             <View
               style={[
                 styles.buttonContainer,
-                {
-                  marginBottom: 16,
-                },
+
               ]}
             >
               <BareButton borderRadius={24} color="#EEEEEE">
@@ -128,9 +142,11 @@ function EmailSignUp() {
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 Already have an account?
               </Text>
+              <Pressable onPress={signInHandler}>
               <Text style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}>
                 Sign In
               </Text>
+              </Pressable>
             </View>
           </View>
         </SafeAreaView>
@@ -149,7 +165,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     justifyContent: "space-between",
     marginHorizontal: "5%",
-    marginVertical: "10%",
+    marginVertical: "6%",
     // marginTop: 200
   },
   welcomeView: {
@@ -159,7 +175,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     height: "10%",
     // marginBottom: 42,
-    marginTop: 40,
+    // marginTop: 40,
   },
   description: {
     width: "100%",
@@ -175,7 +191,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     height: 65,
-    marginBottom: 20,
+    marginBottom: 10,
+    marginTop: 8
   },
   vector: {
     width: "10%",
@@ -206,5 +223,16 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "500",
     letterSpacing: 2,
+  },
+  lineContainer: {
+    flexDirection: "row",
+    marginTop: "5%",
+    justifyContent: "space-between",
+    height: "34%",
+  },
+  line: {
+    height: 2,
+    width: "20%",
+    backgroundColor: "#D9D9D9",
   },
 });

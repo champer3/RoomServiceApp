@@ -8,8 +8,8 @@ const { width, height } = Dimensions.get("window");
 function ProductHorizontal({items}){
 
     return <ScrollView style={styles.container} horizontal={true}>
-        {items.map((index) =><View  key={index}   style={{width: width / 2}} >
-                <Product widths={width}  />
+        {items.map(({title, oldPrice, image}, index) =><View  key={index}   style={{width: width / 2}} >
+                <Product widths={width} title={title} oldPrice={oldPrice} image={image}/>
                 </View>)}
     </ScrollView>
 }

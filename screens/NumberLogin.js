@@ -5,8 +5,10 @@ import {
   View,
   TouchableWithoutFeedback,
   Keyboard,
+  Pressable,
 } from "react-native";
 import Input from "../components/Inputs/Input";
+import { useNavigation } from "@react-navigation/native";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -14,12 +16,22 @@ import PhoneIcon from "../components/PhoneIcon";
 
 function NumberLogin() {
 
-  function handleScreenPress() {
-    Keyboard.dismiss()
+  // function handleScreenPress() {
+  //   Keyboard.dismiss()
+  // }
+  const navigation  = useNavigation()
+  function pressHandler (){
+    navigation.navigate('PinLogin')
+  }
+  function emailHandler (){
+    navigation.navigate('EmailLogin')
+  }
+  function signUpHandler (){
+    navigation.navigate('StartScreen')
   }
 
   return (
-    <TouchableWithoutFeedback onPress={handleScreenPress}>
+    <TouchableWithoutFeedback>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
           <View style={styles.topView}>
@@ -30,10 +42,10 @@ function NumberLogin() {
           </View>
           <View style={styles.middleView}>
             <View style={{ marginBottom: "5%" }}>
-              <Input text="                    " icon={<PhoneIcon />} keyboard="numeric" />
+              <Input icon={<PhoneIcon />} keyboard="numeric" />
             </View>
             <View style={styles.buttonContainer}>
-              <Button>
+              <Button onPress = {pressHandler}>
                 <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
                 <Image
                   style={styles.vector}
@@ -42,6 +54,7 @@ function NumberLogin() {
               </Button>
             </View>
             <View>
+              <Pressable onPress = {emailHandler}>
               <Text
                 style={{
                   // marginBottom: 120,
@@ -54,6 +67,7 @@ function NumberLogin() {
               >
                 Login with email and password
               </Text>
+              </Pressable>
             </View>
           </View>
           <View style={styles.downView}>
@@ -84,10 +98,12 @@ function NumberLogin() {
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 New to RoomService?
               </Text>
+              <Pressable onPress = {signUpHandler}>
               <Text style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}>
                 {" "}
                 Sign Up
               </Text>
+              </Pressable>
             </View>
           </View>
         </SafeAreaView>

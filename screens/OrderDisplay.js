@@ -15,16 +15,9 @@ function OrderDisplay(){
     const handleSelect = (selectedIndex) => {
       setIndex(selectedIndex);
     };
-    return  <SafeAreaView style={{flex: 1}}>
+    return  <View style={{flex: 1}}>
     
-    
-    <View style={{paddingLeft: '5%', paddingTop: '7%', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-    <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-        <Ionicons name="md-arrow-back-outline" size={40} color="black" />
-    </Pressable>
-    <Text style ={{fontWeight: 'bold', fontSize: 20}}>Orders</Text>
-    </View>
-    <View style={[{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, marginHorizontal: '5%', paddingTop: '5%', gap: 20, borderBottomColor: 'rgba(0,0,0,0.075)'}]}>
+    <View style={[{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, marginHorizontal: '5%', gap: 20, borderBottomColor: 'rgba(0,0,0,0.075)'}]}>
         
         <View style={[{width: 'auto',alignItems: 'center', padding: '3%'}, index == 0 ? styles.active : undefined]}>
             <Pressable onPressIn={() => handleSelect(0)}>
@@ -60,7 +53,7 @@ function OrderDisplay(){
     
    
     </View>
-    </SafeAreaView>
+    </View>
 }
 
 export default OrderDisplay

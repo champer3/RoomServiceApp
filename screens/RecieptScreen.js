@@ -17,14 +17,8 @@ function RecieptScreen() {
     setIndex(selectedIndex);
   };
   return (
-    <SafeAreaView style ={{flex: 1}}>
-       
-        <View style={{paddingLeft: '5%', paddingVertical: '6%', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-        <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Ionicons name="md-arrow-back-outline" size={40} color="black" />
-        </Pressable>
-        <Text style ={{fontWeight: 'bold', fontSize: 20}}>Order Receipt</Text>
-        </View>
+    <View style ={{flex: 1}}>
+     
         <View style={{flex: 0.5}}>
         <ScrollView>
         <View style={styles.recommendedView}>
@@ -90,7 +84,7 @@ function RecieptScreen() {
             
                 
         </View>
-    </SafeAreaView>
+    </View>
   );
 }
 export default RecieptScreen

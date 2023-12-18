@@ -1,12 +1,23 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
+import { useNavigation } from "@react-navigation/native";
 
 function StartScreen() {
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('HomeTabs')
+  }
+  function emailHandler (){
+    navigation.navigate('EmailSignUp')
+  }
+  function signInHandler (){
+    navigation.navigate('NumberLogin')
+  }
   return (
     <View style={styles.container}>
-      <Text style={{color: "#333333", opacity: 0.7, fontSize: 16, fontWeight: "500", alignSelf: "flex-end"}}>Skip Registration</Text>
+      <Pressable onPress={pressHandler} style={{alignSelf: 'flex-end'}}><Text style={{color: "#333333", opacity: 0.7, fontSize: 16, fontWeight: "500", alignSelf: "flex-end"}}>Skip Registration</Text></Pressable>
       <View style={styles.imageContainer}>
         <Image
           style={styles.image}
@@ -21,8 +32,8 @@ function StartScreen() {
         </Text>
       </View>
       <View style={styles.buttonContainer}>
-        <Button>
-          <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
+        <Button onPress={emailHandler}>
+          <Text style={{ fontSize: 16, color: "white" }}>Sign Up  </Text>
           <Image
             style={styles.vector}
             source={require("../assets/Vector.png")}
@@ -54,7 +65,9 @@ function StartScreen() {
       </View>
       <View style={styles.textContainer}>
         <Text style={{color: "#333333", opacity: 0.5}}>Already have an account?</Text>
+        <Pressable onPress={signInHandler}>
         <Text style={{color: "#BC6C25", fontWeight: "700", opacity: 1}}> Sign In</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -69,6 +82,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: "5%",
+    paddingTop: 20,
     marginTop: -50
   },
   imageContainer: {

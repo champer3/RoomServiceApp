@@ -1,8 +1,8 @@
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Feather } from '@expo/vector-icons';
 
-function AddressEditable({ title, address }) {
+function AddressEditable({ title, address, onPress }) {
   return (
     <View style={styles.container}>
       <View style={styles.icon}>
@@ -31,9 +31,9 @@ function AddressEditable({ title, address }) {
       </View>
       </View>
       
-      <View style={styles.radio}>
+      <Pressable onPress={onPress} style={styles.radio}>
       <Feather name="edit-3" size={30} color="#BC6C25" />
-      </View>
+      </Pressable>
     </View>
   );
 }

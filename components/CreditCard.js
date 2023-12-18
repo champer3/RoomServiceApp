@@ -1,9 +1,9 @@
-import { Image, View, Text, StyleSheet, Dimensions } from "react-native";
+import { Image, View, Text, StyleSheet, Dimensions, Pressable } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
-function CreditCard({ card, number }) {
+function CreditCard({ card, number, onPress }) {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -15,9 +15,9 @@ function CreditCard({ card, number }) {
           <Text style={styles.number}>{number} **** **** ****</Text>
         </View>
       </View>
-      <View style={styles.right}>
+      <Pressable onPress={onPress} style={styles.right}>
         <AntDesign name="edit" size={30} color="#BC6C25" />
-      </View>
+      </Pressable>
     </View>
   );
 }

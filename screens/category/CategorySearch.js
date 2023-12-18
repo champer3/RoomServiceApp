@@ -11,9 +11,12 @@ import { Ionicons, EvilIcons } from "@expo/vector-icons";
 import Product from "../../components/Product/Product";
 import Input from "../../components/Inputs/Input"
 import ProductCategory from "../../components/Category/ProductCategory";
-
+import { useRoute } from "@react-navigation/native";
 
 function CategorySearch() {
+  const route = useRoute()
+  const name = route.params.name
+  const cat = {}
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -23,7 +26,7 @@ function CategorySearch() {
           source={require("../../assets/categoryPic.png")}
         >
           <View style={styles.catHead}>
-            <Text style={styles.text}>Snacks</Text>
+            <Text style={styles.text}>{name}</Text>
           </View>
         </ImageBackground>
         <Input icon={<EvilIcons name="search" size={24} color="#aaa" />} text={'Search'}/>
@@ -35,7 +38,7 @@ function CategorySearch() {
           />
         </View> */}
         <View style={styles.topList}>
-          <Text style={{ fontWeight: "700", fontSize: 20 }}>All Snacks</Text>
+          <Text style={{ fontWeight: "700", fontSize: 20 }}>{`All ${name}`}</Text>
           <Pressable>
             <Text style={{ color: "#BC6C25" }}>
               {" "}

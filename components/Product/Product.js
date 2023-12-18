@@ -3,19 +3,25 @@ import { StyleSheet, Text, View } from "react-native";
 import FlexButton from "../Buttons/FlexButton";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
 
 
 
-function Product({ image, widths = 90 }) {
-  let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
+
+function Product({ image, title, oldPrice, newPrice, widths = 90 }) {
+ console.log(image)
   let size = widths;
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('Product', {image: image, title : title})
+  }
   return (
     <View style={[styles.container]}>
-      <View style={styles.priceView}>
-        <Text style={styles.priceText}>$2.99</Text>
-        <Text style={styles.crossPrice}>$5.00</Text>
+      <View style={[styles.priceView, {backgroundColor: newPrice ? "#283618" : 'white', fontStyle: newPrice ? "italic" : 'normal',}]}>
+        <Text style={[styles.priceText, {color : newPrice ? 'white' : 'black'}]}>{`$${oldPrice}`}</Text>
+        {newPrice && <Text style={styles.crossPrice}>{`$${newPrice}`}</Text>}
       </View>
       <View style={styles.imageContainer}>
         <View
@@ -27,24 +33,24 @@ function Product({ image, widths = 90 }) {
             // width: "10%"
           }}
         >
-          <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
+          <Pressable onPress={pressHandler} style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <Image
               style={styles.image}
-              source={require("../../assets/snack.png")}
+              source={image}
             />
           </Pressable>
         </View>
 
         <View style={{ flex: -1.5, width: `${size < 50 ? 100 : size * 3.75/6 }%`, gap: 10, paddingTop: 12 }}>
-          <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
+          <Pressable onPress={pressHandler} style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <View style={styles.textContainer}>
               <Text
                 style={[styles.text]}
                 ellipsizeMode="tail"
                 numberOfLines={2}
               >
-                {text
-                  ? text.replace(/\b\w/g, (char) => char.toUpperCase())
+                {title
+                  ? title.replace(/\b\w/g, (char) => char.toUpperCase())
                   : ""}
               </Text>
             </View>
@@ -110,7 +116,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
-    backgroundColor: "#283618",
+    
+    borderWidth: 1,
+    borderColor : '#aaa', 
+    borderRadius: 10,
     padding: 0.5,
     paddingHorizontal: 6,
     borderRadius: 30,
@@ -119,7 +128,6 @@ const styles = StyleSheet.create({
   priceText: {
     color: "white",
     fontWeight: "900",
-    fontStyle: "italic",
     fontSize: 14,
   },
   crossPrice: {

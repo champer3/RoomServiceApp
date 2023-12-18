@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get("window");
 
 
 function Profile({ image, quantity, action,  children }) {
-  let text = "Oladimeji Abubakar";
+  let text = "Josh Brooks";
 
   return (
     <View style={[styles.container]}>
@@ -50,7 +50,7 @@ function Profile({ image, quantity, action,  children }) {
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 9, alignItems: 'center' }}
               >
-                <Text style={{fontWeight: '300', fontSize: 16, color: 'white'}}>oladimeji@gmail.com</Text>
+                <Text style={{fontWeight: '300', fontSize: 16, color: 'white'}}>joshbrooks@gmail.com</Text>
               </View>
             </View>
         </View>

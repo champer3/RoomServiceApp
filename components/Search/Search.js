@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View } from "react-native"
 import Pill from "../Pills/Pills"
 
-function Search({items}){
+function Search({items, onPress}){
 
     return <View style ={styles.container}>
-        {items.map((item, ind)=> <Pill key={ind} text={item}/>)}
+        {items.map((item, ind)=> <Pill key={ind} text={item} onPress={onPress}/>)}
     </View>
 }
 

@@ -1,18 +1,23 @@
 import { Image, Pressable } from "react-native";
 import { StyleSheet, Text, View, Dimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get('window');
-function Item({ text, image }) {
+function Item({ text, image , onPress}) {
+  const navigation = useNavigation()
+  function pressHandler (cat){
+    navigation.navigate('Category', {cat})
+  }
     // console.log(width)
   return (
-    <View style={[styles.container, {}]}>
-      <Pressable style={[styles.pressed, ({ pressed }) => pressed && { opacity: 0.5 }]}>
+      <Pressable onPress={onPress} style={ ({ pressed }) => pressed && { opacity: 0.5 }}>
+       
         <View style={styles.imageContainer}>
           <Image style={styles.image} source={image} />
         </View>
         <Text style={styles.text}>{text}</Text>
+
       </Pressable>
-    </View>
   );
 }
 
@@ -22,23 +27,23 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     // marginHorizontal: 10,
-    height: "100%",
-    width: width / 3.5,
+    height: "50%",
+    width: width / 3.6,
   },
   pressed: {
     width: "86%",
     // height: "90%"
   },
   imageContainer: {
-    height: height / 9,
+    flex: 1,
     backgroundColor: "#f9f3cf59",
     borderRadius: 100,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
-    borderWidth: 2,
-    borderColor: "#283618"
+    height: height/10.3,
+    width: width/5
   },
-  image: { width: "90%", height: "70%", resizeMode: "contain", },
-  text: { fontWeight: "600", fontSize: 20, textAlign: "center" },
+  image: { width: "70%", height: "70%", resizeMode: 'contain'  },
+  text: { fontWeight: "bold", fontSize: 14, textAlign: "center" },
 });

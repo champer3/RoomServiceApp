@@ -8,6 +8,7 @@ import BoxItemCategory from "./components/Category/BoxItemCategory";
 import Category from "./screens/category/Category";
 import CategorySearch from "./screens/category/CategorySearch";
 import Home from "./screens/Home";
+import { Octicons } from '@expo/vector-icons';
 import Deal from "./components/Category/Deal";
 import ProductDisplay from "./screens/ProductDisplay";
 import DealsScreen from "./screens/DealsScreen";
@@ -25,7 +26,21 @@ import EmailSignUp from "./screens/EmailSignUp";
 import AddNumber from "./screens/AddNumber";
 import CreatePassword from "./screens/CreatePassword";
 import AccountDisplay from "./screens/AccountDisplay";
+import CartDisplay from "./screens/CartDisplay";
+import ReviewScreen from "./screens/ReviewScreen";
 import MapScreen from "./screens/MapScreen";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AddPin from "./screens/AddPin";
+import CategoryAll from "./screens/category/CategoryAll";
+import ProfileDisplay from "./screens/ProfileDisplay";
+import OrderDisplay from "./screens/OrderDisplay";
+import AddressDisplay from "./screens/AddressDisplay";
+import PaymentsDisplay from "./screens/PaymentsDisplay"
+import PaymentScreen from "./screens/PaymentScreen";
+import ConfirmPaymentMethod from "./screens/ConfirmPaymentMethod";
+import RecieptScreen from './screens/RecieptScreen'
+import AddressConfirm from './screens/AddressConfirm'
+import CheckoutScreen from './screens/CheckoutScreen'
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -57,28 +72,29 @@ function OnBoarding() {
 function Authentication() {
   return (
     <Stack.Navigator
-    initialRouteName="PinLogin"
       screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}
     >
       <Stack.Screen
         name="NumberLogin"
         component={NumberLogin}
         options={{
-          // headerBackTitle: () =>  <Ionicons name="md-arrow-back-outline" size={40} color="black" />,
-          headerShown: false,
-          // title: ''
+          headerBackTitle: () =>  <Ionicons name="md-arrow-back-outline" size={40} color="black" />,
+          headerShadowVisible: false,
+          title: ''
 
         }}
       />
       <Stack.Screen
         name="PinLogin"
         component={PinLogin}
-        options={{ headerShown: false }}
+        options={{ headerShadowVisible: false,
+          title: '' }}
       />
       <Stack.Screen
         name="EmailLogin"
         component={EmailLogin}
-        options={{ headerShown: false }}
+        options={{headerShadowVisible: false,
+          title: ''}}
       />
       <Stack.Screen
         name="StartScreen"
@@ -88,42 +104,124 @@ function Authentication() {
       <Stack.Screen
         name="EmailSignUp"
         component={EmailSignUp}
-        options={{ headerShown: false }}
+        options={{headerShadowVisible: false,
+          title: ''}}
       />
       <Stack.Screen
         name="AddNumber"
         component={AddNumber}
-        options={{ headerShown: false }}
+        options={{headerShadowVisible: false,
+          title: ''}}
+      />
+      <Stack.Screen
+        name="AddPin"
+        component={AddPin}
+        options={{headerShadowVisible: false,
+          title: ''}}
       />
       <Stack.Screen
         name="CreatePassword"
         component={CreatePassword}
-        options={{ headerShown: false }}
+        options={{headerShadowVisible: false,
+          title: ''}}
       />
     </Stack.Navigator>
   );
 }
+function Home2(){
+  return (   <Stack.Navigator>
+    <Stack.Screen
+          name="HomeDefault"
+          component={Home}
+          options={{headerShown: false,}}
+        />
+    <Stack.Screen
+          name="Category"
+          component={CategorySearch}
+          options={{headerShadowVisible: false,
+            title: ''}}
+        />
+         <Stack.Screen
+    name="All Categories"
+    component={CategoryAll}
+    options={{ headerShown: false }}
+  />
+         <Stack.Screen
+    name="All Deals"
+    component={DealsScreen}
+    options={{ headerShown: false }}
+  />
+  </Stack.Navigator>
+  )
+}
+function Search(){
+  return (   <Stack.Navigator>
+    <Stack.Screen
+          name="SearchDefault"
+          component={Category}
+          options={{headerShown: false,}}
+        />
+    <Stack.Screen
+          name="CategorySearch"
+          component={CategorySearch}
+          options={{headerShadowVisible: false,
+            title: ''}}
+        />
+
+  </Stack.Navigator>
+  )
+}
+function Account(){
+  return (   <Stack.Navigator>
+    <Stack.Screen
+          name="Profile"
+          component={{ProfileDisplay}}
+          options={{headerShadowVisible: false,
+            title: 'My Profile'}}
+        />
+    <Stack.Screen
+          name="Payment"
+          component={{PaymentsDisplay}}
+          options={{headerShadowVisible: false,
+            title: 'Payments'}}
+        />
+    <Stack.Screen
+          name="Order History"
+          component={{OrderDisplay}}
+          options={{headerShadowVisible: false,
+            title: 'Orders'}}
+        />
+    <Stack.Screen
+          name="Address"
+          component={{AddressDisplay}}
+          options={{headerShadowVisible: false,
+            title: 'Address'}}
+        />
+
+  </Stack.Navigator>
+  )
+}
 
 function HomeTabs() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator screenOptions={{tabBarInactiveTintColor: 'black', tabBarActiveTintColor: '#BC6C25'}}>
       <Tab.Screen
         name="Home"
-        component={Home}
+        component={Home2}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" color={color} size={size} />
+            <Octicons name="home" color={color} size={size} />
           ),
         }}
       />
       <Tab.Screen
-        name="Category"
-        component={Category}
+        name="Search"
+        component={Search}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="category" color={color} size={size} />
+            <Ionicons name="search-outline" color={color} size={size} />
           ),
         }}
       />
@@ -133,7 +231,9 @@ function HomeTabs() {
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="handshake-o" color={color} size={size} />
+            <View style={{transform: 'rotateZ(45deg)',}}>
+                    <MaterialCommunityIcons name="handshake-outline" size={size} color={color} />
+              </View>
           ),
         }}
       />
@@ -143,7 +243,7 @@ function HomeTabs() {
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={24} color="black" />
+            <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
       />

@@ -7,6 +7,7 @@ import ProductAction from "../components/Product/ProductAction";
 import { Fontisto } from '@expo/vector-icons';
 import AddressEditable from "../components/AddressEditable";
 import DeliveryMode from "../components/DeliveryMode";
+import { useNavigation } from "@react-navigation/native";
 function CheckoutScreen() {
    const mode  = [{mode: 'Faster (+$2)', time : '10-15\nMinutes', fastest: true}, {mode: 'Fast', time : '30-45 \nMinutes', fastest: false}, {mode: 'Schedule', time : 'Pick a \ndelivery time', fastest: false}]
    
@@ -14,19 +15,20 @@ function CheckoutScreen() {
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
   };
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('Make Payment')
+  }
+  function addressHandler (){
+    navigation.navigate('Confirm Address')
+  }
   return (
-    <SafeAreaView>
+    <View>
         <ScrollView style={{marginBottom: '19%' }}>
-        <View style={{paddingLeft: '5%', paddingVertical: '6%', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-        <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Ionicons name="md-arrow-back-outline" size={40} color="black" />
-        </Pressable>
-        <Text style ={{fontWeight: 'bold', fontSize: 20}}>Checkout</Text>
-        </View>
         <View style={styles.recommendedView}>
             <Text style={styles.text}>Shipping Address</Text>
             <View style={{flex: 1}}>
-            <AddressEditable title='My apartment' address='123 Main Street, Apt 4B, Cityville, USA'/>
+            <AddressEditable title='My apartment' address='123 Main Street, Apt 4B, Cityville, USA' onPress = {addressHandler}/>
             </View>
         </View>
         <View style={styles.recommendedView}>
@@ -73,10 +75,10 @@ function CheckoutScreen() {
                     </Text>
             </View>
             <View style ={{width: '40%', height: '130%'}}>
-                <FlexButton background={'#283618'}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
+                <FlexButton background={'#283618'} onPress={pressHandler}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
             </View>
         </View>
-    </SafeAreaView>
+    </View>
   );
 }
 export default CheckoutScreen
