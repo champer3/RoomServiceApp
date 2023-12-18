@@ -55,6 +55,7 @@ function OnBoarding() {
 function Authentication() {
   return (
     <Stack.Navigator
+    initialRouteName="CreatePassword"
       screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}
     >
       <Stack.Screen

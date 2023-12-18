@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard } from "react-native";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
@@ -7,7 +7,13 @@ import Info from "../components/Info";
 import CodeInput from "../components/Inputs/CodeInput";
 
 function NumberLogin() {
+
+  function handleScreenPress() {
+    Keyboard.dismiss()
+  }
+
   return (
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <View style={styles.topView}>
@@ -69,6 +75,7 @@ function NumberLogin() {
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
+    </TouchableWithoutFeedback>
   );
 }
 

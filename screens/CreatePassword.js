@@ -1,51 +1,68 @@
-import { StyleSheet, Image, Text, View } from "react-native";
+import {
+  StyleSheet,
+  Image,
+  Text,
+  View,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Button from "../components/Buttons/Button";
 import Info from "../components/Info";
 import Input from "../components/Inputs/Input";
 import { MaterialIcons } from "@expo/vector-icons";
 
 function CreatePassword() {
+  function handleScreenPress() {
+    Keyboard.dismiss();
+  }
   return (
-    <View style={styles.container}>
-      <View style={styles.welcomeView}>
-        <Text style={styles.text}>Done,</Text>
-        <Text style={styles.text}>Create A Password🤩</Text>
-        <View style={styles.lineContainer}>
-          <View style={styles.line}></View>
-          <View style={styles.line}></View>
-          <View style={styles.line} ></View>
-          <View style={[styles.line, { backgroundColor: "#283618" }]}></View>
-        </View>
-      </View>
-      <View style={{ flex: 3, }}>
-        <Input
-          type="password"
-          text="password"
-          icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
-        />
-        <Input
-          type="password"
-          text="password"
-          icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
-        />
-        <View style={{marginTop: 20}}>
-          <Info text="Choose a strong and secure password to complete your account creation" />
-        </View>
-      </View>
-      <View style={{ flex: 2, justifyContent: "flex-end" }}>
-        <View style={styles.buttonContainer}>
-          <Button>
-            <Text style={{ fontSize: 16, color: "white" }}>
-              Create Password{" "}
-            </Text>
-            <Image
-              style={styles.vector}
-              source={require("../assets/Vector.png")}
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.welcomeView}>
+            <Text style={styles.text}>Done,</Text>
+            <Text style={styles.text}>Create A Password🤩</Text>
+            <View style={styles.lineContainer}>
+              <View style={styles.line}></View>
+              <View style={styles.line}></View>
+              <View style={styles.line}></View>
+              <View
+                style={[styles.line, { backgroundColor: "#283618" }]}
+              ></View>
+            </View>
+          </View>
+          <View style={{ flex: 3 }}>
+            <Input
+              type="password"
+              text="password"
+              icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
             />
-          </Button>
-        </View>
-      </View>
-    </View>
+            <Input
+              type="password"
+              text="password"
+              icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
+            />
+            <View style={{ marginTop: 20 }}>
+              <Info text="Choose a strong and secure password to complete your account creation" />
+            </View>
+          </View>
+          <View style={{ flex: 2, justifyContent: "flex-end" }}>
+            <View style={styles.buttonContainer}>
+              <Button>
+                <Text style={{ fontSize: 16, color: "white" }}>
+                  Create Password{" "}
+                </Text>
+                <Image
+                  style={styles.vector}
+                  source={require("../assets/Vector.png")}
+                />
+              </Button>
+            </View>
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </TouchableWithoutFeedback>
   );
 }
 
