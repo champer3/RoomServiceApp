@@ -32,10 +32,12 @@ const Stack = createNativeStackNavigator();
 
 function OnBoarding() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{animationTypeForReplace: 'pop'}}>
+      
+      
       <Stack.Screen
-        name="OnBoard3"
-        component={OnBoard3}
+        name="OnBoard1"
+        component={OnBoard1}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -44,8 +46,8 @@ function OnBoarding() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="OnBoard1"
-        component={OnBoard1}
+        name="OnBoard3"
+        component={OnBoard3}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -61,7 +63,10 @@ function Authentication() {
         name="NumberLogin"
         component={NumberLogin}
         options={{
-          headerShown: false,
+          headerBackTitle: () =>  <Ionicons name="md-arrow-back-outline" size={40} color="black" />,
+          headerShadowVisible: false,
+          title: ''
+         
         }}
       />
       <Stack.Screen
@@ -150,16 +155,17 @@ export default function App() {
     <NavigationContainer>
       <StatusBar style="light" />
       <Stack.Navigator>
+      <Stack.Screen
+          name="OnBoarding"
+          component={OnBoarding}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Authentication"
           component={Authentication}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="OnBoarding"
-          component={OnBoarding}
-          options={{ headerShown: false }}
-        />
+        
         <Stack.Screen
           name="HomeTabs"
           component={HomeTabs}

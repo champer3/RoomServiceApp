@@ -1,20 +1,17 @@
 import { Pressable, StyleSheet, View, Text } from "react-native";
 
-function Button({ children, color, opacity }) {
+function Button({ children, color, opacity, onPress }) {
+  
   return (
-    <View
-      style={[
+      <Pressable onPress={onPress} style={[
         styles.buttonContainer,
         {
           backgroundColor: color ? color : "#283618",
           opacity: opacity,
         },
-      ]}
-    >
-      <Pressable>
+      ]}>
         <View style={styles.buttonText}>{children}</View>
       </Pressable>
-    </View>
   );
 }
 

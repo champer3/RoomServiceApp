@@ -6,12 +6,17 @@ import {
   Text,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useNavigation } from "@react-navigation/native";
 import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
 
 const { width, height } = Dimensions.get("window");
 
 function OnBoard3() {
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('Authentication')
+  }
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -38,12 +43,12 @@ function OnBoard3() {
             </View>
             <View style={styles.butContainer}>
               <View style={styles.buttonView}>
-                <BareButton>
+                <BareButton onPress = {pressHandler}>
                   <Text>Skip</Text>
                 </BareButton>
               </View>
               <View style={styles.buttonView}>
-                <Button>
+                <Button onPress = {pressHandler}>
                   <Text style={{ color: "white", fontSize: 16 }}>Next</Text>
                 </Button>
               </View>
