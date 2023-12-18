@@ -3,6 +3,7 @@ import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import PhoneIcon from "../components/PhoneIcon";
 
 function NumberLogin() {
   return (
@@ -16,7 +17,7 @@ function NumberLogin() {
         </View>
         <View style={styles.middleView}>
           <View style={{ marginBottom: "5%" }}>
-            <Input type="email" />
+            <Input icon={<PhoneIcon/>} keyboard="numeric"/>
           </View>
           <View style={styles.buttonContainer}>
             <Button>

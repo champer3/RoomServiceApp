@@ -25,6 +25,7 @@ import EmailSignUp from "./screens/EmailSignUp";
 import AddNumber from "./screens/AddNumber";
 import CreatePassword from "./screens/CreatePassword";
 import AccountDisplay from "./screens/AccountDisplay";
+import MapScreen from "./screens/MapScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -168,6 +169,7 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
