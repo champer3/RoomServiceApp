@@ -4,12 +4,17 @@ import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { RadioButton } from "react-native-paper";
 import Info from "../components/Info";
+import { useNavigation } from "@react-navigation/native";
 
 function AddPin() {
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('CreatePassword')
+  }
   return (
     <View style={styles.container}>
       <View style={styles.welcomeView}>
-        <Text style={styles.text}>Allmost there,</Text>
+        <Text style={styles.text}>Almost there,</Text>
         <Text style={styles.text}>Verify Your Number😉</Text>
         <View style={styles.lineContainer}>
             <View style={styles.line}></View>
@@ -19,7 +24,7 @@ function AddPin() {
         </View>
       </View>
       <View style={{flex: 2}}>
-        <CodeInput length={6} />
+        <CodeInput length={5} />
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Text style={{marginVertical: 20}}>Resend Code</Text>
           <Text style={{marginVertical: 20}}>00:59</Text>
@@ -28,7 +33,7 @@ function AddPin() {
       </View>
       <View style={{flex: 2, justifyContent: "flex-end"}}>
       <View style={styles.buttonContainer}>
-        <Button>
+        <Button onPress={pressHandler}>
           <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
           <Image
             style={styles.vector}
@@ -74,7 +79,7 @@ const styles = StyleSheet.create({
     marginBottom: -20,
   },
   vector: {
-    width: "22%",
+    width: "7%",
     resizeMode: "contain",
   },
   facebook: {

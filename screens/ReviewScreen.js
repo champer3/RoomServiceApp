@@ -19,12 +19,6 @@ function ReviewScreen() {
   return (
     <SafeAreaView>
         <ScrollView>
-        <View style={{paddingLeft: '1%', paddingTop: '6%', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-        <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Ionicons name="md-arrow-back-outline" size={40} color="black" />
-        </Pressable>
-        <Text style ={{fontWeight: 'bold', fontSize: 20}}>4.0 (5 reviews)</Text>
-        </View>
         <View style={{paddingHorizontal: '1%', paddingRight: '3%', paddingVertical: '6%', flexDirection: 'row', justifyContent: 'space-between'}}>
             {rating.map((rate, idx) => <Pressable key={idx} onPressOut={() => handleSelect(idx)}><Rating  rate={rate} active={index === idx}/></Pressable>)}
         </View>

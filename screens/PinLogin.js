@@ -1,17 +1,24 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Pressable } from "react-native";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Info from "../components/Info";
 import CodeInput from "../components/Inputs/CodeInput";
+import { useNavigation } from "@react-navigation/native";
 
 function NumberLogin() {
 
   function handleScreenPress() {
     Keyboard.dismiss()
   }
-
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('HomeTabs')
+  }
+  function signUpHandler (){
+    navigation.navigate('StartScreen')
+  }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
     <SafeAreaProvider>
@@ -27,7 +34,7 @@ function NumberLogin() {
             <CodeInput length={6} />
           </View>
           <View style={styles.buttonContainer}>
-            <Button>
+            <Button onPress = {pressHandler}>
               <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
               <Image
                 style={styles.vector}
@@ -67,10 +74,12 @@ function NumberLogin() {
             <Text style={{ color: "#333333", opacity: 0.5 }}>
               New to RoomService?
             </Text>
+            <Pressable onPress = {signUpHandler}>
             <Text style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}>
               {" "}
               Sign Up
             </Text>
+            </Pressable>
           </View>
         </View>
       </SafeAreaView>
@@ -109,7 +118,7 @@ const styles = StyleSheet.create({
     marginBottom: "5%",
   },
   vector: {
-    width: "22%",
+    width: "7%",
     resizeMode: "contain",
   },
   facebook: {

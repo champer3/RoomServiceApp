@@ -14,6 +14,7 @@ function Input({
   keyboard = "default",
   buttonText,
   children,
+  color
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPassword = () => {
@@ -28,18 +29,20 @@ function Input({
       maxLength={length}
       autoCapitalize="words"
       keyboardType={keyboard}
+      placeholderTextColor={color}
     />
   );
   if (secured) {
     content = (
       <TextInput
-        style={styles.input}
+        style={[styles.input, {color: color}]}
         placeholder={text}
         autoComplete="address-line1"
         cursorColor={"rgba(0,0,0,0.5)"}
         maxLength={length}
         secureTextEntry={!showPassword}
         keyboardType={keyboard}
+        placeholderTextColor={color}
       />
     );
   }
@@ -54,7 +57,9 @@ function Input({
         flexDirection: "row",
         alignItems: "center",
         marginTop: 25,
-        gap: 5,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'white'
       }}
     >
       <View style={styles.container}>
@@ -123,6 +128,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.03)",
+    // backgroundColor: "rgba(0,0,0,0.03)",
     borderRadius: 10,
     padding: 16,
     // marginVertical: -6,

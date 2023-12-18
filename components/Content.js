@@ -1,9 +1,10 @@
 import { StyleSheet, View, Text } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
+import { Pressable } from "react-native";
 
-function Content({icon,  title, info }) {
+function Content({icon,  title, info, onPress }) {
   return (
-    <View style={[styles.container ]}>
+    <Pressable onPress = {onPress} style={[styles.container ]}>
       <View style={styles.icon}>
       {icon && <View style ={{ backgroundColor: "#FAFAFA",
             padding: 20,
@@ -31,7 +32,7 @@ function Content({icon,  title, info }) {
       <View style={styles.radio}>
       <Ionicons name="chevron-forward-sharp" size={30} color="rgba(0,0,0,0.35)" />
       </View>
-    </View>
+    </Pressable>
   );
 }
 

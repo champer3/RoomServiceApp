@@ -9,25 +9,22 @@ import AddressEditable from "../components/AddressEditable";
 import DeliveryMode from "../components/DeliveryMode";
 import CreditCard from "../components/CreditCard";
 import Info from "../components/Info";
+import { useNavigation } from "@react-navigation/native";
 function PaymentScreen() {
-   const mode  = [{mode: 'Faster (+$2)', time : '10-15\nMinutes', fastest: true}, {mode: 'Fast', time : '30-45 \nMinutes', fastest: false}, {mode: 'Schedule', time : 'Pick a \ndelivery time', fastest: false}]
-   
-  const [index, setIndex] = useState(0);
-  const handleSelect = (selectedIndex) => {
-    setIndex(selectedIndex);
-  };
+  
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('Order Receipt')
+  }
+  function cardHandler (){
+    navigation.navigate('Manage Payment')
+  }
   return (
-    <SafeAreaView style = {{flex: 1}}>
+    <View style = {{flex: 1}}>
         <View>
-        <View style={{paddingLeft: '5%', paddingVertical: '6%', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-        <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Ionicons name="md-arrow-back-outline" size={40} color="black" />
-        </Pressable>
-        <Text style ={{fontWeight: 'bold', fontSize: 20}}>Make Payment</Text>
-        </View>
         <View style={styles.recommendedView}>
             <Text style={styles.text}>Payment Method</Text>
-            <CreditCard card={'Mastercard'} number={5382}/>
+            <CreditCard onPress={cardHandler} card={'Mastercard'} number={5382}/>
         </View>
         <View style={styles.recommendedView}>
             <Info text={"Pay securely using your saved card details or add a different card to finish purchase."}/>
@@ -54,10 +51,10 @@ function PaymentScreen() {
                     </Text>
             </View>
             <View style ={{width: '40%', height: '130%'}}>
-                <FlexButton background={'#283618'}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
+                <FlexButton onPress={pressHandler} background={'#283618'}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
             </View>
         </View>
-    </SafeAreaView>
+    </View>
   );
 }
 export default PaymentScreen

@@ -9,24 +9,29 @@ import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import ProductCategory from "../components/Category/ProductCategory";
 import FlexButton from "../components/Buttons/FlexButton";
 import Deal from "../components/Category/Deal";
+import { useNavigation } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 function ProductDisplay() {
+    const route = useRoute()
+    const title = route.params.title
+    console.log(route.params)
+    const image = route.params.image
   const [index, setIndex] = useState(0);
   const { width, height } = Dimensions.get("window");
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
   };
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('Review')
+  }
   return (
-    <SafeAreaView>
+    <View>
         <ScrollView>
-        <View style={{paddingLeft: '5%', paddingVertical: '6%'}}>
-        <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Ionicons name="md-arrow-back-outline" size={40} color="black" />
-        </Pressable>
-        </View>
         <View style= {{marginBottom: 120}}>
-            <View style={{alignItems: 'center', backgroundColor: "#FAFAFA", paddingBottom:'6%'}}>
+            <View style={{alignItems: 'center', backgroundColor: "#FAFAFA", paddingVertical:'6%'}}>
 
-                <Image  source={require("../assets/snack.png")} style ={{width: width/2, height: height/4 }} />
+                <Image  source={image} style ={{width: width/2, height: height/4 }} />
                 <View
                     style={{
                     flexDirection: "row",
@@ -56,7 +61,7 @@ function ProductDisplay() {
                         fontWeight: "900",
                         fontSize: 22,
                     }}
-                    >Nerds Gummy Clusters Candy 5oz </Text></View>
+                    >{title} </Text></View>
                 <View style = {{flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 0.5, borderBottomColor:'#aaa', paddingBottom: '3%'}}>
 
                     <View >
@@ -67,7 +72,7 @@ function ProductDisplay() {
                     <Text>4.0</Text>
                     <Text>(53 Reviews)</Text>
                     </View>
-                    <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }} >
+                    <Pressable onPress={pressHandler} style={({ pressed }) => pressed && { opacity: 0.5 }} >
                     <Text style={{color: "#BC6C25", fontSize: 12, fontWeight: 'bold'}}>See Reviews</Text>
                     </Pressable>
                 </View>
@@ -99,10 +104,10 @@ function ProductDisplay() {
                         fontWeight: "bold",
                         fontSize: 16,
                     }} >Shop Related Products</Text>
-                        <ProductCategory items={[1,2,3,4]}/>
+                        {/* <ProductCategory items={[1,2,3,4]}/> */}
                     </View>
                     <View style={styles.catHead}>
-                        <Deal text={'Shop Related Products'}/>
+                        {/* <Deal text={'Shop Related Products'}/> */}
                     </View>
                 </View>
                 <View>
@@ -135,7 +140,7 @@ function ProductDisplay() {
             </View>
         </View>
         
-    </SafeAreaView>
+    </View>
   );
 }
 export default ProductDisplay

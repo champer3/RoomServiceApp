@@ -24,9 +24,7 @@ function NavBar(){
             </Pressable>
             <Pressable onPressIn={() => handleSelect(2)}>
             <View style= {{alignItems: 'center', }}>
-                <View style={{transform: 'rotateZ(45deg)',}}>
-                    <MaterialCommunityIcons name="handshake-outline" size={30} color={`${index == 2 ? '#BC6C25': 'black'}`} />
-                </View>
+                
                     <Text style={{color: index == 2 ? '#BC6C25': 'black', fontWeight: 'bold'}} >Deals</Text>
                 
             </View>

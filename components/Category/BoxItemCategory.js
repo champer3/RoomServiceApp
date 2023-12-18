@@ -4,11 +4,11 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 
 
-function BoxItemCategory({items}){
+function BoxItemCategory({items, onPress}){
 
     return <ScrollView style={{flex: 1}}>
         <View style={styles.container}>
-        {items.map(({text, image},index) => <BoxedItem key={index} text={text} image={image}/>)}
+        {items.map(({text, image},index) => <BoxedItem key={index} text={text} image={image} onPress = {onPress}/>)}
         </View>
     </ScrollView>
 }

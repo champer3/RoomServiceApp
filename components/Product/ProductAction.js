@@ -1,13 +1,16 @@
 import { Image, Pressable, Dimensions } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
-
+import { useNavigation } from "@react-navigation/native";
 const { width, height } = Dimensions.get("window");
 
 
 
 function ProductAction({ image, quantity, action,  children }) {
   let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
-
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('Product')
+  }
   return (
     <View style={[styles.container]}>
       <View style={styles.imageContainer}>
@@ -23,7 +26,7 @@ function ProductAction({ image, quantity, action,  children }) {
             paddingHorizontal: 30,
           }}
         >
-          <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
+          <Pressable onPress={pressHandler} style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <Image
               style={styles.image}
               source={require("../../assets/snack.png")}

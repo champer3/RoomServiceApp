@@ -5,7 +5,11 @@ import {
   View,
   TouchableWithoutFeedback,
   Keyboard,
+  Pressable,
 } from "react-native";
+import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
@@ -18,6 +22,11 @@ function AddNumber() {
   function handleScreenPress() {
     Keyboard.dismiss()
   }
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('AddPin')
+  }
+  const [active, setActive] = useState(false)
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
@@ -34,10 +43,10 @@ function AddNumber() {
               <View style={styles.line}></View>
             </View>
           </View>
-          <View style={{ flex: 2 }}>
-          <Input text="                    " icon={<PhoneIcon />} keyboard="numeric" />
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <RadioButton value="option1" color="blue" />
+          <View style={{ flex: 5 }}>
+          <Input icon={<PhoneIcon />} keyboard="numeric" />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Pressable onPress={() => setActive((prev) => !prev )}><Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="#aaa" /></Pressable>
               <Text style={{ marginVertical: 24 }}>
                 Send me promotional discount and promos via SMS
               </Text>
@@ -46,7 +55,7 @@ function AddNumber() {
           </View>
           <View style={{ flex: 2, justifyContent: "flex-end" }}>
             <View style={styles.buttonContainer}>
-              <Button>
+              <Button onPress={pressHandler}>
                 <Text style={{ fontSize: 16, color: "white" }}>Send Code </Text>
                 <Image
                   style={styles.vector}
@@ -70,7 +79,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     // alignItems: "center",
     marginHorizontal: "5%",
-    marginVertical: 80,
+    marginVertical: 40,
   },
   welcomeView: {
     flex: 1,
@@ -94,7 +103,7 @@ const styles = StyleSheet.create({
     marginBottom: -20,
   },
   vector: {
-    width: "22%",
+    width: "7%",
     resizeMode: "contain",
   },
   facebook: {
@@ -130,7 +139,7 @@ const styles = StyleSheet.create({
     height: "34%",
   },
   line: {
-    height: "5%",
+    height: 2,
     width: "20%",
     backgroundColor: "#D9D9D9",
   },

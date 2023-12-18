@@ -25,15 +25,8 @@ function ConfirmPaymentMethod() {
     setIndex(selectedIndex);
   };
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <View style={{flex: 1}}>
         <View>
-        
-        <View style={{paddingLeft: '5%', paddingVertical: '7%', flexDirection: 'row', alignItems: 'center', gap: 20}}>
-        <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Ionicons name="md-arrow-back-outline" size={40} color="black" />
-        </Pressable>
-        <Text style ={{fontWeight: 'bold', fontSize: 20}}>Manage Payment</Text>
-        </View>
         <ScrollView style={{marginBottom: '50%' }}>
         
         <View style={styles.recommendedView}>
@@ -44,11 +37,11 @@ function ConfirmPaymentMethod() {
         
        
         </View>
-        <View style={{flex: 1, width: '100%', height: '25%', paddingHorizontal: '5%',  paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
-            <View style={[styles.recommendedView, {height: '50%'}]}>
+        <View style={{flex: 1, width: '100%', height: '20%', paddingHorizontal: '5%',  paddingVertical: '2%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
+            <View style={[styles.recommendedView, {height: '60%'}]}>
                 <FlexButton><Text style={{fontSize: 18}}>Add payment method</Text></FlexButton>
             </View>
-            <View style={[styles.recommendedView, {height: '50%'}]}>
+            <View style={[styles.recommendedView, {height: '60%'}]}>
                 <FlexButton background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Select</Text></FlexButton>
             </View>
             
@@ -56,7 +49,7 @@ function ConfirmPaymentMethod() {
     
         </View>
 
-    </SafeAreaView>
+    </View>
   );
 }
 export default ConfirmPaymentMethod;

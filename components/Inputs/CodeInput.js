@@ -32,6 +32,7 @@ const CodeInput = ({ length = 6 }) => {
           onChangeText={(value) => handleOtpChange(index, value)}
           keyboardType="numeric"
           ref={(ref) => (otpInputRefs.current[index] = ref)}
+          secureTextEntry={true}
         />
       ))}
     </View>

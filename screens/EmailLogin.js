@@ -1,14 +1,25 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Pressable } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Dimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 function EmailLogin() {
+  const navigation = useNavigation()
   function handleScreenPress() {
     Keyboard.dismiss()
+  }
+  function pressHandler (){
+    navigation.navigate('HomeTabs')
+  }
+  function numberHandler (){
+    navigation.navigate('NumberLogin')
+  }
+  function signUpHandler (){
+    navigation.navigate('StartScreen')
   }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
@@ -35,6 +46,7 @@ function EmailLogin() {
         <Input
           type="password"
           text="Password"
+          secured ={true}
           icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
         />
 
@@ -50,7 +62,7 @@ function EmailLogin() {
         </Text>
 
       <View style={styles.buttonContainer}>
-        <Button>
+        <Button onPress={pressHandler}>
           <Text style={{ fontSize: 16, color: "white" }}>Login </Text>
           <Image
             style={styles.vector}
@@ -58,7 +70,7 @@ function EmailLogin() {
           />
         </Button>
       </View>
-
+          <Pressable onPress={numberHandler}>
         <Text
           style={{
             color: "#BC6C25",
@@ -69,6 +81,7 @@ function EmailLogin() {
         >
           Login with your mobile number
         </Text>
+        </Pressable>
       </View>
 
       <View
@@ -110,10 +123,12 @@ function EmailLogin() {
           <Text style={{ color: "#333333", opacity: 0.5 }}>
             New to RoomService?
           </Text>
+          <Pressable onPress={signUpHandler}>
           <Text style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}>
             {" "}
             Sign Up
           </Text>
+          </Pressable>
         </View>
       </View>
       </SafeAreaView>
@@ -132,7 +147,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     justifyContent: "space-between",
     marginHorizontal: "5%",
-    marginVertical: "20%",
+    marginVertical: "10%",
     // marginTop: 200
   },
   welcomeView: {
@@ -140,8 +155,7 @@ const styles = StyleSheet.create({
     // borderColor: "black",
     flex: 1,
     justifyContent: "flex-start",
-    marginBottom: 42,
-    marginTop: 40,
+    marginBottom: 23,
   },
   description: {
     width: "100%",
@@ -160,7 +174,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   vector: {
-    width: "22%",
+    width: "7%",
     resizeMode: "contain",
   },
   facebook: {

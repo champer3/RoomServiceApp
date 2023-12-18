@@ -12,7 +12,24 @@ import Profile from "../components/Profile";
 import Content from "../components/Content";
 import FlexButton from "../components/Buttons/FlexButton";
 import NavBar from "../components/NavBar";
+import { useNavigation } from "@react-navigation/native";
 function AccountDisplay() {
+  const navigation = useNavigation()
+    function pressHandler (){
+        navigation.navigate('Profile')
+    }
+    function paymentHandler (){
+        navigation.navigate('Payment')
+    }
+    function orderHandler (){
+        navigation.navigate('Order History')
+    }
+    function addressHandler (){
+        navigation.navigate('Address')
+    }
+    function logoutHandler (){
+        navigation.navigate('NumberLogin')
+    }
   return (
     <SafeAreaView style ={{flex: 1}}>
 
@@ -20,25 +37,25 @@ function AccountDisplay() {
         <Text style ={{fontWeight: 'bold', fontSize: 20}}>My Account</Text>
         </View>
         <View style = {{flex: 1}}>
-        <ScrollView  style= {{marginBottom: '15%'}}>
+        <ScrollView  style= {{}}>
         <View style={styles.recommendedView}>
            <Profile/>
         </View>
         <View style={[styles.recommendedView,{marginVertical: '10%', marginTop: '5%', marginHorizontal: '5%', paddingBottom: '2%',borderWidth: 2, borderColor: 'rgba(0,0,0,0.05)', borderRadius: 20,justifyContent: 'space-between'}]}>
-            <Content title={'My Profile'} info={'Make changes to your account'}  icon={<Ionicons name="person-outline" size={30} color="#283618" />}/>
-            <Content title={'Payments'} info={'Manage your payment settings'}  icon={<MaterialCommunityIcons name="wallet-outline" size={30} color="#283618" />}/>
-            <Content title={'Orders'} info={'View your orders'}  icon={<Entypo name="text-document" size={30} color="#283618" />}/>
-            <Content title={'Address'} info={'Add or manage saved addresses'}  icon={<Octicons name="location" size={30} color="#283618" />}/>
+            <Content title={'My Profile'} info={'Make changes to your account'}  icon={<Ionicons name="person-outline" size={30} color="#283618" />} onPress = {pressHandler}/>
+            <Content title={'Payments'} info={'Manage your payment settings'}  icon={<MaterialCommunityIcons name="wallet-outline" size={30} color="#283618"  />} onPress = {paymentHandler}/>
+            <Content title={'Orders'} info={'View your orders'}  icon={<Entypo name="text-document" size={30} color="#283618" />}onPress = {orderHandler}/>
+            <Content title={'Address'} info={'Add or manage saved addresses'}  icon={<Octicons name="location" size={30} color="#283618" />}onPress = {addressHandler}/>
         </View>
-        <View style={[styles.recommendedView, {flex: 1, paddingTop: '2%'}]}>
-                <BareButton color={'#B22334'}><Ionicons name="log-out-outline" size={30} color="#B22334" /><Text style={{fontSize: 18, color: '#B22334'}}> Logout</Text></BareButton>
+        <View style={[styles.recommendedView, {flex: 1, paddingTop: '1%'}]}>
+                <BareButton color={'#B22334'} onPress={logoutHandler}><Ionicons name="log-out-outline" size={30} color="#B22334" /><Text style={{fontSize: 18, color: '#B22334'}}> Logout</Text></BareButton>
         </View>
 
         </ScrollView>
-
+{/* 
         <View style={{paddingHorizontal: '5%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , justifyContent: "space-between", flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)'}}>
             <NavBar/>
-        </View>
+        </View> */}
 
         </View>
 
