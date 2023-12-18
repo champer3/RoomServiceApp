@@ -1,29 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 
-const CodeInput = ({ length = 8 }) => {
-  const [passcode, setPasscode] = useState('');
+const CodeInput = ({ length = 6 }) => {
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const otpInputRefs = useRef([]);
 
-  const handleInputChange = (value) => {
-    // Ensure the input length doesn't exceed the specified length
-    if (value.length <= length) {
-      setPasscode(value);
+  const handleOtpChange = (index, value) => {
+    const newOtp = [...otp];
+    newOtp[index] = value;
 
-      // If the input length reaches the specified length, trigger onInputComplete callback
+    setOtp(newOtp);
 
-  };}
+    // Move focus to the next input field
+    if (value === '' && index > 0) {
+      // If the current input is empty and not the first one, move focus to the previous input
+      otpInputRefs.current[index - 1].focus();
+    } else if (index < otp.length - 1 && value !== '') {
+      // If the current input is not the last one and not empty, move focus to the next input
+      otpInputRefs.current[index + 1].focus();
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {[...Array(length)].map((_, index) => (
+      {otp.map((digit, index) => (
         <TextInput
           key={index}
           style={styles.input}
-          value={passcode[index] || ''}
           maxLength={1}
+          value={digit}
+          onChangeText={(value) => handleOtpChange(index, value)}
           keyboardType="numeric"
-          returnKeyType='done'
-          onChangeText={(value) => handleInputChange(value)}
+          ref={(ref) => (otpInputRefs.current[index] = ref)}
         />
       ))}
     </View>
