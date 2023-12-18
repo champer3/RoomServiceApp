@@ -57,6 +57,7 @@ function OnBoarding() {
 function Authentication() {
   return (
     <Stack.Navigator
+    initialRouteName="PinLogin"
       screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}
     >
       <Stack.Screen

@@ -1,4 +1,5 @@
-import { StyleSheet, Image, Text, View } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
@@ -6,8 +7,13 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Dimensions } from "react-native";
 
 function EmailLogin() {
+  function handleScreenPress() {
+    Keyboard.dismiss()
+  }
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
       <View style={styles.welcomeView}>
         <Text style={styles.text}>Hello,</Text>
         <Text style={styles.text}>Welcome Back😍</Text>
@@ -110,7 +116,9 @@ function EmailLogin() {
           </Text>
         </View>
       </View>
-    </View>
+      </SafeAreaView>
+      </SafeAreaProvider>
+    </TouchableWithoutFeedback>
   );
 }
 
