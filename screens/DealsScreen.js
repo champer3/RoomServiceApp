@@ -13,17 +13,106 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, EvilIcons } from "@expo/vector-icons";
 import Deal from "../components/Category/Deal";
 import Input from "../components/Inputs/Input";
+import { useNavigation } from "@react-navigation/native";
 
 const { height } = Dimensions.get("window");
+
+
 function DealsScreen() {
+  const navigation  = useNavigation()
+  function dealHandler (){
+
+    navigation.navigate('All Deals')
+  }
   const data = [
-    { key: "1", text: "Best Meal Deal" },
-    { key: "2", text: "Best Snack Deal" },
-    { key: "3", text: "Best Alcohol Deal" },
+    { key: "1", text: "Best Meal Deal" , things: [
+      {
+        title: "Woodstock Organic Frozen Broccoli Florets 10oz",
+        oldPrice: 4.99,
+        newPrice: "10.00",
+        image: require("../assets/cr3.png"),
+      },
+      {
+        title: "Woodstock Frozen Organic Mixed Berries 10oz",
+        oldPrice: 4.99,
+        newPrice: "10.00",
+        image: require("../assets/cr2.png"),
+      },
+      {
+        title: "Sambazon Original Blend Smoothie Superfruit Pack",
+        oldPrice: 4.99,
+        newPrice: '10.00',
+        image: require("../assets/cr1.png"),
+      }
+    ]},
+    { key: "2", text: "Best Snack Deal", things : [
+      {
+        title: "Theraflu Green Tea & Honey Lemon Multi-",
+        oldPrice: 4.99,
+        newPrice: "10.00",
+        image: require("../assets/h1.png"),
+      },
+      {
+        title: "Stix Early Pregnancy Test 2ct",
+        oldPrice: 4.99,
+        newPrice: "10.00",
+        image: require("../assets/h2.png"),
+      },
+      {
+        title: "Equaline Cotton Swabs 375ct",
+        oldPrice: 4.99,
+        newPrice: '10.00',
+        image: require("../assets/h3.png"),
+      },
+      {
+        title: "Q-Tips Cotton Swabs 170ct",
+        oldPrice: 4.99,
+        newPrice: '10.00',
+        image: require("../assets/h4.png"),
+      },
+      {
+        title: "Equaline Cotton Swabs 375ct",
+        oldPrice: 4.99,
+        newPrice: '10.00',
+        image: require("../assets/h3.png"),
+      }
+    ] },
+    { key: "3", text: "Best Alcohol Deal" ,things : [
+      {
+        title: "Theraflu Green Tea & Honey Lemon Multi-",
+        oldPrice: 4.99,
+        newPrice: "10.00",
+        image: require("../assets/h1.png"),
+      },
+      {
+        title: "Stix Early Pregnancy Test 2ct",
+        oldPrice: 4.99,
+        newPrice: "10.00",
+        image: require("../assets/h2.png"),
+      },
+      {
+        title: "Equaline Cotton Swabs 375ct",
+        oldPrice: 4.99,
+        newPrice: '10.00',
+        image: require("../assets/h3.png"),
+      },
+      {
+        title: "Q-Tips Cotton Swabs 170ct",
+        oldPrice: 4.99,
+        newPrice: '10.00',
+        image: require("../assets/h4.png"),
+      },
+      {
+        title: "Equaline Cotton Swabs 375ct",
+        oldPrice: 4.99,
+        newPrice: '10.00',
+        image: require("../assets/h3.png"),
+      }
+    ] },
   ];
   const renderItem = ({ item }) => (
     <View style={[styles.recommendedView, { alignItems: "center" }]}>
-      <Deal text={item.text} />
+      <Deal text={item.text} onPress={dealHandler} item={item.things} />
     </View>
   );
   return (

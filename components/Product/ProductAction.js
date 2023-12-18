@@ -9,7 +9,7 @@ function ProductAction({ image, quantity, action,  children }) {
   let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
   const navigation = useNavigation()
   function pressHandler (){
-    navigation.navigate('Product')
+    navigation.navigate('Product', {title: text, image : require("../../assets/snack.png") })
   }
   return (
     <View style={[styles.container]}>

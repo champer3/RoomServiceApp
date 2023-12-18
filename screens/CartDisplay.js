@@ -43,7 +43,26 @@ function CartDisplay() {
             <Input text={'Enter Coupon'} buttonText={'Apply code'}/>
         </View>
         <View style={{paddingHorizontal: '5%', paddingVertical: '10%'}}>
-            <Deal text={'Top Deals For You'} onPress={dealHandler}/>
+        <Deal text={"Best Grocery Deals!"} onPress={dealHandler} item={[
+    {
+      title: "Woodstock Organic Frozen Broccoli Florets 10oz",
+      oldPrice: 4.99,
+      newPrice: "10.00",
+      image: require("../assets/cr3.png"),
+    },
+    {
+      title: "Woodstock Frozen Organic Mixed Berries 10oz",
+      oldPrice: 4.99,
+      newPrice: "10.00",
+      image: require("../assets/cr2.png"),
+    },
+    {
+      title: "Sambazon Original Blend Smoothie Superfruit Pack",
+      oldPrice: 4.99,
+      newPrice: '10.00',
+      image: require("../assets/cr1.png"),
+    }
+  ]} color = '#039F03' />
         </View>
         </ScrollView>
         <View style={{flex: 1, width: "100%", paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>

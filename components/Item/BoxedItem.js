@@ -1,14 +1,18 @@
 import { Image, Pressable } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 import { useFonts, Poppins_700Bold } from "@expo-google-fonts/poppins";
-
-function BoxedItem({ text, image, onPress }) {
+import { useNavigation } from "@react-navigation/native";
+function BoxedItem({ text, image}) {
   let [fontsLoaded] = useFonts({
     Poppins_700Bold,
   });
+  const navigation = useNavigation()
+  function pressHandler (){
+    navigation.navigate('Category', {cat: text})
+  }
   return (
 
-      <Pressable style={styles.container} onPress = {onPress}>
+      <Pressable style={styles.container} onPress = {pressHandler}>
         <View style={styles.imageContainer}>
           <Image style={styles.image} source={image} />
         </View>

@@ -41,7 +41,7 @@ import Input from "../../components/Inputs/Input";
               { text: "Drinks", image: require("../../assets/DrinksCat.png") },
               { text: "Health", image: require("../../assets/HealthCat.png") },
               { text: "Home", image: require("../../assets/HomeCat.png") },
-            ]} onPress = {pressHandler}
+            ]} 
           />
         </View>
       </>
