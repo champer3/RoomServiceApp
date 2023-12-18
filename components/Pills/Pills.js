@@ -6,7 +6,7 @@ function Pill({ text, type = "pill" }) {
   return (
     <Pressable style={({ pressed }) => pressed && styles.pressed}>
       <View style={[styles.container, { borderRadius: radius }]}>
-        <Text style={[styles.text]}>
+        <Text style={[styles.text, {fontWeight: weight}]}>
           {text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : null}
         </Text>
       </View>
@@ -29,5 +29,5 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.5,
   },
-  text: { fontSize: 16, color: "#333333" },
+  text: { fontSize: 12, color: "#333333" },
 });

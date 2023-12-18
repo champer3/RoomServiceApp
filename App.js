@@ -19,6 +19,7 @@ import OnBoard3 from "./screens/onBoarding/onBoard3";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import MapScreen from "./screens/MapScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -86,21 +87,22 @@ function HomeTabs() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <StatusBar style="light" />
-      <Stack.Navigator>
-        <Stack.Screen
-          name="OnBoarding"
-          component={OnBoarding}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="HomeTabs"
-          component={HomeTabs}
-          options={{ headerShown: false }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <MapScreen/>
+    // <NavigationContainer>
+    //   <StatusBar style="light" />
+    //   <Stack.Navigator>
+    //     <Stack.Screen
+    //       name="OnBoarding"
+    //       component={OnBoarding}
+    //       options={{ headerShown: false }}
+    //     />
+    //     <Stack.Screen
+    //       name="HomeTabs"
+    //       component={HomeTabs}
+    //       options={{ headerShown: false }}
+    //     />
+    //   </Stack.Navigator>
+    // </NavigationContainer>
   )}
 
 const styles = StyleSheet.create({
