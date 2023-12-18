@@ -102,7 +102,7 @@ function EmailSignUp() {
             >
               <BareButton borderRadius={24} color="#EEEEEE">
                 <Image
-                  style={styles.facebook}
+                  style={[styles.facebook, {resizeMode: "center"}]}
                   source={require("../assets/facebook.png")}
                 />
                 <Text> Continue with facebook</Text>
@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   vector: {
-    width: "22%",
-    resizeMode: "contain",
+    width: "10%",
+    resizeMode: "center",
   },
   facebook: {
     width: "12%",

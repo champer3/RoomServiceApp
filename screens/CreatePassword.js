@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     marginBottom: -20,
   },
   vector: {
-    width: "16%",
-    resizeMode: "contain",
+    width: "10%",
+    resizeMode: "center",
   },
   facebook: {
     width: "12%",
-    resizeMode: "contain",
+    resizeMode: "cover",
   },
   threeContainer: {
     width: "100%",

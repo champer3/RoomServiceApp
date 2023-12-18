@@ -160,8 +160,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   vector: {
-    width: "22%",
-    resizeMode: "contain",
+    width: "10%",
+    resizeMode: "center",
   },
   facebook: {
     width: "12%",

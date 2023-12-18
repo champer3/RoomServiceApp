@@ -28,7 +28,7 @@ function NumberLogin() {
           </View>
           <View style={styles.buttonContainer}>
             <Button>
-              <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
+              <Text style={{ fontSize: 16, color: "white" }}>Continue</Text>
               <Image
                 style={styles.vector}
                 source={require("../assets/Vector.png")}
@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
     marginBottom: "5%",
   },
   vector: {
-    width: "22%",
-    resizeMode: "contain",
+    width: "10%",
+    resizeMode: "center",
   },
   facebook: {
     width: "12%",
