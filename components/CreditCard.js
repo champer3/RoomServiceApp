@@ -3,7 +3,7 @@ import { AntDesign } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
-function CreditCard({ card, number, onPress }) {
+function CreditCard({ card, number, onPress, secured = true }) {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -12,7 +12,8 @@ function CreditCard({ card, number, onPress }) {
         </View>
         <View style={styles.textContainer}>
           <Text style={styles.card}>{card}</Text>
-          <Text style={styles.number}>{number} **** **** ****</Text>
+          {secured && <Text style={styles.number}>{number} **** **** ****</Text>}
+          {!secured && <Text style={styles.number}>{number}</Text>}
         </View>
       </View>
       <Pressable onPress={onPress} style={styles.right}>

@@ -8,20 +8,55 @@ import { Fontisto } from '@expo/vector-icons';
 import AddressEditable from "../components/AddressEditable";
 import DeliveryMode from "../components/DeliveryMode";
 import { useNavigation } from "@react-navigation/native";
+import {useSelector, useDispatch} from 'react-redux'
+
 function CheckoutScreen() {
    const mode  = [{mode: 'Faster (+$2)', time : '10-15\nMinutes', fastest: true}, {mode: 'Fast', time : '30-45 \nMinutes', fastest: false}, {mode: 'Schedule', time : 'Pick a \ndelivery time', fastest: false}]
-   
+   const cartItems = useSelector((state) => state.cartItems.ids)
+
   const [index, setIndex] = useState(0);
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
   };
   const navigation = useNavigation()
   function pressHandler (){
-    navigation.navigate('Make Payment')
+    navigation.navigate('Make Payment', {total: getTotalSum().toFixed(2)})
   }
   function addressHandler (){
     navigation.navigate('Confirm Address')
   }
+  function getTotalSum() {
+    return cartItems.reduce((sum, obj) => sum + obj.oldPrice, 0) +2.62 +(index == 0 ? 2 : 0) ;
+  } 
+  function addQuantityToObjects(inputList) {
+    const titleCountMap = {};
+
+    // Loop through the inputList to count occurrences of each title
+    inputList.forEach((obj) => {
+        const title = obj.title;
+
+        // Increment the count for the title or initialize to 1 if it doesn't exist
+        titleCountMap[title] = (titleCountMap[title] || 0) + 1;
+    });
+
+    // Loop through the inputList again to create a new list with quantity key
+    const newList = inputList.map((obj) => {
+        const title = obj.title;
+        const quantity = titleCountMap[title];
+
+        // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
+        titleCountMap[title] = 0;
+
+        return { ...obj, quantity };
+    });
+    const filteredList = newList.filter((obj) => obj.quantity !== 0);
+
+    return filteredList;
+}
+
+// Example usage:
+
+const newList = addQuantityToObjects(cartItems);
   return (
     <View>
         <ScrollView style={{marginBottom: '19%' }}>
@@ -40,14 +75,11 @@ function CheckoutScreen() {
         <View style={styles.recommendedView}>
             <Text style={styles.text}>Order Items</Text>
             <View style={{gap: 20}}>
-                <ProductAction><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
+                {newList.map(({title, image, quantity, oldPrice}, idx)=><ProductAction key={idx} price={oldPrice*quantity} title={title} image={image}><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
                     <Text style ={{fontWeight: 'bold', fontSize: 18}}
-                    >1</Text>
-                </View></ProductAction>
-                <ProductAction><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
-                    <Text style ={{fontWeight: 'bold', fontSize: 18}}
-                    >1</Text>
-                </View></ProductAction>
+                    >{quantity}</Text>
+                </View></ProductAction>)}
+               
             </View>
         </View>
         <View style={[styles.recommendedView,{marginVertical: '10%', marginTop: '5%', marginHorizontal: '5%', paddingBottom: '2%',borderWidth: 2, borderColor: 'rgba(0,0,0,0.05)', borderRadius: 20, flexDirection: 'row', justifyContent: 'space-between'}]}>
@@ -71,7 +103,7 @@ function CheckoutScreen() {
                         fontSize: 20,
                         
                     }}
-                    > $12.00
+                    > {`$${getTotalSum().toFixed(2)  }`}
                     </Text>
             </View>
             <View style ={{width: '40%', height: '130%'}}>

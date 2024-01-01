@@ -15,12 +15,58 @@ import ProductAction from "../components/Product/ProductAction";
 import Input from "../components/Inputs/Input";
 import Deal from "../components/Category/Deal";
 import { useNavigation } from "@react-navigation/native";
+import {useSelector, useDispatch} from 'react-redux'
+import {addToCart, removeFromCart, deleteFromCart} from '../Data/cart'
 
 const { width, height } = Dimensions.get("window");
 function CartDisplay() {
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cartItems.ids)
+  function handleAddToCart(product){
+    dispatch(addToCart({id : product}))
+  }
+  function handleRemoveFromCart(product){
+    dispatch(removeFromCart({id : product}))
+  }
+  function handleDeleteFromCart(product){
+    dispatch(deleteFromCart({id : product}))
+  }
+  function getTotalSum() {
+    return cartItems.reduce((sum, obj) => sum + obj.oldPrice, 0);
+  } 
+  function addQuantityToObjects(inputList) {
+      const titleCountMap = {};
+  
+      // Loop through the inputList to count occurrences of each title
+      inputList.forEach((obj) => {
+          const title = obj.title;
+  
+          // Increment the count for the title or initialize to 1 if it doesn't exist
+          titleCountMap[title] = (titleCountMap[title] || 0) + 1;
+      });
+  
+      // Loop through the inputList again to create a new list with quantity key
+      const newList = inputList.map((obj) => {
+          const title = obj.title;
+          const quantity = titleCountMap[title];
+  
+          // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
+          titleCountMap[title] = 0;
+  
+          return { ...obj, quantity };
+      });
+      const filteredList = newList.filter((obj) => obj.quantity !== 0);
+
+      return filteredList;
+  }
+  
+  // Example usage:
+  
+  const newList = addQuantityToObjects(cartItems);
     const navigation = useNavigation()
     function pressHandler (){
-        navigation.navigate('Checkout')
+      if (cartItems.length > 0){
+        navigation.navigate('Checkout')}
     }
     function dealHandler (){
         navigation.navigate('All Deals')
@@ -29,10 +75,10 @@ function CartDisplay() {
     <View  style = {{flex: 1, paddingTop: 20}}>
         <ScrollView style={{marginBottom: '19%' }}>
         
-        
-        <View style={{marginHorizontal: '10%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
-            <ProductAction  action={<Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={45} color="#B22334" /></Pressable>}><IncrementDecrementBtn/></ProductAction>
-            <ProductAction action={<Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={45} color="#B22334" /></Pressable>}><IncrementDecrementBtn/></ProductAction>
+        {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
+        {cartItems.length > 0 && <><View style={{marginHorizontal: '10%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
+            {newList.map(({title, oldPrice,image, quantity}, idx)=>  <ProductAction key={idx} title={title} price={oldPrice} image={image} quantity={quantity} action={<Pressable onPress={()=>handleDeleteFromCart(newList[idx])} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={45} color="#B22334" /></Pressable>}><IncrementDecrementBtn minValue={quantity} onIncrease={()=>{handleAddToCart(newList[idx])}} onDecrease ={()=>{handleRemoveFromCart(newList[idx])}}/></ProductAction>)}
+      
         </View>
         <View  style={{paddingHorizontal: '5%', paddingVertical: '10%'}}>
             <Text style={{
@@ -41,7 +87,7 @@ function CartDisplay() {
                         fontSize: 16,
                     }}>Have a coupon code?</Text>
             <Input text={'Enter Coupon'} buttonText={'Apply code'}/>
-        </View>
+        </View></>}
         <View style={{paddingHorizontal: '5%', paddingVertical: '10%'}}>
         <Deal text={"Best Grocery Deals!"} onPress={dealHandler} item={[
     {
@@ -81,11 +127,11 @@ function CartDisplay() {
                         fontSize: 20,
                         
                     }}
-                    > $3.69
+                    > {`$${getTotalSum().toFixed(2)}`}
                     </Text>
             </View>
             <View style ={{width: '40%', height: '130%'}}>
-                <FlexButton onPress = {pressHandler} background={'#283618'}><FontAwesome name="shopping-bag" size={24} color="white" /><Text style={{color: 'white'}}>Checkout</Text></FlexButton>
+                <FlexButton onPress = {pressHandler} background={cartItems.length == 0 ? "rgba(0,0,0,0.5)" :  '#283618'}><FontAwesome name="shopping-bag" size={24} color="white" /><Text style={{color: 'white'}}>Checkout</Text></FlexButton>
             </View>
         </View>
     </View>
@@ -96,5 +142,13 @@ const styles = StyleSheet.create({
     catHead: {
         justifyContent: "space-between",
         gap: 19
+      },
+      image: {
+        height: height / 3,
+        alignSelf: "center",
+        resizeMode: 'contain'
+      },
+      recommendedView: {
+        paddingHorizontal: '5%', paddingTop: '5%', gap: 20
       },
 })

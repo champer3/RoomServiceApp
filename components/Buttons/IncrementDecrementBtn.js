@@ -3,19 +3,17 @@ import React, { useState } from "react";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 
-function IncrementDecrementBtn({ minValue = 0, maxValue = 100 }) {
-    const [count, setCount] = useState(minValue);
+function IncrementDecrementBtn({ minValue = 0, maxValue = 100, onIncrease, onDecrease }) {
+   
 
   const handleIncrementCounter = () => {
-    if (count < maxValue) {
-      setCount((prevState) => prevState + 1);
+    if (minValue < maxValue) {
+      onIncrease()
     }
   };
 
   const handleDecrementCounter = () => {
-    if (count > minValue) {
-      setCount((prevState) => prevState - 1);
-    }
+    onDecrease()
   };
 
     return (
@@ -30,7 +28,7 @@ function IncrementDecrementBtn({ minValue = 0, maxValue = 100 }) {
         <View><Feather name="minus" size={30} color="black" /></View>
         
       </Pressable>
-      <Text>{count}</Text>
+      <Text>{minValue}</Text>
       <Pressable onPress={
           handleIncrementCounter
         } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50 }}>

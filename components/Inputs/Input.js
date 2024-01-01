@@ -1,11 +1,13 @@
-import { StyleSheet, Text, View, TextInput } from "react-native";
+import { StyleSheet, Text, View, TextInput, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
+import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useEffect, useImperativeHandle } from 'react';
 
 import { useState } from "react";
 import FlexButton from "../Buttons/FlexButton";
 
-function Input({
+const  Input = ({
   text,
   length,
   icon,
@@ -14,8 +16,10 @@ function Input({
   keyboard = "default",
   buttonText,
   children,
-  color
-}) {
+  color,
+  textInputConfig, 
+  onPress
+}) => {
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -30,6 +34,7 @@ function Input({
       autoCapitalize="words"
       keyboardType={keyboard}
       placeholderTextColor={color}
+      {...textInputConfig}
     />
   );
   if (secured) {
@@ -43,6 +48,7 @@ function Input({
         secureTextEntry={!showPassword}
         keyboardType={keyboard}
         placeholderTextColor={color}
+        {...textInputConfig}
       />
     );
   }
@@ -80,10 +86,10 @@ function Input({
             ]}
           >
             {type == "address" && (
-              <>
+              <Pressable onPress={onPress} style={{flexDirection: 'row', gap: 6, alignItems: 'center'}}>
                 <Octicons name="location" size={24} color="#BC6C25" />
                 <Text style={{ color: "#BC6C25" }}>Get location</Text>
-              </>
+              </Pressable>
             )}
             {type == "password" && (
               <Feather
@@ -94,6 +100,7 @@ function Input({
                 onPress={toggleShowPassword}
               />
             )}
+            {type == 'dropdown' && (<Ionicons name="chevron-down-outline" size={24} color="#aaa" />)}
             {buttonText && (
               <View style={{ height: 50 }}>
                 <FlexButton
@@ -121,7 +128,8 @@ function Input({
       </View>
     </View>
   );
-}
+};
+
 export default Input;
 
 const styles = StyleSheet.create({

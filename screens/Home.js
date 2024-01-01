@@ -16,8 +16,43 @@ import Deal from "../components/Category/Deal";
 import { useNavigation } from "@react-navigation/native";
 import Input from "../components/Inputs/Input";
 const { width, height } = Dimensions.get("window");
+import {useSelector, useDispatch} from 'react-redux'
+import {addToCart, removeFromCart} from '../Data/cart'
+
+
+
 
 function Home() {
+  function getGreeting() {
+    var currentTime = new Date();
+    var hours = currentTime.getHours();
+  
+    if (hours < 12) {
+        return "Good Morning!";
+    } else if (hours < 18) {
+        return "Good Afternoon!";
+    } else {
+        return "Good Evening!";
+    }
+  }
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cartItems.ids)
+  const productItems = useSelector((state) => state.productItems.ids)
+  const categoryObject = {};
+
+  productItems.forEach(item => {
+    const category = item.category;
+
+    if (!categoryObject[category]) {
+        // If the category key doesn't exist, create it with an array containing the current item
+        categoryObject[category] = [item];
+    } else {
+        // If the category key already exists, push the current item to the existing array
+        categoryObject[category].push(item);
+    }
+});
+
+  var greeting = getGreeting();
   const navigation = useNavigation()
   function pressHandler (cat){
     navigation.navigate('Category', {cat})
@@ -31,20 +66,40 @@ function Home() {
   function dealHandler (){
     navigation.navigate('All Deals')
   }
+  function handleAddToCart(product){
+    dispatch(addToCart({id : product}))
+  }
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
           <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: "5%", paddingTop: '10%'}}>
             <View style={{gap: 6}}>
-              <Text style={{color: 'white', fontSize: 13, letterSpacing: 0.4, fontWeight: 'bold'}}>Good Afternoon</Text>
+              <Text style={{color: 'white', fontSize: 13, letterSpacing: 0.4, fontWeight: 'bold'}}>{greeting}</Text>
               <Text style={{color: 'white', fontSize: 24, fontWeight: 'bold', letterSpacing: 1}}>Josh Brooks</Text>
             </View>
           <View style={[styles.cart, {flex: 0.3}]}>
               <Pressable onPress={cartHandler}>
+                
+                
                 <View>
-                  <Feather name="shopping-cart" size={24} color="black" />
+                  <Feather name="shopping-cart" size={30} color="black" />
                 </View>
               </Pressable>
+              {cartItems.length > 0 && <View style={{
+                  height: '45%',
+                  minWidth: '50%',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  position: 'absolute',
+                  zIndex: 2,
+                  top: 0,
+                  right: 0,
+                  borderRadius: 100,
+                  fontSize: 14,
+                  backgroundColor: "#283618"
+                }}>
+                  <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>{cartItems.length}</Text>
+                </View>}
             </View>
           </View>
           <View style={styles.search}>
@@ -125,14 +180,8 @@ function Home() {
           
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Recommended Foods</Text>
-            <ProductHorizontal items={[
-              {title: '4 Piece Chicken McNuggets', oldPrice: 3.69, image : require('../assets/food6.png')},
-              {title: 'Double Quarter Pounder with Cheese', oldPrice: 3.69, image : require('../assets/food1.png')},
-              {title: 'Sausage McMuffin® with Egg Meal', oldPrice: 3.69, image : require('../assets/food2.png')},
-              {title: '10 PC. Spicy Chicken Nuggets', oldPrice: 3.69, image : require('../assets/food3.png')},
-              {title: 'Asiago Ranch Classic Chicken Club', oldPrice: 3.69, image : require('../assets/food4.png')},
-              {title: 'Sour Cream and Chive Baked Potato', oldPrice: 3.69, image : require('../assets/food5.png')},
-          ]} />
+            <ProductHorizontal items={categoryObject['food']} onPress = {handleAddToCart}/>
+            
           </View>
           
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
@@ -142,6 +191,7 @@ function Home() {
       oldPrice: 4.99,
       newPrice: "10.00",
       image: require("../assets/cr3.png"),
+      category : 'frozen'
     },
     {
       title: "Woodstock Frozen Organic Mixed Berries 10oz",
@@ -159,25 +209,11 @@ function Home() {
           </View>
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Snacks For You</Text>
-            <ProductHorizontal items={[
-              {title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', oldPrice: 3.69, image : require('../assets/snacks1.png')},
-              {title: 'Hostess Donettes Chocolate Mini Donuts Bag 10.75oz', oldPrice: 3.69, image : require('../assets/snacks2.png')},
-              {title: 'Kit Kat Candy Bar King Size 3oz', oldPrice: 3.69, image : require('../assets/snacks3.png')},
-              {title: 'Basically, Sour Rainbow Bites 5oz', oldPrice: 3.69, image : require('../assets/snacks4.png')},
-              {title: 'Ferrero Rocher Hazelnut Chocolate Candy 1.3oz', oldPrice: 3.69, image : require('../assets/snacks5.png')},
-              {title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', oldPrice: 3.69, image : require('../assets/snacks6.png')},
-          ]} /> 
+            <ProductHorizontal items={categoryObject['snacks']} onPress = {handleAddToCart}/>
           </View>
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Alcohol</Text>
-            <ProductHorizontal items={[
-              {title: 'White Claw Seltzer Flavor No. 3 Variety 12pk 12oz Can 5.0% ABV $22.99', oldPrice: 3.69, image : require('../assets/alcohol1.png')},
-              {title: 'White Claw Surge Variety 12pk 12oz Can 8% ABV $22.99', oldPrice: 3.69, image : require('../assets/alcohol2.png')},
-              {title: 'White Claw Seltzer Variety 12pk 12oz Can 5.0% ABV $22.99', oldPrice: 3.69, image : require('../assets/alcohol3.png')},
-              {title: 'Dolce Vita Italy Sparkling Prosecco 750ml $39.49', oldPrice: 3.69, image : require('../assets/alcohol4.png')},
-              {title: "Jack Daniel's & Coca-Cola 355ml Can 7% ABV", oldPrice: 3.69, image : require('../assets/alcohol5.png')},
-              {title: 'Don Romeo Blanco Tequila 750ml (80 Proof)', oldPrice: 3.69, image : require('../assets/alcohol6.png')},
-          ]} /> 
+            <ProductHorizontal items={categoryObject['alcohol']} onPress = {handleAddToCart}/>
           </View>
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
             <Deal text={"Health Deals"} onPress={dealHandler} item={[
@@ -216,14 +252,7 @@ function Home() {
      
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Drinks</Text>
-            <ProductHorizontal items={[
-              {title: 'CELSIUS Peach Mango Green Tea, Essential', oldPrice: 3.69, image : require('../assets/drink1.png')},
-              {title: 'GHOST® Energy Sour Patch Kids Blue Raspberry 16oz Can $2.99', oldPrice: 3.69, image : require('../assets/drink2.png')},
-              {title: 'Mountain Valley Spring Water Sparkling Glass', oldPrice: 3.69, image : require('../assets/drink3.png')},
-              {title: 'Tiger Eye Iced Coconut Latte 8.5oz', oldPrice: 3.69, image : require('../assets/drink4.png')},
-              {title: "La Colombe Cold Brew Colombian Light Roast Coffee 42oz $8.59", oldPrice: 3.69, image : require('../assets/drink5.png')},
-              {title: 'La Colombe Cold Brew Brazilian Medium Roast', oldPrice: 3.69, image : require('../assets/drink6.png')},
-          ]} /> 
+            <ProductHorizontal items={categoryObject['drink']} onPress = {handleAddToCart}/>
           </View>
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
             <Deal text={"Pantry Deals"} onPress={dealHandler} item={[
@@ -261,14 +290,7 @@ function Home() {
           </View>
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Home</Text>
-            <ProductHorizontal items={[
-              {title: 'Basically, 4ct Large Roll Soft Toilet Paper $22.99', oldPrice: 3.69, image : require('../assets/home1.png')},
-              {title: 'Bounty Select-A-Size Paper Towels, Double Roll', oldPrice: 3.69, image : require('../assets/home2.png')},
-              {title: 'Gain Ultra Original Liquid Dish Soap 8oz', oldPrice: 3.69, image : require('../assets/home4.png')},
-              {title: 'Tide PODS Liquid Laundry Detergent Pacs Spring Meadow Scent 42ct $15.49', oldPrice: 3.69, image : require('../assets/home3.png')},
-              {title: "Febreze April Fresh Fabric Refreshener with Downy", oldPrice: 3.69, image : require('../assets/home5.png')},
-              {title: 'Tide Liquid Laundry Detergent Original Scent', oldPrice: 3.69, image : require('../assets/home6.png')},
-          ]} /> 
+            <ProductHorizontal items={categoryObject['home']} onPress = {handleAddToCart}/>
           </View>
           <View style={styles.recommendedView}>
           <Deal text={"Yummy Ice Creams!"} onPress={dealHandler} item={[

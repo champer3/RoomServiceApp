@@ -4,19 +4,44 @@ import FlexButton from "../Buttons/FlexButton";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import {useSelector, useDispatch} from 'react-redux'
+import {addToCart, removeFromCart} from '../../Data/cart'
 
 const { width, height } = Dimensions.get("window");
 
 
 
 
-function Product({ image, title, oldPrice, newPrice, widths = 90 }) {
- console.log(image)
+function Product({ image, title, oldPrice, newPrice, reviews, category, widths = 90 , onAdd}) {
   let size = widths;
   const navigation = useNavigation()
   function pressHandler (){
-    navigation.navigate('Product', {image: image, title : title})
+    navigation.navigate('Product', {image: image, title : title, reviews: reviews, oldPrice: oldPrice, category: category })
   }
+  const productItems = useSelector((state) => state.productItems.ids)
+
+  const getAverageRatingByTitle = () => {
+    const item = productItems.find(item => item.title === title);
+
+    if (item && item.reviews.length > 0) {
+        const totalRating = item.reviews.reduce((sum, review) => sum + review.rating, 0);
+        const averageRating = totalRating / item.reviews.length;
+        return averageRating;
+    } else {
+        return 0; // Indicate that there are no reviews or the item is not found
+    }
+};
+  const rating = getAverageRatingByTitle().toFixed(0)
+  var rate = []
+    for (var i = 0; i < 5; i++ ){
+        if (i < rating){
+            rate.push('star')
+        }
+        else{
+            rate.push('staro')
+        }
+    }
+
   return (
     <View style={[styles.container]}>
       <View style={[styles.priceView, {backgroundColor: newPrice ? "#283618" : 'white', fontStyle: newPrice ? "italic" : 'normal',}]}>
@@ -58,19 +83,16 @@ function Product({ image, title, oldPrice, newPrice, widths = 90 }) {
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 2 }}
               >
-                <AntDesign name="star" size={15} color="#BC6C25" />
-                <AntDesign name="star" size={15} color="#BC6C25" />
-                <AntDesign name="star" size={15} color="#BC6C25" />
-                <AntDesign name="star" size={15} color="#BC6C25" />
-                <AntDesign name="star" size={15} color="#BC6C25" />
+                {rate.map((star, idx)=><AntDesign key={idx} name={star} size={15} color="#BC6C25"/>)}
+
               </View>
               <Text style={{ fontSize: 14, fontWeight: "400", lineHeight: 20 }}>
-                53
+              {reviews ? reviews.length : 0}
               </Text>
             </View>
           </Pressable>
           <View style={{ height: height / 20 }}>
-            <FlexButton color={"#aaa"} borderRadius={5} width={1.5}>
+            <FlexButton color={"#aaa"} borderRadius={5} width={1.5} onPress={()=>onAdd({image, title, oldPrice, newPrice,})}>
               <Text style={{ fontSize: 10 }}>
                 {" "}
                 <Feather name="shopping-cart" size={10} color="black" /> Add to

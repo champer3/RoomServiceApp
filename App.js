@@ -17,6 +17,7 @@ import PinLogin from "./screens/PinLogin";
 import OnBoard1 from "./screens/onBoarding/OnBoard1";
 import OnBoard2 from "./screens/onBoarding/OnBoard2";
 import OnBoard3 from "./screens/onBoarding/onBoard3";
+import {Provider} from 'react-redux'
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
@@ -41,6 +42,8 @@ import ConfirmPaymentMethod from "./screens/ConfirmPaymentMethod";
 import RecieptScreen from './screens/RecieptScreen'
 import AddressConfirm from './screens/AddressConfirm'
 import CheckoutScreen from './screens/CheckoutScreen'
+import AddAddressScreen from "./screens/AddAddressScreen";
+import {store} from './Data/Store'
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -248,8 +251,10 @@ function HomeTabs() {
 
 export default function App() {
   return (
+    <Provider store={store}>
     <NavigationContainer>
       <StatusBar style="light" />
+
       <Stack.Navigator>
       <Stack.Screen
           name="OnBoarding"
@@ -339,10 +344,23 @@ export default function App() {
           options={{headerShadowVisible: false,
             title: 'Order Receipt'}}
         />
+    <Stack.Screen
+          name="Map"
+          component={MapScreen}
+          options={{headerShadowVisible: false,
+            title: 'Address'}}
+        />
+    <Stack.Screen
+          name="Add Address"
+          component={AddAddressScreen}
+          options={{headerShadowVisible: false,
+            title: 'New Address'}}
+        />
         
         
       </Stack.Navigator>
     </NavigationContainer>
+    </Provider>
   );
 }
 

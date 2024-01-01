@@ -1,21 +1,72 @@
-import { StyleSheet, Image, Text, View, Pressable, ScrollView } from "react-native";
+import { StyleSheet, Image, Text, View, Pressable, ScrollView, TextInput, Dimensions } from "react-native";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
+import BottomSheet from '../components/Modals/BottomSheet';
 import BareButton from "../components/Buttons/BareButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Info from "../components/Info";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ProductAction from "../components/Product/ProductAction";
 import Pill from "../components/Pills/Pills";
 import FlexButton from "../components/Buttons/FlexButton";
+import { AntDesign } from '@expo/vector-icons';
+import { RotateInDownLeft } from "react-native-reanimated";
+import {useSelector, useDispatch} from 'react-redux'
 
+
+const { width, height } = Dimensions.get("window");
 function OrderDisplay(){
+  const orders = useSelector((state) => state.cartItems.order)
     const [index, setIndex] = useState(0);
+    const [rating, setrating] = useState(0);
+    var rate = []
+    for (var i = 0; i < 5; i++ ){
+        if (i < rating){
+            rate.push('star')
+        }
+        else{
+            rate.push('staro')
+        }
+    }
+    function addQuantityToObjects(inputList) {
+      const titleCountMap = {};
+  
+      // Loop through the inputList to count occurrences of each title
+      inputList.forEach((obj) => {
+          const title = obj.title;
+  
+          // Increment the count for the title or initialize to 1 if it doesn't exist
+          titleCountMap[title] = (titleCountMap[title] || 0) + 1;
+      });
+  
+      // Loop through the inputList again to create a new list with quantity key
+      const newList = inputList.map((obj) => {
+          const title = obj.title;
+          const quantity = titleCountMap[title];
+  
+          // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
+          titleCountMap[title] = 0;
+  
+          return { ...obj, quantity };
+      });
+      const filteredList = newList.filter((obj) => obj.quantity !== 0);
+  
+      return filteredList;
+  }
+  const newList = addQuantityToObjects(orders);
+    console.log(orders)
+    const ref = useRef(null);
+    const onPress = useCallback(() => {
+        const isActive = ref?.current?.isActive();
+        // ref?.current?.scrollTo(0);
+        ref?.current?.scrollTo(-610);
+      }, []);
     const handleSelect = (selectedIndex) => {
       setIndex(selectedIndex);
     };
-    return  <View style={{flex: 1}}>
+    return  <GestureHandlerRootView style={{ flex: 1 }}><View style={{flex: 1}}>
     
     <View style={[{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, marginHorizontal: '5%', gap: 20, borderBottomColor: 'rgba(0,0,0,0.075)'}]}>
         
@@ -37,15 +88,16 @@ function OrderDisplay(){
     <View style={styles.recommendedView}>
         <Input icon={<Ionicons name="search-outline" size={24} color="#aaa" />} text={'Search orders'}/>
     </View>
-    {index == 0 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
+    {index == 0 && <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
+    {index == 1 && orders.length == 0 && <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
+    {/* {index == 0 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
-    </View>}
+    </View>} */}
     {index == 1 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
-        <ProductAction quantity={1}><View style={{flex: 1}}><BareButton background={'#283618'}><Text style={{color: 'white', fontWeight: 'bold', fontSize: 11}}>Leave a review</Text></BareButton></View></ProductAction>
-        <ProductAction quantity={1}><Pill text={"Delivered"} type="null"/></ProductAction>
-        <ProductAction quantity={1}><Pill text={"Delivered"} type="null"/></ProductAction>
+    {newList.map(({title, image, quantity, oldPrice}, idx)=><ProductAction key={idx} price={oldPrice*quantity} quantity={quantity} title={title} image={image}><Pill text={"Delivered"} type="null"/></ProductAction>)}
+        
     </View>}
 
     
@@ -53,7 +105,39 @@ function OrderDisplay(){
     
    
     </View>
+    <BottomSheet ref={ref}>
+          <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 10 }} >
+            <View style ={{justifyContent: 'space-between', flexDirection: 'row', marginBottom: 25}}><Text style={{fontWeight: 'bold'}}>Leave A Review</Text></View>
+            <Text style={{fontWeight:'bold', fontSize: 18, textAlign: 'center'}}>How did it go?</Text>
+            <Text style={{ fontSize: 14, textAlign: 'center'}}>Give an honest rating for the just concluded order</Text>
+            <View style={{ flexDirection: 'row', gap: 35, alignSelf: 'center', marginVertical: 28 }}>
+            {rate.map((star, idx)=><Pressable key={idx} onPress={()=>setrating(idx+1)}><AntDesign name={star} size={30} color="black"/></Pressable>)}
+            </View>
+            <View
+      style={{
+        backgroundColor: '#FAFAFACC',
+        borderBottomColor: '#000000',
+        borderRadius: 12,
+        marginBottom: 15
+      }}>
+      <TextInput
+        multiline
+        placeholder="Why?"
+        cursorColor={'#aaa'}
+        numberOfLines={6}
+        clearButtonMode="always"
+        style={{paddingHorizontal: 10}}
+      />
     </View>
+    <View style={[{height: '20%', paddingTop: '25%'}]}>
+                <FlexButton background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Post Review</Text></FlexButton>
+            </View>
+          </View>
+          
+    </BottomSheet>
+
+    </View>
+    </GestureHandlerRootView>
 }
 
 export default OrderDisplay
@@ -68,5 +152,10 @@ const styles = StyleSheet.create({
   },
   active : {borderBottomWidth:2, 
     borderBottomColor: 'rgba(0,0,0,0.5)'
-}
+}, 
+image: {
+    height: height / 3,
+    alignSelf: "center",
+    resizeMode: 'contain'
+  },
 })

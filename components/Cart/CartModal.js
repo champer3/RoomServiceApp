@@ -18,7 +18,7 @@ export default CartModal
 const styles = StyleSheet.create({
     container: {
         height: 80,
-        width: "90%",
+        width: "100%",
         backgroundColor: "white",
         flexDirection: "row",
         justifyContent: "center",
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     iconContainer: {
         height: 65,
         width: 65,
-        borderRadius: "50%",
+        borderRadius: 50,
         flex: 1,
         backgroundColor: '#283618',
         justifyContent: "center",
