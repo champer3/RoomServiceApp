@@ -11,7 +11,6 @@ const { width, height } = Dimensions.get("window");
 
 
 function Product({ image, title, oldPrice, newPrice, widths = 90 }) {
- console.log(image)
   let size = widths;
   const navigation = useNavigation()
   function pressHandler (){
@@ -116,9 +115,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
-    
+
     borderWidth: 1,
-    borderColor : '#aaa', 
+    borderColor : '#aaa',
     borderRadius: 10,
     padding: 0.5,
     paddingHorizontal: 6,

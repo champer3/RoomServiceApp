@@ -7,7 +7,9 @@ import {
   Dimensions,
   Pressable,
   FlatList,
-  Platform
+  Keyboard,
+  Platform,
+  TouchableWithoutFeedback
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, EvilIcons } from "@expo/vector-icons";
@@ -23,6 +25,9 @@ function DealsScreen() {
   function dealHandler (){
 
     navigation.navigate('All Deals')
+  }
+  function handleScreenPress() {
+    Keyboard.dismiss()
   }
   const data = [
     { key: "1", text: "Best Meal Deal" , things: [
@@ -116,9 +121,10 @@ function DealsScreen() {
     </View>
   );
   return (
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-        
+
             <Input text={'Search deals'} icon={<EvilIcons name="search" size={24} color="#aaa" />}/>
           <View style={styles.catHead}>
             <Text style={styles.text}>Available Deals</Text>
@@ -137,6 +143,7 @@ function DealsScreen() {
           />
       </SafeAreaView>
     </SafeAreaProvider>
+    </TouchableWithoutFeedback>
   );
 }
 

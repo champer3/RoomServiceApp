@@ -14,7 +14,6 @@ import { useRoute } from "@react-navigation/native";
 function ProductDisplay() {
     const route = useRoute()
     const title = route.params.title
-    console.log(route.params)
     const image = route.params.image
   const [index, setIndex] = useState(0);
   const { width, height } = Dimensions.get("window");
@@ -130,7 +129,7 @@ function ProductDisplay() {
                         color: "black",
                         fontWeight: "600",
                         fontSize: 20,
-                        
+
                     }}
                     > $3.69
                     </Text>
@@ -139,7 +138,7 @@ function ProductDisplay() {
                 <FlexButton background={'#283618'}><FontAwesome name="shopping-bag" size={24} color="white" /><Text style={{color: 'white'}}>Add to cart</Text></FlexButton>
             </View>
         </View>
-        
+
     </View>
   );
 }

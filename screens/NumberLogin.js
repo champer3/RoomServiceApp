@@ -16,9 +16,9 @@ import PhoneIcon from "../components/PhoneIcon";
 
 function NumberLogin() {
 
-  // function handleScreenPress() {
-  //   Keyboard.dismiss()
-  // }
+  function handleScreenPress() {
+    Keyboard.dismiss()
+  }
   const navigation  = useNavigation()
   function pressHandler (){
     navigation.navigate('PinLogin')
@@ -31,7 +31,7 @@ function NumberLogin() {
   }
 
   return (
-    <TouchableWithoutFeedback>
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
           <View style={styles.topView}>
@@ -143,8 +143,9 @@ const styles = StyleSheet.create({
     resizeMode: "center",
   },
   facebook: {
-    width: "12%",
+    width: "7%",
     resizeMode: "contain",
+    marginRight: 3
   },
   threeContainer: {
     width: "100%",

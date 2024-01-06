@@ -36,7 +36,7 @@ function Home() {
       <SafeAreaView style={styles.container}>
           <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: "5%", paddingTop: '10%'}}>
             <View style={{gap: 6}}>
-              <Text style={{color: 'white', fontSize: 13, letterSpacing: 0.4, fontWeight: 'bold'}}>Good Afternoon</Text>
+              <Text style={{color: 'white', fontSize: 13, letterSpacing: 0.4, fontWeight: 'bold'}}>Good Evening</Text>
               <Text style={{color: 'white', fontSize: 24, fontWeight: 'bold', letterSpacing: 1}}>Josh Brooks</Text>
             </View>
           <View style={[styles.cart, {flex: 0.3}]}>
@@ -49,17 +49,17 @@ function Home() {
           </View>
           <View style={styles.search}>
             {/* <View style={styles.input}> */}
-            
+
               <Input color={'white'} icon={<EvilIcons name="search" size={30} color="white" />} text={'Search items'}></Input>
-           
-             
+
+
               {/* <EvilIcons name="search" size={24} color="black" />
               <TextInput style={{fontSize: 16}} placeholderTextColor="black" placeholder="Search RoomService                                                                         " /> */}
             {/* </View> */}
-            
+
           </View>
         <ScrollView style={{backgroundColor: "white"}}>
-          
+
           <View style={[styles.horizontalCat,{marginTop: 20}]}>
             <View style={styles.catHead}>
               <Text style={styles.text}>Popular Categories</Text>
@@ -75,9 +75,9 @@ function Home() {
                 { text: "Food", image: require("../assets/food.png") },
                 { text: "Snacks", image: require("../assets/snack.png") }
               ]}
-             
+
             />
-              
+
             {/* <ScrollView style={{borderWidth: 1}} horizontal={true}>
               <View style={{flex: 1}}>
             <Pressable onPress={dealHandler} stylye ={{borderWidth: 1}}>
@@ -85,7 +85,7 @@ function Home() {
                 style={styles.image}
                 source={require("../assets/deals.png")}
               />
-              
+
             </Pressable>
             </View>
             <Pressable onPress={dealHandler}>
@@ -102,7 +102,7 @@ function Home() {
             </Pressable>
           </ScrollView> */}
           <ScrollView   horizontal={true} >
-            <View  style={{flexDirection: 'row', flexWrap: 'nowrap', 
+            <View  style={{flexDirection: 'row', flexWrap: 'nowrap',
         gap: 15}}>
                 <Pressable onPress={dealHandler}><View style={styles.imageContainer}>
           <Image style={styles.image} source={require("../assets/deal1.png")} />
@@ -122,7 +122,7 @@ function Home() {
             </View>
           </ScrollView>
           </View>
-          
+
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Recommended Foods</Text>
             <ProductHorizontal items={[
@@ -134,7 +134,7 @@ function Home() {
               {title: 'Sour Cream and Chive Baked Potato', oldPrice: 3.69, image : require('../assets/food5.png')},
           ]} />
           </View>
-          
+
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
             <Deal text={"Best Grocery Deals!"} onPress={dealHandler} item={[
     {
@@ -166,7 +166,7 @@ function Home() {
               {title: 'Basically, Sour Rainbow Bites 5oz', oldPrice: 3.69, image : require('../assets/snacks4.png')},
               {title: 'Ferrero Rocher Hazelnut Chocolate Candy 1.3oz', oldPrice: 3.69, image : require('../assets/snacks5.png')},
               {title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', oldPrice: 3.69, image : require('../assets/snacks6.png')},
-          ]} /> 
+          ]} />
           </View>
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Alcohol</Text>
@@ -177,7 +177,7 @@ function Home() {
               {title: 'Dolce Vita Italy Sparkling Prosecco 750ml $39.49', oldPrice: 3.69, image : require('../assets/alcohol4.png')},
               {title: "Jack Daniel's & Coca-Cola 355ml Can 7% ABV", oldPrice: 3.69, image : require('../assets/alcohol5.png')},
               {title: 'Don Romeo Blanco Tequila 750ml (80 Proof)', oldPrice: 3.69, image : require('../assets/alcohol6.png')},
-          ]} /> 
+          ]} />
           </View>
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
             <Deal text={"Health Deals"} onPress={dealHandler} item={[
@@ -213,7 +213,7 @@ function Home() {
     }
   ]} color = '#00CED1' />
           </View>
-     
+
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Drinks</Text>
             <ProductHorizontal items={[
@@ -223,7 +223,7 @@ function Home() {
               {title: 'Tiger Eye Iced Coconut Latte 8.5oz', oldPrice: 3.69, image : require('../assets/drink4.png')},
               {title: "La Colombe Cold Brew Colombian Light Roast Coffee 42oz $8.59", oldPrice: 3.69, image : require('../assets/drink5.png')},
               {title: 'La Colombe Cold Brew Brazilian Medium Roast', oldPrice: 3.69, image : require('../assets/drink6.png')},
-          ]} /> 
+          ]} />
           </View>
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
             <Deal text={"Pantry Deals"} onPress={dealHandler} item={[
@@ -268,7 +268,7 @@ function Home() {
               {title: 'Tide PODS Liquid Laundry Detergent Pacs Spring Meadow Scent 42ct $15.49', oldPrice: 3.69, image : require('../assets/home3.png')},
               {title: "Febreze April Fresh Fabric Refreshener with Downy", oldPrice: 3.69, image : require('../assets/home5.png')},
               {title: 'Tide Liquid Laundry Detergent Original Scent', oldPrice: 3.69, image : require('../assets/home6.png')},
-          ]} /> 
+          ]} />
           </View>
           <View style={styles.recommendedView}>
           <Deal text={"Yummy Ice Creams!"} onPress={dealHandler} item={[
@@ -303,10 +303,10 @@ function Home() {
       image: require("../assets/i5.png"),
     }
   ]} color = '#98FB98' />
-       
+
           </View>
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
-          <View  style={{flexDirection: 'row', flexWrap: 'nowrap', 
+          <View  style={{flexDirection: 'row', flexWrap: 'nowrap',
         gap: 15}}>
                 <Pressable onPress={dealHandler}><View style={[styles.imageContainer, {width: width - 30}]}>
           <Image style={styles.image} source={require("../assets/deals.png")} />

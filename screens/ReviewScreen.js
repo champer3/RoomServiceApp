@@ -17,7 +17,7 @@ function ReviewScreen() {
   };
   const rating = ['All', '5', '4', '3', '2' , '1']
   return (
-    <SafeAreaView>
+    <View>
         <ScrollView>
         <View style={{paddingHorizontal: '1%', paddingRight: '3%', paddingVertical: '6%', flexDirection: 'row', justifyContent: 'space-between'}}>
             {rating.map((rate, idx) => <Pressable key={idx} onPressOut={() => handleSelect(idx)}><Rating  rate={rate} active={index === idx}/></Pressable>)}
@@ -31,8 +31,8 @@ function ReviewScreen() {
 
         </View>
         </ScrollView>
-      
-    </SafeAreaView>
+
+    </View>
   );
 }
 export default ReviewScreen

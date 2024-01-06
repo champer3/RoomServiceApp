@@ -4,6 +4,8 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -18,6 +20,9 @@ import Input from "../../components/Inputs/Input";
 import { useNavigation } from "@react-navigation/native";
 
 function Category() {
+  function handleScreenPress() {
+    Keyboard.dismiss()
+  }
   const navigation = useNavigation()
     function pressHandler (){
         navigation.navigate('CategorySearch')
@@ -92,6 +97,7 @@ function Category() {
     </View>
   );
   return (
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <View style={styles.search}>
@@ -117,6 +123,7 @@ function Category() {
       </View> */}
       </SafeAreaView>
     </SafeAreaProvider>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -166,7 +173,7 @@ const styles = StyleSheet.create({
   horizontalCat: {
     width: "100%",
     height: '29%'
-    
+
   },
   history: {
     marginTop: "10%"

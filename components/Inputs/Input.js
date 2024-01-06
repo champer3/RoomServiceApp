@@ -22,7 +22,7 @@ function Input({
   };
   let content = (
     <TextInput
-      style={styles.input}
+      style={[styles.input, {color: color}]}
       placeholder={text}
       autoComplete="address-line1"
       cursorColor={"rgba(0,0,0,0.5)"}
@@ -30,6 +30,7 @@ function Input({
       autoCapitalize="words"
       keyboardType={keyboard}
       placeholderTextColor={color}
+
     />
   );
   if (secured) {
@@ -147,5 +148,6 @@ const styles = StyleSheet.create({
     // minWidth: "22.5%",
     width: "100%",
     flex: 1,
+    color: "white"
   },
 });

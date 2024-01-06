@@ -3,8 +3,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 function Pill({ text, type = "pill" , onPress}) {
   const weight = type == "pill" ? "thin" : "bold";
   const radius = type == "pill" ? 50 : 25;
+  function onA(){
+    return
+  }
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable onPress={onA} style={({ pressed }) => pressed && styles.pressed}>
       <View style={[styles.container, { borderRadius: radius }]}>
         <Text style={[styles.text, {fontWeight: weight}]}>
           {text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : null}
@@ -29,5 +32,5 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.5,
   },
-  text: { fontSize: 12, color: "#333333" },
+  text: { fontSize: 11, color: "#333333" },
 });

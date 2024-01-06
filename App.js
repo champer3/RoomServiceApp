@@ -4,12 +4,10 @@ import { Provider as PaperProvider } from "react-native-paper";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import BoxItemCategory from "./components/Category/BoxItemCategory";
 import Category from "./screens/category/Category";
 import CategorySearch from "./screens/category/CategorySearch";
 import Home from "./screens/Home";
 import { Octicons } from '@expo/vector-icons';
-import Deal from "./components/Category/Deal";
 import ProductDisplay from "./screens/ProductDisplay";
 import DealsScreen from "./screens/DealsScreen";
 import NumberLogin from "./screens/NumberLogin";
@@ -18,8 +16,6 @@ import OnBoard1 from "./screens/onBoarding/OnBoard1";
 import OnBoard2 from "./screens/onBoarding/OnBoard2";
 import OnBoard3 from "./screens/onBoarding/onBoard3";
 import { Ionicons } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
 import EmailLogin from "./screens/EmailLogin";
 import StartScreen from "./screens/StartScreen";
 import EmailSignUp from "./screens/EmailSignUp";
@@ -48,8 +44,8 @@ const Stack = createNativeStackNavigator();
 function OnBoarding() {
   return (
     <Stack.Navigator screenOptions={{animationTypeForReplace: 'pop'}}>
-      
-      
+
+
       <Stack.Screen
         name="OnBoard1"
         component={OnBoard1}
@@ -162,12 +158,12 @@ function Search(){
           options={{headerShadowVisible: false,
             title: ''}}
         />
-   
+
   </Stack.Navigator>
   )
 }
 function Account(){
-  return (   <Stack.Navigator>
+  return (   <Stack.Navigator >
     <Stack.Screen
           name="Profile"
           component={{ProfileDisplay}}
@@ -192,7 +188,7 @@ function Account(){
           options={{headerShadowVisible: false,
             title: 'Address'}}
         />
-   
+
   </Stack.Navigator>
   )
 }
@@ -250,7 +246,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <StatusBar style="light" />
-      <Stack.Navigator>
+      <Stack.Navigator screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}>
       <Stack.Screen
           name="OnBoarding"
           component={OnBoarding}
@@ -278,7 +274,7 @@ export default function App() {
     options={{headerShadowVisible: false,
       title: '4.0 (5 reviews)'}}
   />
-        
+
          <Stack.Screen
     name="Cart"
     component={CartDisplay}
@@ -300,8 +296,9 @@ export default function App() {
     <Stack.Screen
           name="Order History"
           component={OrderDisplay}
+
           options={{headerShadowVisible: false,
-            title: 'Orders'}}
+            title: 'Orders', contentStyle: {backgroundColor: "white"}}}
         />
     <Stack.Screen
           name="Address"
@@ -339,8 +336,8 @@ export default function App() {
           options={{headerShadowVisible: false,
             title: 'Order Receipt'}}
         />
-        
-        
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );
