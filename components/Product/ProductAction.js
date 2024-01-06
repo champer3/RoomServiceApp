@@ -5,11 +5,10 @@ const { width, height } = Dimensions.get("window");
 
 
 
-function ProductAction({ image, quantity, action,  children }) {
-  let text = "Goldfish Flavor Blasted Xtra Cheddar Crackers 6.6oz";
+function ProductAction({title, image, price, reviews, category, quantity, action,  children }) {
   const navigation = useNavigation()
   function pressHandler (){
-    navigation.navigate('Product', {title: text, image : require("../../assets/snack.png") })
+    navigation.navigate('Product', {title: title, image : image, reviews: reviews, oldPrice: price, category: category })
   }
   return (
     <View style={[styles.container]}>
@@ -26,10 +25,10 @@ function ProductAction({ image, quantity, action,  children }) {
             paddingHorizontal: 30,
           }}
         >
-          <Pressable onPress={pressHandler} style={({ pressed }) => pressed && { opacity: 0.5 }}>
+          <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <Image
               style={styles.image}
-              source={require("../../assets/snack.png")}
+              source={image}
             />
           </Pressable>
         </View>
@@ -43,8 +42,8 @@ function ProductAction({ image, quantity, action,  children }) {
                 ellipsizeMode="tail"
                 numberOfLines={2}
               >
-                {text
-                  ? text.replace(/\b\w/g, (char) => char.toUpperCase())
+                {title
+                  ? title.replace(/\b\w/g, (char) => char.toUpperCase())
                   : ""}
               </Text>
               </View>
@@ -54,8 +53,8 @@ function ProductAction({ image, quantity, action,  children }) {
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 9, alignItems: 'center' }}
               >
-                <Text style={{fontWeight: 'bold', fontSize: 18}}>$3.69</Text>
-                {quantity && <View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 5, borderRadius: 50}}>
+                <Text style={{fontWeight: 'bold', fontSize: 18}}>{`$${(quantity ? price*quantity : price).toFixed(2)}`}</Text>
+                {quantity != null && <View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 5, borderRadius: 50}}>
                     <Text>{quantity}</Text>
                 </View>}
               </View>

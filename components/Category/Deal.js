@@ -9,7 +9,6 @@ function Deal({ text, onPress,item, color = "#283618"}) {
   if (items.length % 2 == 1) {
     odd = items.splice(0, 1)[0];
   }
-  console.log(item)
   return (
           <View style={[styles.container, {backgroundColor: color,}]}>
             <View style={styles.catHead}>

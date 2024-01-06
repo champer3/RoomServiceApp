@@ -10,7 +10,10 @@ import { FontAwesome } from '@expo/vector-icons';
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import ProductCategory from "../components/Category/ProductCategory";
 import FlexButton from "../components/Buttons/FlexButton";
+import { useRoute } from "@react-navigation/native";
+
 function ReviewScreen() {
+  const route = useRoute()
   const [index, setIndex] = useState(0);
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
@@ -23,12 +26,7 @@ function ReviewScreen() {
             {rating.map((rate, idx) => <Pressable key={idx} onPressOut={() => handleSelect(idx)}><Rating  rate={rate} active={index === idx}/></Pressable>)}
         </View>
         <View style={{paddingHorizontal: '1%', paddingRight: '3%', gap: 25}}>
-            <Review review={"I stumbled upon Nerds Gummy Clusters, and oh boy, what a find! The blend of fruity and tangy nerds with the chewy gummy inside is a party in my mouth. The 5oz bag disappears way too quickly. Can't get enough!"} date={'5days ago'} rate={3} name={'Jacob Henderson'}/>
-            <Review review={"I stumbled upon Nerds Gummy Clusters, and oh boy, what a find! The blend of fruity and tangy nerds with the chewy gummy inside is a party in my mouth. The 5oz bag disappears way too quickly. Can't get enough!"} date={'5days ago'} rate={4} name={'Jacob Henderson'}/>
-            <Review review={"I stumbled upon Nerds Gummy Clusters, and oh boy, what a find! The blend of fruity and tangy nerds with the chewy gummy inside is a party in my mouth. The 5oz bag disappears way too quickly. Can't get enough!"} date={'5days ago'} rate={5} name={'Jacob Henderson'}/>
-            <Review review={"I stumbled upon Nerds Gummy Clusters, and oh boy, what a find! The blend of fruity and tangy nerds with the chewy gummy inside is a party in my mouth. The 5oz bag disappears way too quickly. Can't get enough!"} date={'5days ago'} rate={2} name={'Jacob Henderson'}/>
-            <Review review={"I stumbled upon Nerds Gummy Clusters, and oh boy, what a find! The blend of fruity and tangy nerds with the chewy gummy inside is a party in my mouth. The 5oz bag disappears way too quickly. Can't get enough!"} date={'5days ago'} rate={1} name={'Jacob Henderson'}/>
-
+          {route.params.reviews.length > 0 && route.params.reviews.map(({comment, rating, user, days}, idx)=><Review key={idx} review={comment} date={days} rate={rating} name={user}/>)}
         </View>
         </ScrollView>
 

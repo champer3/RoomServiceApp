@@ -13,12 +13,14 @@ import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import PhoneIcon from "../components/PhoneIcon";
+import React, { useCallback, useEffect, useImperativeHandle, useState } from 'react';
 
 function NumberLogin() {
 
-  function handleScreenPress() {
-    Keyboard.dismiss()
-  }
+  // function handleScreenPress() {
+  //   Keyboard.dismiss()
+  // }
+  const [number, setNumber] = useState('')
   const navigation  = useNavigation()
   function pressHandler (){
     navigation.navigate('PinLogin')
@@ -29,6 +31,26 @@ function NumberLogin() {
   function signUpHandler (){
     navigation.navigate('StartScreen')
   }
+  const formatPhoneNumber = (input) => {
+    // Remove non-numeric characters from input
+    const cleanedInput = input.replace(/\D/g, '');
+
+    // Add brackets dynamically based on entered digits
+    let formattedNumber = '';
+    for (let i = 0; i < cleanedInput.length; i++) {
+      if (i === 0) {
+        formattedNumber += '(';
+      } else if (i === 3) {
+        formattedNumber += ') ';
+      } else if (i === 6) {
+        formattedNumber += '-';
+      }
+      formattedNumber += cleanedInput[i];
+    }
+
+    // Set the state with the formatted number
+    setNumber(formattedNumber);
+  };
 
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
@@ -42,7 +64,7 @@ function NumberLogin() {
           </View>
           <View style={styles.middleView}>
             <View style={{ marginBottom: "5%" }}>
-              <Input icon={<PhoneIcon />} keyboard="numeric" />
+              <Input length={14} icon={<PhoneIcon />} keyboard="numeric" textInputConfig={{onChangeText: (text) => formatPhoneNumber(text), value: number}} />
             </View>
             <View style={styles.buttonContainer}>
               <Button onPress = {pressHandler}>

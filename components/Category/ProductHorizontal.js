@@ -5,11 +5,11 @@ import Product from "../Product/Product"
 const { width, height } = Dimensions.get("window");
 
 
-function ProductHorizontal({items}){
+function ProductHorizontal({items, onPress}){
 
     return <ScrollView style={styles.container} horizontal={true}>
-        {items.map(({title, oldPrice, image}, index) =><View  key={index}   style={{width: width / 2}} >
-                <Product widths={width} title={title} oldPrice={oldPrice} image={image}/>
+        {items.map(({title, oldPrice, image, reviews, category}, index) =><View  key={index}  style={{width: width / 2}} >
+                <Product reviews={reviews}  category={category} widths={width} title={title} oldPrice={oldPrice} image={image} onAdd = {onPress}/>
                 </View>)}
     </ScrollView>
 }

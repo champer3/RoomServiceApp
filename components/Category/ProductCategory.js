@@ -4,12 +4,12 @@ import Product from "../Product/Product"
 
 
 
-function ProductCategory({items}){
+function ProductCategory({items, onPress}){
 
     return <ScrollView style={{flex: 1}}>
         <View style={styles.container}>
-        {items.map(({title, oldPrice, image}, index) =><View key={index} style={{width: '50%', marginBottom: 15}}>
-                    <Product widths={200}  title={title} oldPrice={oldPrice} image={image} /></View>)}
+        {items.map(({title, oldPrice, image,  reviews, category}, index) =><View key={index} style={{width: '50%', marginBottom: 15}}>
+                    <Product reviews={reviews}  category={category} widths={200}  title={title} oldPrice={oldPrice} image={image} onAdd ={onPress}/></View>)}
     </View>
     </ScrollView>
 }

@@ -9,12 +9,14 @@ import AddressEditable from "../components/AddressEditable";
 import DeliveryMode from "../components/DeliveryMode";
 import CreditCard from "../components/CreditCard";
 import Info from "../components/Info";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation , useRoute} from "@react-navigation/native";
+
 function PaymentScreen() {
   
   const navigation = useNavigation()
+  const route = useRoute()
   function pressHandler (){
-    navigation.navigate('Order Receipt')
+    navigation.navigate('Order Receipt', {total : route.params.total})
   }
   function cardHandler (){
     navigation.navigate('Manage Payment')
@@ -47,7 +49,7 @@ function PaymentScreen() {
                         fontSize: 20,
                         
                     }}
-                    > $12.00
+                    > {`$${route.params.total}`}
                     </Text>
             </View>
             <View style ={{width: '40%', height: '130%'}}>
