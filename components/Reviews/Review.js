@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     lineHeight: 20,
     fontSize: 16,
-    alignSelf: "center",
   },
   dateText: {
     color: "#333333",

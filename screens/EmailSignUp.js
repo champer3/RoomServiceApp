@@ -2,23 +2,65 @@ import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Pres
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
+import Info from "../components/Info";
 import BareButton from "../components/Buttons/BareButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { Dimensions } from "react-native";
+import { useState } from 'react';
 import { useNavigation } from "@react-navigation/native";
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
 
 function EmailSignUp() {
   function handleScreenPress() {
     Keyboard.dismiss();
   }
   const navigation = useNavigation()
-  function pressHandler (){
-    navigation.navigate('AddNumber')
-  }
   function signInHandler (){
     navigation.navigate('NumberLogin')
   }
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile)
+  
+  const [warning, setWarning] = useState()
+  const [form , setForm] = useState(data)
+  function handleUpdate(){
+    dispatch(updateProfile({id : form}))
+ }
+  function handleFormChange(field, value) {
+    if (field == 'number'){
+      const cleanedInput = value.replace(/\D/g, '');
+
+    // Add brackets dynamically based on entered digits
+    let formattedNumber = '';
+    for (let i = 0; i < cleanedInput.length; i++) {
+      if (i === 0) {
+        formattedNumber += '(';
+      } else if (i === 3) {
+        formattedNumber += ') ';
+      } else if (i === 6) {
+        formattedNumber += '-';
+      }
+      formattedNumber += cleanedInput[i];
+    }
+    value = formattedNumber
+    }
+    if (field == 'email'){
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+        if (!emailRegex.test(value)) {
+          setWarning('Provide a valid email address')
+        } else{
+          setWarning()
+        } 
+    }
+    setForm((prev) => ({...prev, [field]: value}));
+    
+  }
+  function handleSubmit(){
+    if (!(warning) && form.email && form.firstName && form.secondName){
+    handleUpdate();navigation.navigate('AddNumber')}
+      }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
@@ -40,26 +82,16 @@ function EmailSignUp() {
               //   flex: 4,
               //   alignItems: "center",
               width: "100%",
-              height: "57%",
-              justifyContent: "flex-start",
+              justifyContent: "start",
               //   borderWidth: 2,
               //   borderColor: "black",
               marginTop: 35
             }}
           >
-            <Input
-              type="email"
-              text="Email"
-              icon={<MaterialIcons name="email" size={24} color="#aaa" />}
-            />
-            <Input
-              text="First Name"
-              icon={<Ionicons name="person" size={24} color="#aaa" />}
-            />
-            <Input
-              text="Last Name"
-              icon={<Ionicons name="person" size={24} color="#aaa" />}
-            />
+            <Input text={'Email Address'} icon={<MaterialIcons name="email" size={24} color="#aaa" />} textInputConfig={{cursorColor: '#aaa',value: form.email, onChangeText: handleFormChange.bind(this, 'email')}}/>
+            <Input text={'First Name'} icon={<Ionicons name="person" size={24} color={'#aaa'}/> } textInputConfig={{cursorColor: '#aaa',value: form.firstName, onChangeText: handleFormChange.bind(this, 'firstName')}}/>
+            <Input text={'Last Name'} icon={<Ionicons name="person" size={24} color={'#aaa'}/> } textInputConfig={{cursorColor: '#aaa',value: form.secondName, onChangeText: handleFormChange.bind(this, 'secondName')}}/>
+            {warning && <Info text={`${warning}                                            `}/>}
 
             {/* <Text
               style={{
@@ -73,7 +105,7 @@ function EmailSignUp() {
             </Text> */}
 
             <View style={styles.buttonContainer}>
-              <Button onPress={pressHandler}>
+              <Button onPress={handleSubmit}>
                 <Text style={{ fontSize: 16, color: "white" }}>Continue  </Text>
                 <Image
                   style={styles.vector}
@@ -220,7 +252,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#333333",
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "500",
     letterSpacing: 2,
   },

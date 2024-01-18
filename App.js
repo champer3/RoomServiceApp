@@ -281,7 +281,7 @@ export default function App() {
     name="Review"
     component={ReviewScreen}
     options={{headerShadowVisible: false,
-      title: '4.0 (5 reviews)'}}
+      title: ''}}
   />
         
          <Stack.Screen

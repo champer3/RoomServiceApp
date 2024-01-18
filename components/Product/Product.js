@@ -6,6 +6,8 @@ import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
 import {addToCart, removeFromCart} from '../../Data/cart'
+import { useState, useEffect } from 'react';
+import IncrementDecrementBtn from "../Buttons/IncrementDecrementBtn";
 
 const { width, height } = Dimensions.get("window");
 
@@ -14,7 +16,39 @@ const { width, height } = Dimensions.get("window");
 
 function Product({ image, title, oldPrice, newPrice, reviews, category, widths = 90 , onAdd}) {
   let size = widths;
+  const [show, setShow] = useState(false)
   const navigation = useNavigation()
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cartItems.ids)
+  function handleAddToCart(product){
+    dispatch(addToCart({id : product}))
+  }
+  function handleRemoveFromCart(product){
+    dispatch(removeFromCart({id : product}))
+  }
+  function addQuantityToObjects(inputList) {
+    
+    const titleCountMap = {};
+
+    // Loop through the inputList to count occurrences of each title
+    inputList.forEach((obj) => {
+        const name = obj.title;
+        if (name == title){
+        // Increment the count for the title or initialize to 1 if it doesn't exist
+        titleCountMap[title] = (titleCountMap[title] || 0) + 1;}
+    });
+    return titleCountMap
+
+    
+}
+
+  // Example usage:
+
+  const newList = addQuantityToObjects(cartItems);
+  var quantity = 0
+  if (newList){
+      quantity = newList[title]
+  }
   function pressHandler (){
     navigation.navigate('Product', {image: image, title : title, reviews: reviews, oldPrice: oldPrice, category: category })
   }
@@ -91,14 +125,15 @@ function Product({ image, title, oldPrice, newPrice, reviews, category, widths =
               </Text>
             </View>
           </Pressable>
-          <View style={{ height: height / 20 }}>
-            <FlexButton color={"#aaa"} borderRadius={5} width={1.5} onPress={()=>onAdd({image, title, oldPrice, newPrice,})}>
+          <View style={{ height: height / 18 }}>
+            {(!show || !quantity) && <FlexButton color={"#aaa"} borderRadius={5} width={1.5} onPress={()=>{onAdd({image, title, oldPrice, newPrice,}); setShow(true)}}>
               <Text style={{ fontSize: 10 }}>
                 {" "}
                 <Feather name="shopping-cart" size={10} color="black" /> Add to
                 Cart
               </Text>
-            </FlexButton>
+            </FlexButton>}
+            {show && quantity && <IncrementDecrementBtn minValue={quantity} onIncrease={()=>{handleAddToCart({ image, title, oldPrice,})}} onDecrease ={()=>{handleRemoveFromCart({ image, title, oldPrice})}}/>}
           </View>
         </View>
       </View>

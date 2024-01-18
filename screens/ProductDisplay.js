@@ -90,8 +90,7 @@ var quantity = 0
 if (newList){
     quantity = newList[route.params.title]
 }
-console.log(quantity)
-console.log(newList[route.params.title])
+
   const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('Review', {reviews: route.params.reviews})

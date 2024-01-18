@@ -96,7 +96,7 @@ function OrderDisplay(){
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
     </View>} */}
     {index == 1 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
-    {newList.map(({title, image, quantity, oldPrice}, idx)=><ProductAction key={idx} price={oldPrice*quantity} quantity={quantity} title={title} image={image}><Pill text={"Delivered"} type="null"/></ProductAction>)}
+    {newList.map(({title, image, quantity, oldPrice}, idx)=><ProductAction key={idx} price={oldPrice} quantity={quantity} title={title} image={image}><Pill text={"Delivered"} type="null"/></ProductAction>)}
         
     </View>}
 
