@@ -39,7 +39,7 @@ function PaymentsDisplay() {
       setScrollHeight(-650)
   })
   
-  const methods = ['Paypal', 'Debit Card', 
+  const methods = ['Debit Card', 
   'Credit Card',
 ]
   function onPressHandler(){ 
@@ -49,12 +49,40 @@ function PaymentsDisplay() {
     }
   }
   function handleUpdate(){
-    const newData = {...data, ['payments'] : [...data.payments, {...form, card : getCardType(form.number)}]} 
+    var image = ''
+    if (getCardType(form.number) === 'Amex'){
+      image = require(`../assets/amex.png`)
+    }
+    else if (getCardType(form.number) === 'Visa'){
+      image = require(`../assets/visa.png`)
+    }
+    else if (getCardType(form.number) === 'Discover'){
+      image = require(`../assets/discover.png`)
+    }
+    else if (getCardType(form.number) === 'Mastercard'){
+      image = require(`../assets/mastercard.png`)
+    }
+
+    const newData = {...data, ['payments'] : [...data.payments, {...form, card : getCardType(form.number), image: image}]} 
     dispatch(updateProfile({id : newData}))
  }
  function handleEdit(index) {
   // Create a shallow copy of the data object
   const newData = { ...data, ['payments'] : [] };
+  var image = ''
+    if (getCardType(form.number) === 'Amex'){
+      image = require(`../assets/amex.png`)
+    }
+    else if (getCardType(form.number) === 'Visa'){
+      image = require(`../assets/visa.png`)
+    }
+    else if (getCardType(form.number) === 'Discover'){
+      image = require(`../assets/discover.png`)
+    }
+    else if (getCardType(form.number) === 'Mastercard'){
+      image = require(`../assets/mastercard.png`)
+    }
+
 
   // Loop through the payments array
   for (let i = 0; i < data.payments.length; i++) {
@@ -64,8 +92,7 @@ function PaymentsDisplay() {
     }
     // If the current index is equal to the specified index, append the form data
     else if (i === index) {
-      console.log(form)
-      newData.payments.push(form)
+      newData.payments.push({...form, ['card']: getCardType(form.number), ['image']: image})
     }
   }
   // Return the new data object
@@ -136,7 +163,7 @@ function getCardType(cardNumber) {
   // Check the card number against each card type
   for (const type in cardTypes) {
     if (cardTypes[type].test(cleanedNumber)) {
-      return type.toUpperCase();
+      return type.charAt(0).toUpperCase() + type.slice(1);
     }
   }
 
@@ -230,7 +257,7 @@ function getCardType(cardNumber) {
         <ScrollView>
         
         <View style={[styles.recommendedView, {paddingBottom: '50%' }]}>
-           {cards && cards.length > 0 && cards.map(({card, number}, idx) => <View  key={idx}><Pressable><CreditCard onPress={()=>{onEditing(); setForm({...cards[idx]})}} card={card} number={number.slice(0, 4)}/></Pressable></View>)}
+           {cards && cards.length > 0 && cards.map(({card, number, image}, idx) => <View  key={idx}><Pressable><CreditCard image={image} onPress={()=>{onEditing(); setForm({...cards[idx]})}} card={card} number={number.slice(0, 4)}/></Pressable></View>)}
            {!cards || !cards.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>You currently have no saved payment method, add one to ease your checkout.</Text></View>}
            <View style={[{height: 75}]}>
                 <FlexButton onPress={onPress}><Text style={{fontSize: 18}}>Add payment method</Text></FlexButton>

@@ -11,8 +11,14 @@ import CreditCard from "../components/CreditCard";
 import Info from "../components/Info";
 import { useNavigation , useRoute} from "@react-navigation/native";
 
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
+
 function PaymentScreen() {
-  
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile)
+  const cards = [...data.payments]
+
   const navigation = useNavigation()
   const route = useRoute()
   function pressHandler (){
@@ -26,7 +32,7 @@ function PaymentScreen() {
         <View>
         <View style={styles.recommendedView}>
             <Text style={styles.text}>Payment Method</Text>
-            <CreditCard onPress={cardHandler} card={'Mastercard'} number={5382}/>
+            <CreditCard onPress={cardHandler} card={cards[0].card} number={cards[0].number.slice(0, 4)} image={cards[0].image}/>
         </View>
         <View style={styles.recommendedView}>
             <Info text={"Pay securely using your saved card details or add a different card to finish purchase."}/>

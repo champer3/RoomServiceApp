@@ -3,12 +3,12 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get("window");
 
-function CreditCardSelect({ card, number, active= false }) {
+function CreditCardSelect({ card, number, active= false,image }) {
   return (
     <View style={[styles.container,{borderColor: active ? 'black' : 'rgba(0,0,0,0.05)'}]}>
       <View style={styles.left}>
         <View style={styles.imageContainer}>
-          <Image style={styles.image} source={require("../assets/mastercard.png")} />
+          <Image style={styles.image} source={image} />
         </View>
         <View style={styles.textContainer}>
           <Text style={styles.card}>{card}</Text>
