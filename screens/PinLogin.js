@@ -96,17 +96,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     justifyContent: "center",
     marginHorizontal: "5%",
-    marginTop: "20%",
-    marginBottom: "5%"
+    marginTop: "10%",
+    marginBottom: "5%",
   },
   topView: {
     height: "16%",
+    marginBottom: "10%",
   },
   welcomeView: {},
   middleView: {
     height: "40%",
     justifyContent: "flex-start",
-    // borderWidth: 2
   },
   image: {
     width: "100%",
@@ -120,10 +120,12 @@ const styles = StyleSheet.create({
   vector: {
     width: "10%",
     resizeMode: "center",
+    marginLeft: 5
   },
   facebook: {
-    width: "12%",
+    width: "7%",
     resizeMode: "contain",
+    marginRight: 3
   },
   threeContainer: {
     width: "100%",

@@ -26,7 +26,7 @@ function Home() {
   function getGreeting() {
     var currentTime = new Date();
     var hours = currentTime.getHours();
-  
+
     if (hours < 12) {
         return "Good Morning!";
     } else if (hours < 18) {
@@ -80,8 +80,8 @@ function Home() {
             </View>
           <View style={[styles.cart, {flex: 0.3}]}>
               <Pressable onPress={cartHandler}>
-                
-                
+
+
                 <View>
                   <Feather name="shopping-cart" size={30} color="black" />
                 </View>
@@ -105,17 +105,17 @@ function Home() {
           </View>
           <View style={styles.search}>
             {/* <View style={styles.input}> */}
-            
+
               <Input color={'white'} icon={<EvilIcons name="search" size={30} color="white" />} text={'Search items'}></Input>
-           
-             
+
+
               {/* <EvilIcons name="search" size={24} color="black" />
               <TextInput style={{fontSize: 16}} placeholderTextColor="black" placeholder="Search RoomService                                                                         " /> */}
             {/* </View> */}
-            
+
           </View>
         <ScrollView style={{backgroundColor: "white"}}>
-          
+
           <View style={[styles.horizontalCat,{marginTop: 20}]}>
             <View style={styles.catHead}>
               <Text style={styles.text}>Popular Categories</Text>
@@ -131,9 +131,9 @@ function Home() {
                 { text: "Food", image: require("../assets/food.png") },
                 { text: "Snacks", image: require("../assets/snack.png") }
               ]}
-             
+
             />
-              
+
             {/* <ScrollView style={{borderWidth: 1}} horizontal={true}>
               <View style={{flex: 1}}>
             <Pressable onPress={dealHandler} stylye ={{borderWidth: 1}}>
@@ -141,7 +141,7 @@ function Home() {
                 style={styles.image}
                 source={require("../assets/deals.png")}
               />
-              
+
             </Pressable>
             </View>
             <Pressable onPress={dealHandler}>
@@ -158,7 +158,7 @@ function Home() {
             </Pressable>
           </ScrollView> */}
           <ScrollView   horizontal={true} >
-            <View  style={{flexDirection: 'row', flexWrap: 'nowrap', 
+            <View  style={{flexDirection: 'row', flexWrap: 'nowrap',
         gap: 15}}>
                 <Pressable onPress={dealHandler}><View style={styles.imageContainer}>
           <Image style={styles.image} source={require("../assets/deal1.png")} />
@@ -178,13 +178,13 @@ function Home() {
             </View>
           </ScrollView>
           </View>
-          
+
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Recommended Foods</Text>
             <ProductHorizontal items={categoryObject['food']} onPress = {handleAddToCart}/>
-            
+
           </View>
-          
+
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
             <Deal text={"Best Grocery Deals!"} onPress={dealHandler} item={[
     {
@@ -250,7 +250,7 @@ function Home() {
     }
   ]} color = '#00CED1' />
           </View>
-     
+
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Drinks</Text>
             <ProductHorizontal items={categoryObject['drink']} onPress = {handleAddToCart}/>
@@ -326,10 +326,10 @@ function Home() {
       image: require("../assets/i5.png"),
     }
   ]} color = '#98FB98' />
-       
+
           </View>
           <View style={[styles.recommendedView, { alignItems: "center" }]}>
-          <View  style={{flexDirection: 'row', flexWrap: 'nowrap', 
+          <View  style={{flexDirection: 'row', flexWrap: 'nowrap',
         gap: 15}}>
                 <Pressable onPress={dealHandler}><View style={[styles.imageContainer, {width: width - 30}]}>
           <Image style={styles.image} source={require("../assets/deals.png")} />

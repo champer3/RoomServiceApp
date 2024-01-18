@@ -231,8 +231,9 @@ const styles = StyleSheet.create({
     resizeMode: "center",
   },
   facebook: {
-    width: "12%",
+    width: "7%",
     resizeMode: "contain",
+    marginRight: 3
   },
   threeContainer: {
     width: "100%",

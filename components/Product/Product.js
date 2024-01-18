@@ -173,9 +173,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
-    
+
     borderWidth: 1,
-    borderColor : '#aaa', 
+    borderColor : '#aaa',
     borderRadius: 10,
     padding: 0.5,
     paddingHorizontal: 6,

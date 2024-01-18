@@ -17,7 +17,7 @@ const  Input = ({
   buttonText,
   children,
   color,
-  textInputConfig, 
+  textInputConfig,
   onPress
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +26,7 @@ const  Input = ({
   };
   let content = (
     <TextInput
-      style={styles.input}
+      style={[styles.input, {color: color}]}
       placeholder={text}
       autoComplete="address-line1"
       cursorColor={"rgba(0,0,0,0.5)"}
@@ -155,5 +155,6 @@ const styles = StyleSheet.create({
     // minWidth: "22.5%",
     width: "100%",
     flex: 1,
+    color: "white"
   },
 });

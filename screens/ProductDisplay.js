@@ -19,7 +19,7 @@ function ProductDisplay() {
     const route = useRoute()
     const title = route.params.title
     const [visible, setVisible] = useState(false)
-    
+
     useEffect(()=>{
         const timeoutId = setTimeout(() => {
           setVisible(false);
@@ -68,7 +68,7 @@ function handleRemoveFromCart(product){
   dispatch(removeFromCart({id : product}))
 }
 function addQuantityToObjects(inputList) {
-    
+
     const titleCountMap = {};
 
     // Loop through the inputList to count occurrences of each title
@@ -80,7 +80,7 @@ function addQuantityToObjects(inputList) {
     });
     return titleCountMap
 
-    
+
 }
 
 // Example usage:
@@ -185,17 +185,17 @@ if (newList){
 
                 </View>
             </View>
-            
+
         </View>
         </ScrollView>
-        
+
         <View style={{flex: 1, width: "100%", minHeight: '60%', flexWrap: 'wrap', paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
         {visible && <View style ={{
     justifyContent: 'flex-end',
     marginHorizontal: 10,
     width: '90%',
     alignItems: 'center',opacity: 1, backgroundColor: 'rgba(0,0,0,0)'}}>
-        <View style ={{ 
+        <View style ={{
     backgroundColor: 'white',
     borderRadius: 20,
     shadowColor: '#000',
@@ -220,7 +220,7 @@ if (newList){
                         color: "black",
                         fontWeight: "600",
                         fontSize: 20,
-                        
+
                     }}
                     > {`$${!quantity ? 0 : (route.params.oldPrice * quantity).toFixed(2)}`}
                     </Text>
@@ -229,7 +229,7 @@ if (newList){
                 <FlexButton onPress={()=>handleAddToCart(route.params)} background={'#283618'}><FontAwesome name="shopping-bag" size={24} color="white" /><Text style={{color: 'white'}}>Add to cart</Text></FlexButton>
             </View>
         </View>
-        
+
     </View>
   );
 }
