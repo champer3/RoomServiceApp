@@ -17,9 +17,9 @@ import React, { useCallback, useEffect, useImperativeHandle, useState } from 're
 
 function NumberLogin() {
 
-  // function handleScreenPress() {
-  //   Keyboard.dismiss()
-  // }
+  function handleScreenPress() {
+    Keyboard.dismiss()
+  }
   const [number, setNumber] = useState('')
   const navigation  = useNavigation()
   function pressHandler (){
