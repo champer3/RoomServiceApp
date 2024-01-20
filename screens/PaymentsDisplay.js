@@ -62,8 +62,19 @@ function PaymentsDisplay() {
     else if (getCardType(form.number) === 'Mastercard'){
       image = require(`../assets/mastercard.png`)
     }
-
-    const newData = {...data, ['payments'] : [...data.payments, {...form, card : getCardType(form.number), image: image}]} 
+    var newData = {}
+    if (active){
+      setActive(false)
+      var tempData = {...data, ['payments'] : [{...form, card : getCardType(form.number), image: image}, ...data.payments]} 
+      newData = { ...data, ['payments'] : [] };
+      var j = 0
+      for (let i = 0; i < tempData.payments.length; i++) {
+          newData.payments.push({...tempData.payments[i], ['id']: j})
+          j += 1
+      }
+    }
+    else {newData = {...data, ['payments'] : [...data.payments, {...form, card : getCardType(form.number), image: image}]} 
+  }
     dispatch(updateProfile({id : newData}))
  }
  function handleEdit(index) {
@@ -96,6 +107,19 @@ function PaymentsDisplay() {
     }
   }
   // Return the new data object
+  dispatch(updateProfile({id : newData}))
+}
+function makeDefault(id){
+  const newData = { ...data, ['payments'] : [{...data.payments[id], ['id']: 0}] };
+  var j = 1
+  for (let i = 0; i < data.payments.length; i++) {
+    // If the current index is less than the specified index, copy the existing payment
+    if (data.payments[i].id != id) {
+      newData.payments.push({...data.payments[i], ['id']: j})
+      j += 1
+    }
+    
+  }
   dispatch(updateProfile({id : newData}))
 }
 function isCardNotExpired(expiryDate) {
@@ -187,6 +211,9 @@ function getCardType(cardNumber) {
     if (!verifyPayment()){
     setScrollHeight((prev) => prev == -450 ? -550 : -450)
     handleEdit(form.id)
+    if (active){
+    makeDefault(form.id)
+    setActive(false)}
     setForm({name: '', number: '', cvv : '' , exp : '', card : '', id: cards.length})
     setIndex()
     setWarning()
@@ -322,7 +349,7 @@ function getCardType(cardNumber) {
      
      </View>
      <View style ={{marginVertical: 15, gap: 13, flexDirection: 'row'}}>
-              <Pressable onPress={()=> setActive((prev) => !prev )}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
+              <Pressable onPress={()=> {setActive((prev) => !prev );}}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
               <Text>Make this the default payment</Text>
               </View>
               {warning && <Info text={`${warning}                                              `}/>}
