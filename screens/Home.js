@@ -35,6 +35,7 @@ function Home() {
         return "Good Evening!";
     }
   }
+  const data = useSelector((state) => state.profileData.profile)
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids)
   const productItems = useSelector((state) => state.productItems.ids)
@@ -75,7 +76,7 @@ function Home() {
           <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: "5%", paddingTop: '10%'}}>
             <View style={{gap: 6}}>
               <Text style={{color: 'white', fontSize: 13, letterSpacing: 0.4, fontWeight: 'bold'}}>{greeting}</Text>
-              <Text style={{color: 'white', fontSize: 24, fontWeight: 'bold', letterSpacing: 1}}>Josh Brooks</Text>
+              <Text style={{color: 'white', fontSize: 24, fontWeight: 'bold', letterSpacing: 1}}>{`${data.firstName} ${data.secondName}`}</Text>
             </View>
           <View style={[styles.cart, {flex: 0.3}]}>
               <Pressable onPress={cartHandler}>

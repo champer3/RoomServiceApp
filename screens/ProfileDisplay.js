@@ -1,43 +1,29 @@
-import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard, Image,Alert } from "react-native";
+import { StyleSheet, Text, View, Pressable, ScrollView, Keyboard, Image } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { SafeAreaView } from "react-native-safe-area-context";
-import BareButton from "../components/Buttons/BareButton";
-import ProductAction from "../components/Product/ProductAction";
-import { FontAwesome } from '@expo/vector-icons';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Entypo } from '@expo/vector-icons';
-import { Octicons } from '@expo/vector-icons';
-import Profile from "../components/Profile";
-import { Feather } from '@expo/vector-icons';
 import Content from "../components/Content";
 import FlexButton from "../components/Buttons/FlexButton";
-import NavBar from "../components/NavBar";
 import BottomSheet from '../components/Modals/BottomSheet';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, {useCallback, useRef } from 'react';
 import Input from "../components/Inputs/Input";
 import PhoneIcon from "../components/PhoneIcon";
 import Info from "../components/Info";
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
+
 
 function ProfileDisplay() {
-  const [data, setData] = useState({
-    firstName: 'Josh',
-    secondName: 'Brooks',
-    number: '(773) 262-9874',
-    email: 'joshbrooks@gmail.com',
-    language: 'English (United States)',
-  })
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile)
+  
   const [warning, setWarning] = useState()
   const [text, setText] = useState() 
-  const [form , setForm] = useState({
-    firstName: 'Josh',
-    secondName: 'Brooks',
-    number: '(773) 262-9874',
-    email: 'joshbrooks@gmail.com',
-    language: 'English (United States)',
-  })
+  const [form , setForm] = useState(data)
+  function handleUpdate(){
+    dispatch(updateProfile({id : form}))
+ }
   function handleFormChange(field, value) {
     if (field == 'number'){
       const cleanedInput = value.replace(/\D/g, '');
@@ -92,7 +78,7 @@ function ProfileDisplay() {
   }, []);
   function handleSubmit(){
     if (!(warning && text == 'email') && form.number.length == 14){
-    setData(()=> {return {...form}})
+    handleUpdate()
     ref?.current?.scrollTo(0);
     }
   }

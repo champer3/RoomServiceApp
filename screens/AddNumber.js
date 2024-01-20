@@ -13,18 +13,52 @@ import { useNavigation } from "@react-navigation/native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
-import BareButton from "../components/Buttons/BareButton";
-import { RadioButton } from "react-native-paper";
 import Info from "../components/Info";
 import PhoneIcon from "../components/PhoneIcon";
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
 
 function AddNumber() {
   function handleScreenPress() {
     Keyboard.dismiss()
   }
   const navigation = useNavigation()
-  function pressHandler (){
-    navigation.navigate('AddPin')
+  const [warning, setWarning] = useState()
+   const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile)
+  
+  const [form , setForm] = useState(data)
+  function handleUpdate(){
+    dispatch(updateProfile({id : form}))
+ }
+  function handleFormChange(field, value) {
+    if (field == 'number'){
+      const cleanedInput = value.replace(/\D/g, '');
+
+    // Add brackets dynamically based on entered digits
+    let formattedNumber = '';
+    for (let i = 0; i < cleanedInput.length; i++) {
+      if (i === 0) {
+        formattedNumber += '(';
+      } else if (i === 3) {
+        formattedNumber += ') ';
+      } else if (i === 6) {
+        formattedNumber += '-';
+      }
+      formattedNumber += cleanedInput[i];
+    }
+    value = formattedNumber
+    if (value.length == 14){
+      setWarning()
+    }
+    }
+    setForm((prev) => ({...prev, [field]: value}));
+    
+  }
+  function handleSubmit(){
+    if (form.number.length == 14){
+    handleUpdate();navigation.navigate('AddPin')
+    } else {setWarning('Provide a valid number')}
   }
   const [active, setActive] = useState(false)
   return (
@@ -44,18 +78,21 @@ function AddNumber() {
             </View>
           </View>
           <View style={{ flex: 5 }}>
-          <Input icon={<PhoneIcon />} keyboard="numeric" />
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Input text={'Contact Number'} icon={<PhoneIcon/> } keyboard="number-pad" length={14} textInputConfig={{cursorColor: '#aaa',value: form.number, onChangeText: handleFormChange.bind(this, 'number')}}/>
+          {warning  && <Info text={`${warning}                                            `}/>}
+            
+           {!warning && <><View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <Pressable onPress={() => setActive((prev) => !prev )}><Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="#aaa" /></Pressable>
               <Text style={{ marginVertical: 24 }}>
                 Send me promotional discount and promos via SMS
               </Text>
             </View>
             <Info text="By selecting this option, you are agreeing to receive promotional discounts, exclusive offers, and marketing promotions via Short Message Service (SMS) to the mobile number provided. " />
+            </>}
           </View>
           <View style={{ flex: 2, justifyContent: "flex-end" }}>
             <View style={styles.buttonContainer}>
-              <Button onPress={pressHandler}>
+              <Button onPress={handleSubmit}>
                 <Text style={{ fontSize: 16, color: "white" }}>Send Code </Text>
                 <Image
                   style={styles.vector}
@@ -128,7 +165,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#333333",
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "500",
     letterSpacing: 2,
   },

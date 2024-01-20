@@ -1,13 +1,14 @@
 import { Image, Pressable, Dimensions } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
+import {useSelector} from 'react-redux'
 
 const { width, height } = Dimensions.get("window");
 
 
 
-function Profile({ image, quantity, action,  children }) {
-  let text = "Josh Brooks";
-
+function Profile({ action }) {
+  const data = useSelector((state) => state.profileData.profile)
+  let text = `${data.firstName} ${data.secondName}`;
   return (
     <View style={[styles.container]}>
       <View style={styles.imageContainer}>
@@ -50,7 +51,7 @@ function Profile({ image, quantity, action,  children }) {
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 9, alignItems: 'center' }}
               >
-                <Text style={{fontWeight: '300', fontSize: 16, color: 'white'}}>joshbrooks@gmail.com</Text>
+                <Text style={{fontWeight: '300', fontSize: 16, color: 'white'}}>{`${data.email}`}</Text>
               </View>
             </View>
         </View>

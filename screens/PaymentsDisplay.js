@@ -1,34 +1,24 @@
 import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView, Keyboard } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { SafeAreaView } from "react-native-safe-area-context";
-import Review from "../components/Reviews/Review"
-import Rating from "../components/Reviews/Rating"
-import Pill from '../components/Pills/Pills'
-import { AntDesign } from "@expo/vector-icons";
-import { FontAwesome } from '@expo/vector-icons';
-import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
-import ProductCategory from "../components/Category/ProductCategory";
 import FlexButton from "../components/Buttons/FlexButton";
-import { EvilIcons } from '@expo/vector-icons';
-import ProductAction from "../components/Product/ProductAction";
 import Input from "../components/Inputs/Input";
-import Deal from "../components/Category/Deal";
-import { Fontisto } from '@expo/vector-icons';
 import { Octicons } from '@expo/vector-icons';
-import Address from "../components/Address";
-import CreditCardSelect from "../components/CreditCardSelect";
 import CreditCard from "../components/CreditCard";
 import BottomSheet from '../components/Modals/BottomSheet';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, {useCallback, useRef } from 'react';
 import CardCat from "../components/CardCat";
 import { Entypo } from '@expo/vector-icons';
 import Info from "../components/Info";
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
 
 const { width, height } = Dimensions.get("window");
 function PaymentsDisplay() {
-  const [cards, setCard]  = useState([])
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile)
+  const cards = [...data.payments]
+  const [warning, setWarning] = useState()
   const [form, setForm] = useState({name: '', number: '', cvv : '' , exp : '', card : '', id : cards.length})
   const [scrollHeight, setScrollHeight] = useState(-450) 
   const [index, setIndex] = useState(null);
@@ -49,7 +39,7 @@ function PaymentsDisplay() {
       setScrollHeight(-650)
   })
   
-  const methods = ['Paypal', 'Debit Card', 
+  const methods = ['Debit Card', 
   'Credit Card',
 ]
   function onPressHandler(){ 
@@ -58,40 +48,173 @@ function PaymentsDisplay() {
     ref?.current?.scrollTo(scrollHeight)
     }
   }
+  function handleUpdate(){
+    var image = ''
+    if (getCardType(form.number) === 'Amex'){
+      image = require(`../assets/amex.png`)
+    }
+    else if (getCardType(form.number) === 'Visa'){
+      image = require(`../assets/visa.png`)
+    }
+    else if (getCardType(form.number) === 'Discover'){
+      image = require(`../assets/discover.png`)
+    }
+    else if (getCardType(form.number) === 'Mastercard'){
+      image = require(`../assets/mastercard.png`)
+    }
+
+    const newData = {...data, ['payments'] : [...data.payments, {...form, card : getCardType(form.number), image: image}]} 
+    dispatch(updateProfile({id : newData}))
+ }
+ function handleEdit(index) {
+  // Create a shallow copy of the data object
+  const newData = { ...data, ['payments'] : [] };
+  var image = ''
+    if (getCardType(form.number) === 'Amex'){
+      image = require(`../assets/amex.png`)
+    }
+    else if (getCardType(form.number) === 'Visa'){
+      image = require(`../assets/visa.png`)
+    }
+    else if (getCardType(form.number) === 'Discover'){
+      image = require(`../assets/discover.png`)
+    }
+    else if (getCardType(form.number) === 'Mastercard'){
+      image = require(`../assets/mastercard.png`)
+    }
+
+
+  // Loop through the payments array
+  for (let i = 0; i < data.payments.length; i++) {
+    // If the current index is less than the specified index, copy the existing payment
+    if (i !== index) {
+      newData.payments.push(data.payments[i])
+    }
+    // If the current index is equal to the specified index, append the form data
+    else if (i === index) {
+      newData.payments.push({...form, ['card']: getCardType(form.number), ['image']: image})
+    }
+  }
+  // Return the new data object
+  dispatch(updateProfile({id : newData}))
+}
+function isCardNotExpired(expiryDate) {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear() % 100; // Extract last two digits of the current year
+  const currentMonth = currentDate.getMonth() + 1; // Months are zero-indexed, so add 1
+
+  const [expiryMonth, expiryYear] = expiryDate.split('/').map(part => parseInt(part, 10));
+
+  // Check if the card has not expired
+  if (expiryYear > currentYear || (expiryYear === currentYear && expiryMonth >= currentMonth)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+function verifyPayment() {
+  
+  if (!form.name || !form.number || !form.cvv || !form.exp ) {
+    return "All fields are required.";
+  }
+
+  // Check credit card number validity
+  // Remove spaces from the credit card number
+  const cleanedNumber = form.number.replace(/\s/g, '');
+
+  
+  const creditCardRegex = /^\d{16}$/;
+  if (getCardType(form.number) == 'Unknown') {
+    return `Invalid card number. Provide a valid card number`;
+  }
+
+  // Check CVV validity
+  const cvvRegex = /^\d{3}$/;
+  if (!cvvRegex.test(form.cvv)) {
+    return "Invalid CVV. It should be a 3-digit number.";
+  }
+
+  // Check expiration date validity (MM/YY format)
+  const expDateRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
+  if (!expDateRegex.test(form.exp)) {
+    return "Invalid expiration date. Please use MM/YY format.";
+  } else if (!isCardNotExpired(form.exp)){
+    return 'Card has expired. Provide a valid card'
+  }
+
+  // Additional checks for card type, name format, etc. can be added as needed
+
+  // If all checks pass, payment method is considered valid
+  return false;
+}
+function getCardType(cardNumber) {
+  // Define regular expressions for different card types
+  const cardTypes = {
+    visa: /^4[0-9]{12}(?:[0-9]{3})?$/,
+    mastercard: /^5[1-5][0-9]{14}$/,
+    amex: /^3[47][0-9]{13}$/,
+    discover: /^6(?:011|5[0-9]{2})[0-9]{12}$/,
+    // Add more card types as needed
+  };
+  // Remove spaces from the credit card number
+  const cleanedNumber = cardNumber.replace(/\s/g, '');
+
+ 
+  // Check the card number against each card type
+  for (const type in cardTypes) {
+    if (cardTypes[type].test(cleanedNumber)) {
+      return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+  }
+
+  // If no match is found, return 'Unknown'
+  return 'Unknown';
+}
   const onDone = useCallback (()=>{
+    if (!verifyPayment()){
     setScrollHeight((prev) => prev == -450 ? -550 : -450)
-    setCard((prev)=>[...prev,{...form, card :'MasterCard'}])
-    setForm({name: '', number: '', cvv : '' , exp : '', card : '', id:  cards.length})
+    
+    handleUpdate()
+   setForm({name: '', number: '', cvv : '' , exp : '', card : '', id:  cards.length})
     setIndex()
-    ref?.current?.scrollTo(0)
+    setWarning()
+    ref?.current?.scrollTo(0)}
+    else{
+    setWarning(verifyPayment())
+ }
   })
   const onEdit = useCallback (()=>{
+    if (!verifyPayment()){
     setScrollHeight((prev) => prev == -450 ? -550 : -450)
-    setCard((prev)=>{const newCard = [...prev];
-      newCard[form.id] = {...form};
-      return newCard
-})
+    handleEdit(form.id)
     setForm({name: '', number: '', cvv : '' , exp : '', card : '', id: cards.length})
     setIndex()
-    ref?.current?.scrollTo(0)
+    setWarning()
+    ref?.current?.scrollTo(0)} else{
+      setWarning(verifyPayment())}
   })
   function deleteAndUpdate(indexToDelete) {
-    
-    const newCards = [...cards]
-    console.log(newCards)
     // Delete the object at the specified index
-    newCards.splice(indexToDelete, 1);
-  
-    // Update the id property of other objects
-    for (let i = indexToDelete; i < newCards.length; i++) {
-      newCards[i].id -= 1;
+    const newData = { ...data, ['payments'] : [] };
+    var j = 0
+    for (let i = 0; i < data.payments.length; i++) {
+      // If the current index is less than the specified index, copy the existing payment
+      if (i != indexToDelete) {
+        newData.payments.push({...data.payments[i], ['id']: j})
+        j += 1
+      }
+      
     }
+    // Update the id property of other objects
+
     ref?.current?.scrollTo(0)
     setScrollHeight(-450)
     setForm({name: '', number: '', cvv : '' , exp : '', card : '', id: cards.length})
     setIndex()
-    console.log("Updated List:", newCards);
-    setCard(newCards)
+    console.log("Updated List:", newData.payments);
+
+  // Return the new data object
+  dispatch(updateProfile({id : newData}))
   }
   function handleFormChange(field, value) {
     if (field == 'number'){
@@ -125,7 +248,7 @@ function PaymentsDisplay() {
     setForm((prev) => ({...prev, [field]: value}));
     
   }
-   
+  console.log(cards)
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <Pressable style = {{flex: 1}} onPress={Keyboard.dismiss}>
@@ -134,8 +257,8 @@ function PaymentsDisplay() {
         <ScrollView>
         
         <View style={[styles.recommendedView, {paddingBottom: '50%' }]}>
-           {cards.length > 0 && cards.map(({card, number}, idx) => <View  key={idx}><Pressable><CreditCard onPress={()=>{onEditing(); setForm({...cards[idx]})}} card={card} number={number.slice(0, 4)}/></Pressable></View>)}
-           {!cards.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>You currently have no saved payment method, add one to ease your checkout.</Text></View>}
+           {cards && cards.length > 0 && cards.map(({card, number, image}, idx) => <View  key={idx}><Pressable><CreditCard image={image} onPress={()=>{onEditing(); setForm({...cards[idx]})}} card={card} number={number.slice(0, 4)}/></Pressable></View>)}
+           {!cards || !cards.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>You currently have no saved payment method, add one to ease your checkout.</Text></View>}
            <View style={[{height: 75}]}>
                 <FlexButton onPress={onPress}><Text style={{fontSize: 18}}>Add payment method</Text></FlexButton>
             </View>
@@ -178,7 +301,8 @@ function PaymentsDisplay() {
               <Pressable onPress={()=> setActive((prev) => !prev )}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
               <Text>Make this the default payment</Text>
               </View>
-    <Info text={'By adding this card you can easily complete purchases securely with it.'}/>
+    {!warning && <Info text={'By adding this card you can easily complete purchases securely with it.'}/>}
+    {warning && <Info text={`${warning}                                              `}/>}
      <View style={[{height: 65, marginTop: 40}]}>
          <FlexButton onPress={onDone} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
      </View>
@@ -201,7 +325,7 @@ function PaymentsDisplay() {
               <Pressable onPress={()=> setActive((prev) => !prev )}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
               <Text>Make this the default payment</Text>
               </View>
-    <Info text={'By adding this card you can easily complete purchases securely with it.'}/>
+              {warning && <Info text={`${warning}                                              `}/>}
      <View style={[{height: 65, marginTop: 40}]}>
          <FlexButton onPress={onEdit} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
      </View>

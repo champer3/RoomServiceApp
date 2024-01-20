@@ -247,99 +247,111 @@ export default function App() {
       <NavigationContainer>
         <StatusBar style="light" />
 
-        <Stack.Navigator>
-          <Stack.Screen
-            name="OnBoarding"
-            component={OnBoarding}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Authentication"
-            component={Authentication}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="HomeTabs"
-            component={HomeTabs}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Product"
-            component={ProductDisplay}
-            options={{ headerShadowVisible: false, title: "" }}
-          />
-          <Stack.Screen
-            name="Review"
-            component={ReviewScreen}
-            options={{ headerShadowVisible: false, title: "4.0 (5 reviews)" }}
-          />
-
-          <Stack.Screen
-            name="Cart"
-            component={CartDisplay}
-            options={{ headerShadowVisible: false, title: "Cart" }}
-          />
-          <Stack.Screen
-            name="Profile"
-            component={ProfileDisplay}
-            options={{ headerShadowVisible: false, title: "My Profile" }}
-          />
-          <Stack.Screen
-            name="Payment"
-            component={PaymentsDisplay}
-            options={{ headerShadowVisible: false, title: "Payments" }}
-          />
-          <Stack.Screen
-            name="Order History"
-            component={OrderDisplay}
-            options={{
-              headerShadowVisible: false,
-              title: "Orders",
-              contentStyle: { backgroundColor: "white" },
-            }}
-          />
-          <Stack.Screen
-            name="Address"
-            component={AddressDisplay}
-            options={{ headerShadowVisible: false, title: "Address" }}
-          />
-          <Stack.Screen
-            name="Checkout"
-            component={CheckoutScreen}
-            options={{ headerShadowVisible: false, title: "Checkout" }}
-          />
-          <Stack.Screen
-            name="Confirm Address"
-            component={AddressConfirm}
-            options={{ headerShadowVisible: false, title: "Shipping Address" }}
-          />
-          <Stack.Screen
-            name="Make Payment"
-            component={PaymentScreen}
-            options={{ headerShadowVisible: false, title: "Make Payment" }}
-          />
-          <Stack.Screen
-            name="Manage Payment"
-            component={ConfirmPaymentMethod}
-            options={{ headerShadowVisible: false, title: "Manage Payment" }}
-          />
-          <Stack.Screen
-            name="Order Receipt"
-            component={RecieptScreen}
-            options={{ headerShadowVisible: false, title: "Order Receipt" }}
-          />
-          <Stack.Screen
-            name="Map"
-            component={MapScreen}
-            options={{ headerShadowVisible: false, title: "Address" }}
-          />
-          <Stack.Screen
-            name="Add Address"
-            component={AddAddressScreen}
-            options={{ headerShadowVisible: false, title: "New Address" }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <Stack.Navigator>
+      <Stack.Screen
+          name="OnBoarding"
+          component={OnBoarding}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Authentication"
+          component={Authentication}
+          options={{ headerShown: false }}
+        />
+         <Stack.Screen
+    name="HomeTabs"
+    component={HomeTabs}
+    options={{ headerShown: false }}
+  />
+         <Stack.Screen
+    name="Product"
+    component={ProductDisplay}
+    options={{headerShadowVisible: false,
+      title: ''}}
+  />
+         <Stack.Screen
+    name="Review"
+    component={ReviewScreen}
+    options={{headerShadowVisible: false,
+      title: ''}}
+  />
+        
+         <Stack.Screen
+    name="Cart"
+    component={CartDisplay}
+    options={{headerShadowVisible: false,
+      title: 'Cart'}}
+  />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileDisplay}
+          options={{headerShadowVisible: false,
+            title: 'My Profile'}}
+        />
+    <Stack.Screen
+          name="Payment"
+          component={PaymentsDisplay}
+          options={{headerShadowVisible: false,
+            title: 'Payments'}}
+        />
+    <Stack.Screen
+          name="Order History"
+          component={OrderDisplay}
+          options={{headerShadowVisible: false,
+            title: 'Orders'}}
+        />
+    <Stack.Screen
+          name="Address"
+          component={AddressDisplay}
+          options={{headerShadowVisible: false,
+            title: 'Address'}}
+        />
+    <Stack.Screen
+          name="Checkout"
+          component={CheckoutScreen}
+          options={{headerShadowVisible: false,
+            title: 'Checkout'}}
+        />
+    <Stack.Screen
+          name="Confirm Address"
+          component={AddressConfirm}
+          options={{headerShadowVisible: false,
+            title: 'Shipping Address'}}
+        />
+    <Stack.Screen
+          name="Make Payment"
+          component={PaymentScreen}
+          options={{headerShadowVisible: false,
+            title: 'Make Payment'}}
+        />
+    <Stack.Screen
+          name="Manage Payment"
+          component={ConfirmPaymentMethod}
+          options={{headerShadowVisible: false,
+            title: 'Manage Payment'}}
+        />
+    <Stack.Screen
+          name="Order Receipt"
+          component={RecieptScreen}
+          options={{headerShadowVisible: false,
+            title: 'Order Receipt'}}
+        />
+    <Stack.Screen
+          name="Map"
+          component={MapScreen}
+          options={{headerShadowVisible: false,
+            title: 'Address'}}
+        />
+    <Stack.Screen
+          name="Add Address"
+          component={AddAddressScreen}
+          options={{headerShadowVisible: false,
+            title: 'New Address'}}
+        />
+        
+        
+      </Stack.Navigator>
+    </NavigationContainer>
     </Provider>
   );
 }

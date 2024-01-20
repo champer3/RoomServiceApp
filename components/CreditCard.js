@@ -3,12 +3,12 @@ import { AntDesign } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
-function CreditCard({ card, number, onPress, secured = true }) {
+function CreditCard({ card, number, onPress, secured = true, image }) {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
         <View style={styles.imageContainer}>
-          <Image style={styles.image} source={require("../assets/mastercard.png")} />
+          <Image style={styles.image} source={image} />
         </View>
         <View style={styles.textContainer}>
           <Text style={styles.card}>{card}</Text>

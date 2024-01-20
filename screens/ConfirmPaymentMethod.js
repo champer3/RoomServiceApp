@@ -17,8 +17,13 @@ import Deal from "../components/Category/Deal";
 import { Fontisto } from '@expo/vector-icons';
 import Address from "../components/Address";
 import CreditCardSelect from "../components/CreditCardSelect";
+
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
 function ConfirmPaymentMethod() {
-   const cards  = [{card: 'Mastercard', number: '5312'}, {card: 'Visa', number : '4242'},]
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile)
+  const cards = [...data.payments]
    
   const [index, setIndex] = useState(0);
   const handleSelect = (selectedIndex) => {
@@ -30,7 +35,7 @@ function ConfirmPaymentMethod() {
         <ScrollView style={{marginBottom: '50%' }}>
         
         <View style={styles.recommendedView}>
-           {cards.map(({card, number}, idx) => <View  key={idx}><Pressable onPressIn={() => handleSelect(idx)}><CreditCardSelect card={card} number={number} active={index === idx}/></Pressable></View>)}
+           {cards.map(({card, number, image}, idx) => <View  key={idx}><Pressable onPressIn={() => handleSelect(idx)}><CreditCardSelect image={image} card={card} number={number.slice(0, 4)} active={index === idx}/></Pressable></View>)}
             </View>
         
         </ScrollView>

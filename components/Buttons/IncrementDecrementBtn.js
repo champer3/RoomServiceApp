@@ -25,14 +25,14 @@ function IncrementDecrementBtn({ minValue = 0, maxValue = 100, onIncrease, onDec
       <Pressable onPress={
           handleDecrementCounter
         } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50 }}>
-        <View><Feather name="minus" size={30} color="black" /></View>
+        <View style={{alignItems: 'center', justifyContent: 'center' }}><Feather name="minus" size={30} color="black" /></View>
         
       </Pressable>
       <Text>{minValue}</Text>
       <Pressable onPress={
           handleIncrementCounter
-        } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50 }}>
-        <View><MaterialIcons name="add" size={30} color="black" /></View>
+        } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{alignItems: 'center', justifyContent: 'center' }}><MaterialIcons name="add" size={30} color="black" /></View>
       </Pressable>
     </View>
   );
