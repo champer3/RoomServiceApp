@@ -1,17 +1,35 @@
-import { StyleSheet, Image, Text, View } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard } from "react-native";
 import CodeInput from "../components/Inputs/CodeInput";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { RadioButton } from "react-native-paper";
 import Info from "../components/Info";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useState } from "react";
+import axios from "axios";
 
 function AddPin() {
+  const [otp, setOtp] = useState([1,2,3,4,5,6])
+  const route = useRoute()
+  const phoneNumber = route.params?.phoneNumber || ""
+  function getOtp(data){
+    setOtp(data)
+  }
+  function handleScreenPress() {
+    Keyboard.dismiss()
+  }
   const navigation = useNavigation()
   function pressHandler (){
+    // verifyNumber(otp.join(""))
     navigation.navigate('CreatePassword')
   }
+  const verifyNumber = async(code) =>{
+    const response = await axios.get(`http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`);
+    console.log("got here")
+    // console.log(response.data)
+  }
   return (
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
     <View style={styles.container}>
       <View style={styles.welcomeView}>
         <Text style={styles.text}>Almost there,</Text>
@@ -24,7 +42,7 @@ function AddPin() {
         </View>
       </View>
       <View style={{flex: 2}}>
-        <CodeInput length={5} />
+        <CodeInput getOtpData={getOtp}  length={5} />
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Text style={{marginVertical: 20}}>Resend Code</Text>
           <Text style={{marginVertical: 20}}>00:59</Text>
@@ -43,6 +61,7 @@ function AddPin() {
       </View>
             </View>
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 

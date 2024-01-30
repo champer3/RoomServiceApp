@@ -23,6 +23,7 @@ function PaymentScreen() {
   const route = useRoute()
   function pressHandler (){
     navigation.navigate('Order Receipt', {total : route.params.total})
+    console.log("make paymn")
   }
   function cardHandler (){
     navigation.navigate('Manage Payment')
@@ -32,11 +33,11 @@ function PaymentScreen() {
         <View>
         <View style={styles.recommendedView}>
             <Text style={styles.text}>Payment Method</Text>
-            <CreditCard onPress={cardHandler} card={cards[0].card} number={cards[0].number.slice(0, 4)} image={cards[0].image}/>
+            {/* <CreditCard onPress={cardHandler} card={cards[0].card} number={cards[0].number.slice(0, 4)} image={cards[0].image}/> */}
         </View>
         <View style={styles.recommendedView}>
             <Info text={"Pay securely using your saved card details or add a different card to finish purchase."}/>
-            
+
         </View>
         </View>
         <View style={{flex: 1, width: "100%", paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
@@ -53,7 +54,7 @@ function PaymentScreen() {
                         color: "black",
                         fontWeight: "600",
                         fontSize: 20,
-                        
+
                     }}
                     > {`$${route.params.total}`}
                     </Text>

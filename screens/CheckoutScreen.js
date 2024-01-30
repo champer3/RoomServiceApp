@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable, ScrollView } from "react-native";
+import { StyleSheet, Text, View, Pressable, ScrollView, Alert } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,10 +9,16 @@ import AddressEditable from "../components/AddressEditable";
 import DeliveryMode from "../components/DeliveryMode";
 import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
+import {useStripe} from '@stripe/stripe-react-native'
+import axios from "axios";
+import { clearCart } from '../Data/cart'
+
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YjUzYjk1OTE5MGY4ZjEyOWU4YjUzYiIsImlhdCI6MTcwNjM3NjA4NywiZXhwIjoxNzA3MjQwMDg3fQ.gWzYLe7TbEQNKphx2Pccyu7bvLy-AMdCHUqTOtSz3r0"
 
 function CheckoutScreen() {
    const mode  = [{mode: 'Faster (+$2)', time : '10-15\nMinutes', fastest: true}, {mode: 'Fast', time : '30-45 \nMinutes', fastest: false}, {mode: 'Schedule', time : 'Pick a \ndelivery time', fastest: false}]
    const cartItems = useSelector((state) => state.cartItems.ids)
+   const dispatch = useDispatch();
 
   const [index, setIndex] = useState(0);
   const handleSelect = (selectedIndex) => {
@@ -21,13 +27,46 @@ function CheckoutScreen() {
   const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('Make Payment', {total: getTotalSum().toFixed(2)})
+    // navigation.navigate('Make Payment')
+    console.log("Make payment button pressed")
   }
+  const {initPaymentSheet, presentPaymentSheet} = useStripe()
+  const checkOut = async () =>{
+    const response = await axios.post("http://10.0.0.173:3000/api/v1/payments/checkout-session", null, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
+      },
+    });
+    console.log("got here")
+    console.log(response.data)
+    const initPayment = await initPaymentSheet({
+      merchantDisplayName: 'RoomService',
+      paymentIntentClientSecret: response.data.clientSecret,
+      customerEphemeralKeySecret: response.data.ephemeralKey,
+      customerId: response.data.customer,
+      // defaultBillingDetails: {
+      //   name: 'Jane Doe',
+      // }
+    })
+
+    const { error } = await presentPaymentSheet()
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      dispatch(clearCart())
+      Alert.alert('Success', 'Your order is confirmed!');
+      navigation.navigate('Home')
+    }
+    // console.log("async nigga pressed")
+  }
+
   function addressHandler (){
     navigation.navigate('Confirm Address')
   }
   function getTotalSum() {
     return cartItems.reduce((sum, obj) => sum + obj.oldPrice, 0) +2.62 +(index == 0 ? 2 : 0) ;
-  } 
+  }
   function addQuantityToObjects(inputList) {
     const titleCountMap = {};
 
@@ -79,7 +118,7 @@ const newList = addQuantityToObjects(cartItems);
                     <Text style ={{fontWeight: 'bold', fontSize: 18}}
                     >{quantity}</Text>
                 </View></ProductAction>)}
-               
+
             </View>
         </View>
         <View style={[styles.recommendedView,{marginVertical: '10%', marginTop: '5%', marginHorizontal: '5%', paddingBottom: '2%',borderWidth: 2, borderColor: 'rgba(0,0,0,0.05)', borderRadius: 20, flexDirection: 'row', justifyContent: 'space-between'}]}>
@@ -101,13 +140,13 @@ const newList = addQuantityToObjects(cartItems);
                         color: "black",
                         fontWeight: "600",
                         fontSize: 20,
-                        
+
                     }}
                     > {`$${getTotalSum().toFixed(2)  }`}
                     </Text>
             </View>
             <View style ={{width: '40%', height: '130%'}}>
-                <FlexButton background={'#283618'} onPress={pressHandler}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
+                <FlexButton background={'#283618'} onPress={checkOut}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
             </View>
         </View>
     </View>

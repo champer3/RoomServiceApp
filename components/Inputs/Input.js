@@ -26,7 +26,7 @@ const  Input = ({
   };
   let content = (
     <TextInput
-      style={[styles.input, {color: color}]}
+      style={[styles.input, {color: color, height: 40, fontSize: 16}]}
       placeholder={text}
       autoComplete="address-line1"
       cursorColor={"rgba(0,0,0,0.5)"}
@@ -62,10 +62,11 @@ const  Input = ({
         width: "100%",
         flexDirection: "row",
         alignItems: "center",
-        marginTop: 25,
+        marginTop: 10,
         borderRadius: 10,
         borderWidth: 1,
         borderColor: 'white'
+
       }}
     >
       <View style={styles.container}>
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.03)",
     // backgroundColor: "rgba(0,0,0,0.03)",
     borderRadius: 10,
-    padding: 16,
+    paddingHorizontal: 16,
     // marginVertical: -6,
     flexDirection: "row",
     alignItems: "center",
@@ -154,7 +155,8 @@ const styles = StyleSheet.create({
   input: {
     // minWidth: "22.5%",
     width: "100%",
-    flex: 1,
+    paddingTop: -20,
+    // flex: 1,
     color: "white"
   },
 });

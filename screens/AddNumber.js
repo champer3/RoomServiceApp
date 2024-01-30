@@ -15,52 +15,66 @@ import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import Info from "../components/Info";
 import PhoneIcon from "../components/PhoneIcon";
-import {useSelector, useDispatch} from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
+import axios from "axios";
 
 function AddNumber() {
   function handleScreenPress() {
-    Keyboard.dismiss()
+    Keyboard.dismiss();
   }
-  const navigation = useNavigation()
-  const [warning, setWarning] = useState()
-   const dispatch = useDispatch();
-  const data = useSelector((state) => state.profileData.profile)
-  
-  const [form , setForm] = useState(data)
-  function handleUpdate(){
-    dispatch(updateProfile({id : form}))
- }
-  function handleFormChange(field, value) {
-    if (field == 'number'){
-      const cleanedInput = value.replace(/\D/g, '');
+  const navigation = useNavigation();
+  const [warning, setWarning] = useState();
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile);
 
-    // Add brackets dynamically based on entered digits
-    let formattedNumber = '';
-    for (let i = 0; i < cleanedInput.length; i++) {
-      if (i === 0) {
-        formattedNumber += '(';
-      } else if (i === 3) {
-        formattedNumber += ') ';
-      } else if (i === 6) {
-        formattedNumber += '-';
+  const [form, setForm] = useState(data);
+  function handleUpdate() {
+    dispatch(updateProfile({ id: form }));
+  }
+  const phoneNumberString = form.number.replace(/[^0-9]/g, '');
+  const phoneNumber = "+1" + phoneNumberString
+  const verifyNumber = async () => {
+    console.log(phoneNumber);
+    const response = await axios.get(
+      `http://10.0.0.173:3000/getCode/${phoneNumber}`
+    );
+    console.log("got here");
+    // console.log(response.data)
+  };
+  function handleFormChange(field, value) {
+    if (field == "number") {
+      const cleanedInput = value.replace(/\D/g, "");
+
+      // Add brackets dynamically based on entered digits
+      let formattedNumber = "";
+      for (let i = 0; i < cleanedInput.length; i++) {
+        if (i === 0) {
+          formattedNumber += "(";
+        } else if (i === 3) {
+          formattedNumber += ") ";
+        } else if (i === 6) {
+          formattedNumber += "-";
+        }
+        formattedNumber += cleanedInput[i];
       }
-      formattedNumber += cleanedInput[i];
+      value = formattedNumber;
+      if (value.length == 14) {
+        setWarning();
+      }
     }
-    value = formattedNumber
-    if (value.length == 14){
-      setWarning()
-    }
-    }
-    setForm((prev) => ({...prev, [field]: value}));
-    
+    setForm((prev) => ({ ...prev, [field]: value }));
   }
-  function handleSubmit(){
-    if (form.number.length == 14){
-    handleUpdate();navigation.navigate('AddPin')
-    } else {setWarning('Provide a valid number')}
+  function handleSubmit() {
+    if (form.number.length == 14) {
+      handleUpdate();
+      // verifyNumber()
+      navigation.navigate("AddPin", {phoneNumber});
+    } else {
+      setWarning("Provide a valid number");
+    }
   }
-  const [active, setActive] = useState(false)
+  const [active, setActive] = useState(false);
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
@@ -78,17 +92,48 @@ function AddNumber() {
             </View>
           </View>
           <View style={{ flex: 5 }}>
-          <Input text={'Contact Number'} icon={<PhoneIcon/> } keyboard="number-pad" length={14} textInputConfig={{cursorColor: '#aaa',value: form.number, onChangeText: handleFormChange.bind(this, 'number')}}/>
-          {warning  && <Info text={`${warning}                                            `}/>}
-            
-           {!warning && <><View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Pressable onPress={() => setActive((prev) => !prev )}><Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="#aaa" /></Pressable>
-              <Text style={{ marginVertical: 24 }}>
-                Send me promotional discount and promos via SMS
-              </Text>
-            </View>
-            <Info text="By selecting this option, you are agreeing to receive promotional discounts, exclusive offers, and marketing promotions via Short Message Service (SMS) to the mobile number provided. " />
-            </>}
+            <Input
+              text={"Contact Number"}
+              icon={<PhoneIcon />}
+              keyboard="number-pad"
+              length={14}
+              textInputConfig={{
+                cursorColor: "#aaa",
+                value: form.number,
+                onChangeText: handleFormChange.bind(this, "number"),
+              }}
+            />
+            {warning && (
+              <Info
+                text={`${warning}                                            `}
+              />
+            )}
+
+            {!warning && (
+              <>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <Pressable onPress={() => setActive((prev) => !prev)}>
+                    <Ionicons
+                      name={`${
+                        active ? "md-radio-button-on" : "md-radio-button-off"
+                      }`}
+                      size={24}
+                      color="#aaa"
+                    />
+                  </Pressable>
+                  <Text style={{ marginVertical: 24 }}>
+                    Send me promotional discount and promos via SMS
+                  </Text>
+                </View>
+                <Info text="By selecting this option, you are agreeing to receive promotional discounts, exclusive offers, and marketing promotions via Short Message Service (SMS) to the mobile number provided. " />
+              </>
+            )}
           </View>
           <View style={{ flex: 2, justifyContent: "flex-end" }}>
             <View style={styles.buttonContainer}>
