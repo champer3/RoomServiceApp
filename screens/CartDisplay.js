@@ -33,35 +33,35 @@ function CartDisplay() {
   }
   function getTotalSum() {
     return cartItems.reduce((sum, obj) => sum + obj.oldPrice, 0);
-  } 
+  }
   function addQuantityToObjects(inputList) {
       const titleCountMap = {};
-  
+
       // Loop through the inputList to count occurrences of each title
       inputList.forEach((obj) => {
           const title = obj.title;
-  
+
           // Increment the count for the title or initialize to 1 if it doesn't exist
           titleCountMap[title] = (titleCountMap[title] || 0) + 1;
       });
-  
+
       // Loop through the inputList again to create a new list with quantity key
       const newList = inputList.map((obj) => {
           const title = obj.title;
           const quantity = titleCountMap[title];
-  
+
           // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
           titleCountMap[title] = 0;
-  
+
           return { ...obj, quantity };
       });
       const filteredList = newList.filter((obj) => obj.quantity !== 0);
 
       return filteredList;
   }
-  
+
   // Example usage:
-  
+
   const newList = addQuantityToObjects(cartItems);
     const navigation = useNavigation()
     function pressHandler (){
@@ -74,11 +74,11 @@ function CartDisplay() {
   return (
     <View  style = {{flex: 1, paddingTop: 20}}>
         <ScrollView style={{marginBottom: '19%' }}>
-        
+
         {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
         {cartItems.length > 0 && <><View style={{marginHorizontal: '10%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
             {newList.map(({title, oldPrice,image, quantity}, idx)=>  <ProductAction key={idx} title={title} price={oldPrice} image={image} quantity={quantity} action={<Pressable onPress={()=>handleDeleteFromCart(newList[idx])} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={45} color="#B22334" /></Pressable>}><IncrementDecrementBtn minValue={quantity} onIncrease={()=>{handleAddToCart(newList[idx])}} onDecrease ={()=>{handleRemoveFromCart(newList[idx])}}/></ProductAction>)}
-      
+
         </View>
         <View  style={{paddingHorizontal: '5%', paddingVertical: '10%'}}>
             <Text style={{
@@ -125,7 +125,7 @@ function CartDisplay() {
                         color: "black",
                         fontWeight: "600",
                         fontSize: 20,
-                        
+
                     }}
                     > {`$${getTotalSum().toFixed(2)}`}
                     </Text>
@@ -137,7 +137,9 @@ function CartDisplay() {
     </View>
   );
 }
+
 export default CartDisplay
+
 const styles = StyleSheet.create({
     catHead: {
         justifyContent: "space-between",

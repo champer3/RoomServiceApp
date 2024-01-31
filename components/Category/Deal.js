@@ -3,7 +3,7 @@ import Item from "../Item/Item";
 import Product from "../Product/Product";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-function Deal({ text, onPress,item, color = "#283618"}) {
+function Deal({ text, onPress,item, onAdd, color = "#283618"}) {
   let items = [...item]
   let odd = "";
   if (items.length % 2 == 1) {
@@ -19,11 +19,11 @@ function Deal({ text, onPress,item, color = "#283618"}) {
                 </Text>
               </Pressable>
             </View>
-            {odd && <Product title={odd.title} newPrice={odd.newPrice} oldPrice={odd.oldPrice} image={odd.image}/>}
+            {odd && <Product onAdd={onAdd} title={odd.title} newPrice={odd.newPrice} oldPrice={odd.oldPrice} image={odd.image}/>}
             <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
               {items.map((item, index) => (
                 <View key={index} style={{ width: "50%", marginBottom: 15 }}>
-                  <Product widths={200} title={item.title} oldPrice={item.oldPrice} newPrice={item.newPrice} image={item.image} />
+                  <Product onAdd={onAdd} widths={200} title={item.title} oldPrice={item.oldPrice} newPrice={item.newPrice} image={item.image} />
                 </View>
               ))}
             </View>

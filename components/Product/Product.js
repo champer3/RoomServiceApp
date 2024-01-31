@@ -27,7 +27,7 @@ function Product({ image, title, oldPrice, newPrice, reviews, category, widths =
     dispatch(removeFromCart({id : product}))
   }
   function addQuantityToObjects(inputList) {
-    
+
     const titleCountMap = {};
 
     // Loop through the inputList to count occurrences of each title
@@ -39,7 +39,7 @@ function Product({ image, title, oldPrice, newPrice, reviews, category, widths =
     });
     return titleCountMap
 
-    
+
 }
 
   // Example usage:
@@ -51,6 +51,7 @@ function Product({ image, title, oldPrice, newPrice, reviews, category, widths =
   }
   function pressHandler (){
     navigation.navigate('Product', {image: image, title : title, reviews: reviews, oldPrice: oldPrice, category: category })
+    console.log("pressed")
   }
   const productItems = useSelector((state) => state.productItems.ids)
 

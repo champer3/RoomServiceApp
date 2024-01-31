@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, TextInput, StyleSheet, Text } from 'react-native';
 
-const CodeInput = ({ length = 6 }) => {
+const CodeInput = ({ length = 6, getOtpData }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [code, setCode] = useState('');
 
@@ -23,6 +23,7 @@ const CodeInput = ({ length = 6 }) => {
     newOtp[index] = value;
 
     setOtp(newOtp);
+    getOtpData(newOtp)
 
     // Move focus to the next input field
     if (value === '' && index > 0) {
@@ -31,6 +32,22 @@ const CodeInput = ({ length = 6 }) => {
     } else if (index < otp.length - 1 && value !== '') {
       // If the current input is not the last one and not empty, move focus to the next input
       otpInputRefs.current[index + 1].focus();
+    }
+  };
+  const handlePaste = (pastedText) => {
+    const pastedValues = pastedText.split('').slice(0, otp.length);
+    console.log("hehhhhhhhhhhhhhhhhhhhhh")
+
+    const newOtp = [...otp];
+    pastedValues.forEach((value, index) => {
+      newOtp[index] = value;
+    });
+
+    setOtp(newOtp);
+
+    // Move focus to the last input field
+    if (otpInputRefs.current.length > 0) {
+      otpInputRefs.current[otpInputRefs.current.length - 1].focus();
     }
   };
 
@@ -46,6 +63,7 @@ const CodeInput = ({ length = 6 }) => {
       cursorColor={'rgba(0,0,0,0)'}
       style={{zIndex: 3, position: 'absolute', width: '100%', borderColor: 'black', borderWidth: 0, height: 52, color: 'rgba(0,0,0,0)',}}
       letterSpacing={length * 8}
+      onPaste={(event) => handlePaste(event.nativeEvent.clipboardData.getData('text/plain'))}
        />
        
       {otp.map((digit, index) => (

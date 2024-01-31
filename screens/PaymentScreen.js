@@ -59,7 +59,7 @@ function PaymentScreen() {
         </View>
         <View style={styles.recommendedView}>
             <Info text={"Pay securely using your saved card details or add a different card to finish purchase."}/>
-            
+
         </View>
         </View>
         <View style={{flex: 1, width: "100%", paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 1, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
@@ -76,7 +76,7 @@ function PaymentScreen() {
                         color: "black",
                         fontWeight: "600",
                         fontSize: 20,
-                        
+
                     }}
                     > {`$${route.params.total}`}
                     </Text>

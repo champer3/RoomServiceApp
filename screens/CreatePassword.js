@@ -11,16 +11,62 @@ import Button from "../components/Buttons/Button";
 import Info from "../components/Info";
 import Input from "../components/Inputs/Input";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useState } from 'react';
 import { useNavigation } from "@react-navigation/native";
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
+import axios from "axios";
 
 function CreatePassword() {
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile)
+  const [form , setForm] = useState(data)
+  console.log("FORM: ", form)
+  const profile = useSelector((state) => state.profileData.profile)
+  const postData = {
+    firstName: form.firstName,
+    lastName: form.secondName,
+    phoneNumber: form.number,
+    email: form.email,
+    password: form.password,
+    passwordConfirm: form.password
+  }
   function handleScreenPress() {
     Keyboard.dismiss();
   }
   const navigation = useNavigation()
-  function pressHandler (){
-    navigation.navigate('NumberLogin')
+  async function pressHandler (){
+    try{
+      handleUpdate()
+    console.log(profile)
+    await createAccount()
+    navigation.navigate('HomeTabs')
+    } catch(err){
+      console.log(err)
+    }
+
   }
+  function handleFormChange(value) {
+    setForm((prev) => ({...prev, ['password']: value}));
+  }
+
+  function handleUpdate(){
+    dispatch(updateProfile({id : form}))
+ }
+ const createAccount = async() =>{
+  try{
+    const response = await axios.post(`http://10.0.0.173:3000/api/v1/users/signup`, JSON.stringify(postData), {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  console.log(response.data)
+  console.log("got here")
+  } catch(err){
+    console.log(err.error)
+  }
+  // console.log(response.data)
+}
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
@@ -43,6 +89,7 @@ function CreatePassword() {
               text="Password"
               secured={true}
               icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
+              textInputConfig={{cursorColor: '#aaa',value: form.password, onChangeText: handleFormChange.bind(this)}}
             />
             <Input
               type="password"

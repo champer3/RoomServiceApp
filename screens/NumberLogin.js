@@ -13,37 +13,53 @@ import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import PhoneIcon from "../components/PhoneIcon";
-import React, { useCallback, useEffect, useImperativeHandle, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
+import axios from "axios";
 
 function NumberLogin() {
-
   function handleScreenPress() {
-    Keyboard.dismiss()
+    Keyboard.dismiss();
   }
-  const [number, setNumber] = useState('')
-  const navigation  = useNavigation()
-  function pressHandler (){
-    navigation.navigate('PinLogin')
+  const [number, setNumber] = useState("");
+  const phoneNumberString = number.replace(/[^0-9]/g, '');
+  const phoneNumber = "+1" + phoneNumberString
+  console.log(number)
+  const navigation = useNavigation();
+  function pressHandler() {
+    verifyNumber()
+    navigation.navigate("PinLogin", {phoneNumber});
   }
-  function emailHandler (){
-    navigation.navigate('EmailLogin')
+
+  const verifyNumber = async() =>{
+    console.log(phoneNumber)
+    const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
+    console.log("got here")
+    // console.log(response.data)
   }
-  function signUpHandler (){
-    navigation.navigate('StartScreen')
+  function emailHandler() {
+    navigation.navigate("EmailLogin");
+  }
+  function signUpHandler() {
+    navigation.navigate("StartScreen");
   }
   const formatPhoneNumber = (input) => {
     // Remove non-numeric characters from input
-    const cleanedInput = input.replace(/\D/g, '');
+    const cleanedInput = input.replace(/\D/g, "");
 
     // Add brackets dynamically based on entered digits
-    let formattedNumber = '';
+    let formattedNumber = "";
     for (let i = 0; i < cleanedInput.length; i++) {
       if (i === 0) {
-        formattedNumber += '(';
+        formattedNumber += "(";
       } else if (i === 3) {
-        formattedNumber += ') ';
+        formattedNumber += ") ";
       } else if (i === 6) {
-        formattedNumber += '-';
+        formattedNumber += "-";
       }
       formattedNumber += cleanedInput[i];
     }
@@ -51,6 +67,10 @@ function NumberLogin() {
     // Set the state with the formatted number
     setNumber(formattedNumber);
   };
+
+  // .................Google SignIn.........................................................
+
+
 
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
@@ -64,10 +84,18 @@ function NumberLogin() {
           </View>
           <View style={styles.middleView}>
             <View style={{ marginBottom: "5%" }}>
-              <Input length={14} icon={<PhoneIcon />} keyboard="numeric" textInputConfig={{onChangeText: (text) => formatPhoneNumber(text), value: number}} />
+              <Input
+                length={14}
+                icon={<PhoneIcon />}
+                keyboard="numeric"
+                textInputConfig={{
+                  onChangeText: (text) => formatPhoneNumber(text),
+                  value: number,
+                }}
+              />
             </View>
             <View style={styles.buttonContainer}>
-              <Button onPress = {pressHandler}>
+              <Button onPress={pressHandler}>
                 <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
                 <Image
                   style={styles.vector}
@@ -76,19 +104,19 @@ function NumberLogin() {
               </Button>
             </View>
             <View>
-              <Pressable onPress = {emailHandler}>
-              <Text
-                style={{
-                  // marginBottom: 120,
-                  // marginTop: 40,
-                  color: "#BC6C25",
-                  fontSize: 16,
-                  fontWeight: "500",
-                  textAlign: "center",
-                }}
-              >
-                Login with email and password
-              </Text>
+              <Pressable onPress={emailHandler}>
+                <Text
+                  style={{
+                    // marginBottom: 120,
+                    // marginTop: 40,
+                    color: "#BC6C25",
+                    fontSize: 16,
+                    fontWeight: "500",
+                    textAlign: "center",
+                  }}
+                >
+                  Login with email and password
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -120,11 +148,13 @@ function NumberLogin() {
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 New to RoomService?
               </Text>
-              <Pressable onPress = {signUpHandler}>
-              <Text style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}>
-                {" "}
-                Sign Up
-              </Text>
+              <Pressable onPress={signUpHandler}>
+                <Text
+                  style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}
+                >
+                  {" "}
+                  Sign Up
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -167,7 +197,7 @@ const styles = StyleSheet.create({
   facebook: {
     width: "7%",
     resizeMode: "contain",
-    marginRight: 3
+    marginRight: 3,
   },
   threeContainer: {
     width: "100%",

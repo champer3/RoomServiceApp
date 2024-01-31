@@ -5,9 +5,18 @@ import BareButton from "../components/Buttons/BareButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Info from "../components/Info";
 import CodeInput from "../components/Inputs/CodeInput";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useState } from "react";
+import axios from "axios";
 
 function NumberLogin() {
+  const [otp, setOtp] = useState()
+  const route = useRoute()
+  const phoneNumber = route.params?.phoneNumber || ""
+  console.log("number:",phoneNumber)
+  function getOtp(data){
+    setOtp(data)
+  }
 
   function handleScreenPress() {
     Keyboard.dismiss()
@@ -15,9 +24,16 @@ function NumberLogin() {
   const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('HomeTabs')
+    console.log("otp: ", otp.join(""))
+    verifyNumber(otp.join(""))
   }
   function signUpHandler (){
     navigation.navigate('StartScreen')
+  }
+  const verifyNumber = async(code) =>{
+    const response = await axios.get(`http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`);
+    console.log("got here")
+    // console.log(response.data)
   }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
@@ -31,7 +47,7 @@ function NumberLogin() {
         </View>
         <View style={styles.middleView}>
           <View style={{ marginBottom: "5%" }}>
-            <CodeInput length={6} />
+            <CodeInput getOtpData={getOtp} length={6} />
           </View>
           <View style={styles.buttonContainer}>
             <Button onPress = {pressHandler}>
