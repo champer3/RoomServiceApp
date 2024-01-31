@@ -25,7 +25,7 @@ function Address({ title, address, active= false }) {
             marginTop: 5,
           }}
         >
-          {address}
+          {address.substring(0, 33) + (address.length > 33 ? '...' : '')}
         </Text>
       </View>
       </View>

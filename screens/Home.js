@@ -78,17 +78,16 @@ function Home() {
               <Text style={{color: 'white', fontSize: 13, letterSpacing: 0.4, fontWeight: 'bold'}}>{greeting}</Text>
               <Text style={{color: 'white', fontSize: 24, fontWeight: 'bold', letterSpacing: 1}}>{`${data.firstName} ${data.secondName}`}</Text>
             </View>
-          <View style={[styles.cart, {flex: 0.3}]}>
-              <Pressable onPress={cartHandler}>
+              <Pressable style={[styles.cart, {flex: 0.3}]} onPress={cartHandler}>
 
 
                 <View>
                   <Feather name="shopping-cart" size={30} color="black" />
                 </View>
-              </Pressable>
+             
               {cartItems.length > 0 && <View style={{
-                  height: '45%',
-                  minWidth: '50%',
+                  height: '35%',
+                  minWidth: '60%',
                   justifyContent: 'center',
                   alignItems: 'center',
                   position: 'absolute',
@@ -101,7 +100,7 @@ function Home() {
                 }}>
                   <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>{cartItems.length}</Text>
                 </View>}
-            </View>
+                </Pressable>
           </View>
           <View style={styles.search}>
             {/* <View style={styles.input}> */}

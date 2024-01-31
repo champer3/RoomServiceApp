@@ -17,37 +17,56 @@ import Deal from "../components/Category/Deal";
 import { Fontisto } from '@expo/vector-icons';
 import Address from "../components/Address";
 import CreditCardSelect from "../components/CreditCardSelect";
-
+import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
 function ConfirmPaymentMethod() {
-  const dispatch = useDispatch();
   const data = useSelector((state) => state.profileData.profile)
   const cards = [...data.payments]
-   
+  const dispatch = useDispatch();
+  const navigation = useNavigation()
   const [index, setIndex] = useState(0);
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
   };
+  function onPress(){
+    navigation.navigate('Payment')
+  }
+  function makeDefault(id){
+    const newData = { ...data, ['payments'] : [{...data.payments[id], ['id']: 0}] };
+    var j = 1
+    for (let i = 0; i < data.payments.length; i++) {
+      // If the current index is less than the specified index, copy the existing payment
+      if (data.payments[i].id != id) {
+        newData.payments.push({...data.payments[i], ['id']: j})
+        j += 1
+      }
+      
+    }
+    dispatch(updateProfile({id : newData}))
+    navigation.goBack()
+  }
+  
   return (
     <View style={{flex: 1}}>
         <View>
-        <ScrollView style={{marginBottom: '50%' }}>
+        <ScrollView>
         
-        <View style={styles.recommendedView}>
+        <View style={[styles.recommendedView, {paddingBottom: '20%' }]}>
            {cards.map(({card, number, image}, idx) => <View  key={idx}><Pressable onPressIn={() => handleSelect(idx)}><CreditCardSelect image={image} card={card} number={number.slice(0, 4)} active={index === idx}/></Pressable></View>)}
+           <View style={[styles.recommendedView, {height: 85}]}>
+                <FlexButton onPress={onPress}><Text style={{fontSize: 18}}>Add payment method</Text></FlexButton>
+            </View>
             </View>
         
         </ScrollView>
         
        
         </View>
-        <View style={{flex: 1, width: '100%', height: '20%', paddingHorizontal: '5%',  paddingVertical: '2%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
-            <View style={[styles.recommendedView, {height: '60%'}]}>
-                <FlexButton><Text style={{fontSize: 18}}>Add payment method</Text></FlexButton>
-            </View>
-            <View style={[styles.recommendedView, {height: '60%'}]}>
-                <FlexButton background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Select</Text></FlexButton>
+        <View style={{flex: 1, width: '100%', height: '10%', paddingHorizontal: '5%',  paddingVertical: '2%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
+            
+            <View style={[ {height: '90%'}]}>
+                <FlexButton onPress={()=>makeDefault(index)} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Select</Text></FlexButton>
             </View>
             
                 

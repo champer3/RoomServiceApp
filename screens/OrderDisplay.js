@@ -14,13 +14,19 @@ import FlexButton from "../components/Buttons/FlexButton";
 import { AntDesign } from '@expo/vector-icons';
 import { RotateInDownLeft } from "react-native-reanimated";
 import {useSelector, useDispatch} from 'react-redux'
+import { addReview } from "../Data/Items";
+import {clearCart, completeOrder} from '../Data/cart'
 
 
 const { width, height } = Dimensions.get("window");
 function OrderDisplay(){
   const orders = useSelector((state) => state.cartItems.order)
-    const [index, setIndex] = useState(0);
+    const [index, setIndex] = useState(1);
     const [rating, setrating] = useState(0);
+    const data = useSelector((state) => state.profileData.profile)
+    const dispatch = useDispatch();
+    const [form , setForm] = useState({title : '',
+  reviews: {user: `${data.firstName} ${data.secondName}`, rating : rating, comment : '', days: '0 day ago'}})
     var rate = []
     for (var i = 0; i < 5; i++ ){
         if (i < rating){
@@ -55,8 +61,7 @@ function OrderDisplay(){
   
       return filteredList;
   }
-  const newList = addQuantityToObjects(orders);
-    console.log(orders)
+    var newList;
     const ref = useRef(null);
     const onPress = useCallback(() => {
         const isActive = ref?.current?.isActive();
@@ -66,6 +71,37 @@ function OrderDisplay(){
     const handleSelect = (selectedIndex) => {
       setIndex(selectedIndex);
     };
+    for (var i =0 ; i < orders.length; i++ ){
+      if (newList){
+      newList = [...addQuantityToObjects(orders[i]), ...newList]}
+      else{
+        newList = [...addQuantityToObjects(orders[i])] 
+      }
+    }
+    function handleFormChange(value){
+      setForm((prev) => {return { ...prev, ['reviews']: {...prev.reviews, ['comment'] : value}}});
+
+    }
+    function handleFormSubmit(){
+      dispatch(addReview({id: form}))
+      updateReviews(form.title)
+      ref?.current?.scrollTo(0);
+      setrating(0)
+      setForm({title : '',
+      reviews: {user: `${data.firstName} ${data.secondName}`, rating : rating, comment : '', days: '0 day ago'}})
+    }
+    function updateReviews(targetTitle) {
+      const menuItems = orders.map(submenu => submenu.map(item => ({...item})));
+      for (let menu of menuItems) {
+        for (let item of menu) {
+          if (item.title === targetTitle) {
+            item.reviews = true;
+          }
+        }
+      }
+      dispatch(completeOrder({id: menuItems}))
+    }
+    console.log(orders)
     return  <GestureHandlerRootView style={{ flex: 1 }}><View style={{flex: 1}}>
     
     <View style={[{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, marginHorizontal: '5%', gap: 20, borderBottomColor: 'rgba(0,0,0,0.075)'}]}>
@@ -96,7 +132,10 @@ function OrderDisplay(){
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
     </View>} */}
     {index == 1 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
-    {newList.map(({title, image, quantity, oldPrice}, idx)=><ProductAction key={idx} price={oldPrice} quantity={quantity} title={title} image={image}><Pill text={"Delivered"} type="null"/></ProductAction>)}
+    {newList && newList.map(({title, image, quantity, oldPrice, reviews}, idx)=><ProductAction key={idx} price={oldPrice} quantity={quantity} title={title} image={image}>
+      {reviews && <Pill text={"Delivered"} type="null"/>}
+      {!reviews && <FlexButton onPress={()=>{onPress(); setForm((prev) => {return { ...prev, ['title']:  title}})}} background={'#283618'}><Text style={{fontSize: 10, color: 'white', fontWeight: 'bold'}}>Leave A Review</Text></FlexButton>}
+    </ProductAction>)}
         
     </View>}
 
@@ -111,7 +150,7 @@ function OrderDisplay(){
             <Text style={{fontWeight:'bold', fontSize: 18, textAlign: 'center'}}>How did it go?</Text>
             <Text style={{ fontSize: 14, textAlign: 'center'}}>Give an honest rating for the just concluded order</Text>
             <View style={{ flexDirection: 'row', gap: 35, alignSelf: 'center', marginVertical: 28 }}>
-            {rate.map((star, idx)=><Pressable key={idx} onPress={()=>setrating(idx+1)}><AntDesign name={star} size={30} color="black"/></Pressable>)}
+            {rate.map((star, idx)=><Pressable key={idx} onPress={()=>{setrating(idx+1), setForm((prev) => {return { ...prev, ['reviews']: {...prev.reviews, ['rating'] : idx+1}}})}}><AntDesign name={star} size={30} color="black"/></Pressable>)}
             </View>
             <View
       style={{
@@ -127,10 +166,12 @@ function OrderDisplay(){
         numberOfLines={6}
         clearButtonMode="always"
         style={{paddingHorizontal: 10}}
+        value = {form.reviews.comment}
+        onChangeText = {handleFormChange.bind(this)}
       />
     </View>
     <View style={[{height: '20%', paddingTop: '25%'}]}>
-                <FlexButton background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Post Review</Text></FlexButton>
+                <FlexButton onPress={handleFormSubmit} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Post Review</Text></FlexButton>
             </View>
           </View>
           

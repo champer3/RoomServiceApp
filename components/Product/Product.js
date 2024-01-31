@@ -14,7 +14,7 @@ const { width, height } = Dimensions.get("window");
 
 
 
-function Product({ image, title, oldPrice, newPrice, reviews, category, widths = 90 , onAdd}) {
+function Product({ image, title, oldPrice, newPrice, reviews, category, widths = 89 , onAdd}) {
   let size = widths;
   const [show, setShow] = useState(false)
   const navigation = useNavigation()

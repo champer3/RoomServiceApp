@@ -14,64 +14,179 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {TouchableOpacity} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet from '../components/Modals/BottomSheet';
-import { getAddress } from "../util/location";
+import { getAddress, getPosition } from "../util/location";
 import Input from "../components/Inputs/Input";
 import PhoneIcon from "../components/PhoneIcon";
 import FlexButton from "../components/Buttons/FlexButton";
 import { Entypo } from '@expo/vector-icons';
 import { useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
+  
 
 export default function MapScreen() {
     const [location, setLocation] = useState(null);
     const route = useRoute()
+    const navigation = useNavigation()
+    const dispatch = useDispatch();
+    const data = useSelector((state) => state.profileData.profile)
   const [errorMsg, setErrorMsg] = useState(null);
   const [position , setPosition] = useState(null)
   const [info, setInfo] = useState('Hey wassup')
   const ref = useRef(null);
   const [active, setActive] = useState(false)
   ref?.current?.scrollTo(-665);
+  const [form , setForm] = useState(route.params)
   const onPress = useCallback(() => {
     const isActive = ref?.current?.isActive();
     // ref?.current?.scrollTo(0);
     ref?.current?.scrollTo(-665);
   }, []);
-  
+  function handleFormChange(field, value) {
+    if (field == 'number'){
+      const cleanedInput = value.replace(/\D/g, '');
+
+    // Add brackets dynamically based on entered digits
+    let formattedNumber = '';
+    for (let i = 0; i < cleanedInput.length; i++) {
+      if (i === 0) {
+        formattedNumber += '(';
+      } else if (i === 3) {
+        formattedNumber += ') ';
+      } else if (i === 6) {
+        formattedNumber += '-';
+      }
+      formattedNumber += cleanedInput[i];
+    }
+    value = formattedNumber
+    } 
+    
+    setForm((prev) => ({...prev, [field]: value}));
+    
+  }
+  async function handleLocation(lat, lng){
+      const m = await getAddress(lat, lng)
+      handleFormChange('address',m)
+  }
   function selectLocationHandler(event){
     const lat = event.nativeEvent.coordinate.latitude
     const lng = event.nativeEvent.coordinate.longitude
     setPosition({latitude: lat, longitude: lng})
+    handleLocation(lat,lng)
+  }
+  async function validateAddress(){
+    let locationT = await getPosition(form.address);
+    if (locationT.lat){
+      setPosition({latitude: locationT.lat, longitude: locationT.lng})
+      setLocation({coords: {longitude: locationT.lng, latitude: locationT.lat}});
+    const m = await getAddress(locationT.lat, locationT.lng)
+    handleFormChange('address',m)
+    const newData = { ...data, ['address'] : [] };
+      for (let i = 0; i < data.address.length; i++) {
+        // If the current index is less than the specified index, copy the existing payment
+        if (i !== form.id) {
+          newData.address.push(data.address[i])
+        }
+        // If the current index is equal to the specified index, append the form data
+        else if (i === form.id) {
+          newData.address.push({...form, ['address']: m})
+        }
+      }
+      // Return the new data object
+      dispatch(updateProfile({id : newData}))
+      if (active){
+        setActive(false)
+        makeDefault(form.id)
+      }
+    
+        navigation.navigate('Address')
+  }
+    else{
+      return false
+    }
+    
   }
   useEffect(() => {
     (async () => {
       
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-      if (location) {
-        setPosition({latitude: location.coords.latitude,
-          longitude: location.coords.longitude ,})
-      }
       
-        
+      let locationT = await getPosition(route.params.address);
+      
+      setLocation({coords: {longitude: locationT.lng, latitude: locationT.lat}});
+      if (locationT) {
+        setPosition({latitude: locationT.lat,
+          longitude: locationT.lng })
+      }
     })();
   }, []);
   const onLayoutRootView = useCallback(async () => {
       await SplashScreen.hideAsync();
   }, [text]);
 
-  useEffect(()=>{
-    async function handleLocation(){
-      if (position){
-        setInfo(await getAddress(position.latitude,position.longitude))
-      }
+  async function findLocation(){
+    if (position){
+      const m = await getAddress(location.coords.latitude,location.coords.longitude)
+      handleFormChange('address',m)
+      setPosition({latitude: location.coords.latitude,
+        longitude: location.coords.longitude ,})
     }
-    handleLocation()
-  }, [position])
+  }
+  function makeDefault(id){
+    const newData = { ...data, ['address'] : [{...data.address[id], ['id']: 0}] };
+    var j = 1
+    for (let i = 0; i < data.address.length; i++) {
+      // If the current index is less than the specified index, copy the existing payment
+      if (data.address[i].id != id) {
+        newData.address.push({...data.address[i], ['id']: j})
+        j += 1
+      }
+      
+    }
+    dispatch(updateProfile({id : newData}))
+  }
+  function deleteAndUpdate() {
+    // Delete the object at the specified index
+    const newData = { ...data, ['address'] : [] };
+    var j = 0
+    for (let i = 0; i < data.address.length; i++) {
+      // If the current index is less than the specified index, copy the existing payment
+      if (i != form.id) {
+        newData.address.push({...data.address[i], ['id']: j})
+        j += 1
+      }
+      
+    }
+    // Update the id property of other objects
+
+
+  // Return the new data object
+  dispatch(updateProfile({id : newData}))
+  navigation.navigate('Address')
+  }
+  // function handleFormSubmit(){
+  //   if (form.address.length > 0){
+  //     const newData = { ...data, ['address'] : [] };
+  //     for (let i = 0; i < data.address.length; i++) {
+  //       // If the current index is less than the specified index, copy the existing payment
+  //       if (i !== form.id) {
+  //         newData.address.push(data.address[i])
+  //       }
+  //       // If the current index is equal to the specified index, append the form data
+  //       else if (i === form.id) {
+  //         newData.address.push({...form})
+  //       }
+  //     }
+  //     // Return the new data object
+  //     dispatch(updateProfile({id : newData}))
+  //     if (active){
+  //       setActive(false)
+  //       makeDefault(form.id)
+  //     }
+    
+  //       // navigation.navigate('Address')
+  //     }
+  //   }
 
   
   let text = <Text>Waiting.............</Text>
@@ -102,7 +217,6 @@ export default function MapScreen() {
     </MapView>
     
   }
-
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     style={{flex: 1}}>
@@ -115,12 +229,12 @@ export default function MapScreen() {
         
         <BottomSheet ref={ref}>
           <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%' }} >
-            <View style ={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={{fontWeight: 'bold'}}>My Apartment</Text><Pressable style={({pressed}) => pressed && {opacity: 0.5}}><View style ={{flexDirection: 'row', gap:6, alignItems: 'center'}}><Octicons name="trash" size={24} color="#B22334" /><Text style={{fontWeight: 'bold', color: '#B22334'}}>Delete Address</Text></View></Pressable></View>
-            <Input text={'Address Name'}/>
-            <Input text={'Address'} type="address"/>
-            <Input text={'Contact Name'}/>
-            <Input icon={<PhoneIcon/>} text={'Contact Number'}/>
-            <View style ={{marginTop: 15, gap: 13, flexDirection: 'row'}}>
+            <View style ={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={{fontWeight: 'bold'}}>{form.name}</Text><Pressable onPress={deleteAndUpdate} style={({pressed}) => pressed && {opacity: 0.5}}><View style ={{flexDirection: 'row', gap:6, alignItems: 'center'}}><Octicons name="trash" size={24} color="#B22334" /><Text style={{fontWeight: 'bold', color: '#B22334'}}>Delete Address</Text></View></Pressable></View>
+            <Input text={'Address Name'} textInputConfig={{cursorColor: '#aaa',value: form.name, onChangeText: handleFormChange.bind(this, 'name')}}/>
+              <Input text={'Address'} onPress={()=>findLocation()} type="address" textInputConfig={{cursorColor: '#aaa',value: form.address, onChangeText: handleFormChange.bind(this, 'address')}}/>
+              <Input text={'Contact Name'} textInputConfig={{cursorColor: '#aaa',value: form.nameNo, onChangeText: handleFormChange.bind(this, 'nameNo')}}/>
+              <Input keyboard="number-pad" length={14} icon={<PhoneIcon/>} text={'Contact Number'} textInputConfig={{cursorColor: '#aaa',value: form.number, onChangeText: handleFormChange.bind(this, 'number')}}/>
+              <View style ={{marginTop: 15, gap: 13, flexDirection: 'row'}}>
               <Pressable onPress={()=> setActive((prev) => !prev )}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
               <Text>Make this the default address</Text>
               </View>
@@ -131,7 +245,7 @@ export default function MapScreen() {
     </View>
     <View style={{flex: 1, width: '100%', height: '15%', paddingHorizontal: '5%',  paddingVertical: '4%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
             <View style={[styles.recommendedView, {height: '100%'}]}>
-                <FlexButton background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
+                <FlexButton onPress={validateAddress} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
             </View>
             
                 

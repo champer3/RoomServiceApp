@@ -26,7 +26,7 @@ function AddressEditable({ title, address, onPress }) {
             marginTop: 5,
           }}
         >
-          {address}
+          {address.substring(0, 33) + (address.length > 33 ? '...' : '')}
         </Text>
       </View>
       </View>

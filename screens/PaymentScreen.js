@@ -10,36 +10,59 @@ import DeliveryMode from "../components/DeliveryMode";
 import CreditCard from "../components/CreditCard";
 import Info from "../components/Info";
 import { useNavigation , useRoute} from "@react-navigation/native";
-
+import {clearCart, completeOrder} from '../Data/cart'
 import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
+import OrderSuccess from "../components/Modals/OrderSuccess";
 
 function PaymentScreen() {
+  const [visible, setVisible] = useState(false)
   const dispatch = useDispatch();
   const data = useSelector((state) => state.profileData.profile)
+  const orders = useSelector((state) => state.cartItems.order)
   const cards = [...data.payments]
-
+  const [cartItems, setCartItems] = useState([...useSelector((state) => state.cartItems.ids)])
+  const temp = [...cartItems]
   const navigation = useNavigation()
   const route = useRoute()
   function pressHandler (){
-    navigation.navigate('Order Receipt', {total : route.params.total})
+    const row = [...cartItems]
+    for (var i =0 ; i < cartItems.length; i++ ){
+      row[i] = {...cartItems[i], ['reviews']: false} 
+    }
+    console.log(row)
+    dispatch(completeOrder({id: [...orders, row]}))
+    dispatch(clearCart({id : cartItems}))
+    setVisible(true)
   }
   function cardHandler (){
     navigation.navigate('Manage Payment')
   }
+  function onPress(){
+    navigation.navigate('Payment')
+  }
+  function press(){
+    navigation.navigate('Order Receipt', {total : route.params.total, items: temp})
+}
+  function move(){
+    navigation.navigate('Order History')
+}
   return (
     <View style = {{flex: 1}}>
         <View>
         <View style={styles.recommendedView}>
             <Text style={styles.text}>Payment Method</Text>
-            <CreditCard onPress={cardHandler} card={cards[0].card} number={cards[0].number.slice(0, 4)} image={cards[0].image}/>
+            {cards.length > 0 && <CreditCard onPress={cardHandler} card={cards[0].card} number={cards[0].number.slice(0, 4)} image={cards[0].image}/>}
+            {!cards.length && <View style={[{height: 55, paddingHorizontal: 40}]}>
+                <FlexButton onPress={onPress}><Text style={{fontSize: 18}}>Add Payment Method</Text></FlexButton>
+            </View>}
         </View>
         <View style={styles.recommendedView}>
             <Info text={"Pay securely using your saved card details or add a different card to finish purchase."}/>
             
         </View>
         </View>
-        <View style={{flex: 1, width: "100%", paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
+        <View style={{flex: 1, width: "100%", paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 1, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
             <View style={{height: '150%', justifyContent: 'space-between', alignItems: 'flex-start'}}>
                 <Text
                 style={{
@@ -58,10 +81,13 @@ function PaymentScreen() {
                     > {`$${route.params.total}`}
                     </Text>
             </View>
-            <View style ={{width: '40%', height: '130%'}}>
+            <View style ={{width: '45%', height: '130%'}}>
                 <FlexButton onPress={pressHandler} background={'#283618'}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
             </View>
         </View>
+        {visible && <View style ={{flex: 1,padding: 20, alignItems: 'center', justifyContent: 'center', justifyContent: 'center', zIndex: 3, position: "absolute", height: '100%', backgroundColor: 'rgba(0,0,0,0.9)'}}>
+          <OrderSuccess onPress={press} onMove={move}/>
+        </View>}
     </View>
   );
 }

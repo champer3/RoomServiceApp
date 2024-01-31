@@ -275,7 +275,6 @@ function getCardType(cardNumber) {
     setForm((prev) => ({...prev, [field]: value}));
     
   }
-  console.log(cards)
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <Pressable style = {{flex: 1}} onPress={Keyboard.dismiss}>

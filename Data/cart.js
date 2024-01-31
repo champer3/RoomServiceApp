@@ -20,7 +20,7 @@ const cart = createSlice({
             }
         }},
         clearCart : (state) => {state.ids.length = 0},
-        completeOrder: (state) => {state.order.push(...state.ids)}
+        completeOrder: (state, action) => {state.order = [...action.payload.id]}
     }
 })
 

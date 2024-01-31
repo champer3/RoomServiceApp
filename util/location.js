@@ -19,7 +19,7 @@ export async function getPosition(address){
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${api_key}`;
     const response = await fetch(url);
     if (!response.ok) {
-        throw new Error('Failed to fetch address!')
+        return ('Failed to fetch address!')
     }
     const data = await response.json();
 
@@ -27,6 +27,6 @@ export async function getPosition(address){
         const position = data.results[0].geometry.location;
         return position;
     } else {
-        throw new Error('No results found for the provided address.');
+        return ('No results found for the provided address.');
     }
 }

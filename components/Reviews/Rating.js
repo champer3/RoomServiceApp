@@ -6,7 +6,7 @@ function Rating({rate, color, active = false}) {
     <View style={[styles.container, {
       backgroundColor: active ? '#283618' : "#FAFAFA",}]}>
         <View style={styles.innerContainer}>
-          <AntDesign name="star" size={24} color={active ? 'white' : 'black'} />
+          <AntDesign name="star" size={20} color={active ? 'white' : 'black'} />
           <Text style={[styles.text, {color : active ? 'white' : 'black'}]}>{rate}</Text>
         </View>
     </View>

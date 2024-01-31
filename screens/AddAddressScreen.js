@@ -21,10 +21,16 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
   import { Entypo } from '@expo/vector-icons';
   import { useNavigation } from "@react-navigation/native";
   
+import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
+  
   
   export default function AddAddressScreen() {
       const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
+    const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile)
+  const address = [...data.address]
     const [position , setPosition] = useState(null)
     const [info, setInfo] = useState('Locating.....')
     const [show, setShow] = useState(false)
@@ -32,6 +38,7 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
     const [active, setActive] = useState(false)
     const ref = useRef(null);
     const [form , setForm] = useState({
+      id : address.length,
         name: '',
         nameNo: '',
         address: '',
@@ -48,7 +55,7 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
       const lat = event.nativeEvent.coordinate.latitude
       const lng = event.nativeEvent.coordinate.longitude
       setPosition({latitude: lat, longitude: lng})
-      handleLocation()
+      handleLocation(lat,lng)
 
     }
     useEffect(() => {
@@ -93,24 +100,45 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
     setForm((prev) => ({...prev, [field]: value}));
     
   }
-    function handleFormSubmit(){
-        if (form.address.length > 0){
-            navigation.navigate('Address', form)
-            setForm({
-                name: '',
-                nameNo: '',
-                address: '',
-                number: '',
-              })
-        }
+  async function validateAddress(){
+    let locationT = await getPosition(form.address);
+    if (locationT.lat){
+      setPosition({latitude: locationT.lat, longitude: locationT.lng})
+      setLocation({coords: {longitude: locationT.lng, latitude: locationT.lat}});
+    const m = await getAddress(locationT.lat, locationT.lng)
+    handleFormChange('address',m)
+    if (active){
+      setActive(false)
+      var tempData = {...data, ['address'] : [{...form, ['address']: m}, ...data.address]} 
+      newData = { ...data, ['address'] : [] };
+      var j = 0
+      for (let i = 0; i < tempData.address.length; i++) {
+          newData.address.push({...tempData.address[i], ['id']: j})
+          j += 1
+      }
     }
-    const onLayoutRootView = useCallback(async () => {
-        await SplashScreen.hideAsync();
-    }, [text]);
-    async function handleLocation(){
-        if (position){
-          handleFormChange('address',await getAddress(position.latitude,position.longitude))
-        }
+    else {newData = {...data, ['address'] : [...data.address, {...form, ['address']: m}]} 
+  }
+  dispatch(updateProfile({id : newData}))
+      navigation.navigate('Address')
+      setForm({
+          id : address.length,
+          name: '',
+          nameNo: '',
+          address: '',
+          number: '',
+        }) 
+  }
+    else{
+      return false
+    }
+    
+  }
+   
+    async function handleLocation(lat, lng){
+        
+          handleFormChange('address',await getAddress(lat, lng))
+        
       }
     async function findLocation(){
         if (position){
@@ -120,15 +148,6 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
             setShow(true)
         }
       }
-//    useEffect(()=>{   
-//       async function handleLocation(){
-//         if (position){
-//           setInfo(await getAddress(position.latitude,position.longitude))
-//           console.log(info)
-//         }
-//       }
-//     }, [position])
-  
     
     let text = <Text>Waiting.............</Text>
     SplashScreen.preventAutoHideAsync();
@@ -180,19 +199,15 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
               <Pressable onPress={()=> setActive((prev) => !prev )}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
               <Text>Make this the default address</Text>
               </View>
+              <View style={[styles.recommendedView, {height: 65, marginTop: 20}]}>
+                  <FlexButton onPress={validateAddress} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
+              </View>
             </View>
           </BottomSheet>
         </View>
       </GestureHandlerRootView>
       </View>
-      <View style={{flex: 1, width: '100%', height: '15%', paddingHorizontal: '5%',  paddingVertical: '4%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
-              <View style={[styles.recommendedView, {height: '100%'}]}>
-                  <FlexButton onPress={handleFormSubmit} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
-              </View>
-              
-                  
       
-          </View>
           </KeyboardAvoidingView>
           
     );

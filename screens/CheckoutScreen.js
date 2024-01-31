@@ -9,18 +9,21 @@ import AddressEditable from "../components/AddressEditable";
 import DeliveryMode from "../components/DeliveryMode";
 import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
+import { updateProfile } from "../Data/profile";
 
 function CheckoutScreen() {
    const mode  = [{mode: 'Faster (+$2)', time : '10-15\nMinutes', fastest: true}, {mode: 'Fast', time : '30-45 \nMinutes', fastest: false}, {mode: 'Schedule', time : 'Pick a \ndelivery time', fastest: false}]
    const cartItems = useSelector((state) => state.cartItems.ids)
-
+   const data = useSelector((state) => state.profileData.profile)
+   const address = [...data.address]
   const [index, setIndex] = useState(0);
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
   };
   const navigation = useNavigation()
   function pressHandler (){
-    navigation.navigate('Make Payment', {total: getTotalSum().toFixed(2)})
+    if (address.length){
+    navigation.navigate('Make Payment', {total: getTotalSum().toFixed(2)})}
   }
   function addressHandler (){
     navigation.navigate('Confirm Address')
@@ -55,7 +58,9 @@ function CheckoutScreen() {
 }
 
 // Example usage:
-
+function onPress(){
+  navigation.navigate('Address')
+}
 const newList = addQuantityToObjects(cartItems);
   return (
     <View>
@@ -63,7 +68,10 @@ const newList = addQuantityToObjects(cartItems);
         <View style={styles.recommendedView}>
             <Text style={styles.text}>Shipping Address</Text>
             <View style={{flex: 1}}>
-            <AddressEditable title='My apartment' address='123 Main Street, Apt 4B, Cityville, USA' onPress = {addressHandler}/>
+            {address.length > 0 && <AddressEditable title={address[0].name} address={address[0].address} onPress = {addressHandler}/>}
+            {!address.length && <View style={[{height: 65, paddingHorizontal: 40}]}>
+                <FlexButton onPress={onPress}><Text style={{fontSize: 18}}>Add Address</Text></FlexButton>
+            </View>}
             </View>
         </View>
         <View style={styles.recommendedView}>
@@ -106,8 +114,8 @@ const newList = addQuantityToObjects(cartItems);
                     > {`$${getTotalSum().toFixed(2)  }`}
                     </Text>
             </View>
-            <View style ={{width: '40%', height: '130%'}}>
-                <FlexButton background={'#283618'} onPress={pressHandler}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
+            <View style ={{width: '45%', height: '130%'}}>
+                <FlexButton background={!address.length ? "rgba(0,0,0,0.5)" :  '#283618'} onPress={pressHandler}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
             </View>
         </View>
     </View>
