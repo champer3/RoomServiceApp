@@ -4,6 +4,9 @@ import { View, TextInput, StyleSheet, Text } from 'react-native';
 const CodeInput = ({ length = 6, getOtpData }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [code, setCode] = useState('');
+  console.log(otp)
+  console.log(code)
+
 
   const otpInputRefs = useRef([]);
   function handleOtp(value){
@@ -16,13 +19,16 @@ const CodeInput = ({ length = 6, getOtpData }) => {
     }
     setCode(value)
     setOtp(newOtp)
-    
+    console.log("value: ", value)
+    getOtpData(value)
+
   }
   const handleOtpChange = (index, value) => {
     const newOtp = [...otp];
     newOtp[index] = value;
 
     setOtp(newOtp);
+    console.log("newOtp: ", newOtp)
     getOtpData(newOtp)
 
     // Move focus to the next input field
@@ -44,6 +50,8 @@ const CodeInput = ({ length = 6, getOtpData }) => {
     });
 
     setOtp(newOtp);
+    console.log("newOtp: ", newOtp)
+    getOtpData(newOtp)
 
     // Move focus to the last input field
     if (otpInputRefs.current.length > 0) {
@@ -63,12 +71,13 @@ const CodeInput = ({ length = 6, getOtpData }) => {
       cursorColor={'rgba(0,0,0,0)'}
       style={{zIndex: 3, position: 'absolute', width: '100%', borderColor: 'black', borderWidth: 0, height: 52, color: 'rgba(0,0,0,0)',}}
       letterSpacing={length * 8}
+      selectionColor={'rgba(0,0,0,0)'}
       onPaste={(event) => handlePaste(event.nativeEvent.clipboardData.getData('text/plain'))}
       selectionColor={"rgba(0,0,0,0)"}
        />
-       
+
       {otp.map((digit, index) => (
-        
+
         <TextInput
           key={index}
           style={[styles.input, {width : `${100/(length*1.2)}%`}]}

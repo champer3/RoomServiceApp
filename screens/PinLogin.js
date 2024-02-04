@@ -24,8 +24,8 @@ function NumberLogin() {
   const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('HomeTabs')
-    // console.log("otp: ", otp.join(""))
-    // verifyNumber(otp.join(""))
+    console.log("otp: ", otp)
+    verifyNumber(otp)
   }
   function signUpHandler (){
     navigation.navigate('StartScreen')
