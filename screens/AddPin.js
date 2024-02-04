@@ -20,7 +20,7 @@ function AddPin() {
   }
   const navigation = useNavigation()
   function pressHandler (){
-    // verifyNumber(otp.join(""))
+    verifyNumber(otp)
     navigation.navigate('CreatePassword')
   }
   const verifyNumber = async(code) =>{

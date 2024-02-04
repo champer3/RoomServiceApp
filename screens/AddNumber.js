@@ -68,7 +68,7 @@ function AddNumber() {
   function handleSubmit() {
     if (form.number.length == 14) {
       handleUpdate();
-      // verifyNumber()
+      verifyNumber()
       navigation.navigate("AddPin", {phoneNumber});
     } else {
       setWarning("Provide a valid number");

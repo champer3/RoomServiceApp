@@ -21,9 +21,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { addToCart, removeFromCart } from "../Data/cart";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useStripe } from "@stripe/stripe-react-native";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function Home() {
   function getGreeting() {
@@ -38,6 +36,20 @@ function Home() {
       return "Good Evening!";
     }
   }
+
+  const retrieveTokenFromAsyncStorage = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem('authToken');
+      console.log(storedToken)
+      if (storedToken !== null) {
+        console.log('Retrieved token:', storedToken);
+      } else {
+        console.log('Token not found in AsyncStorage.');
+      }
+    } catch (error) {
+      console.error('Error retrieving token:', error);
+    }
+  };
   const [datas, setDatas] = useState(null);
   // const [request, response, promptAsync] = Google.useAuthRequest({
   //   androidClientId: "1036326714736-ca9qlbpotp81psarrg0pk9s3b27tiigo.apps.googleusercontent.com"
@@ -127,20 +139,20 @@ function Home() {
             >{`${data.firstName} `}</Text>
             {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
           </View>
-          <View style={[styles.cart, { flex: 0.1 }]}>
-          <Pressable style={[styles.cart, {flex: 0.3}]} onPress={cartHandler}>
+          <View style={[styles.cart, { flex: 0.2}]}>
+          <Pressable style={[styles.cart,]} onPress={cartHandler}>
 
 
                 <View>
-                  <Feather name="shopping-cart" size={30} color="black" />
+                  <Feather name="shopping-cart" size={24} color="black" />
                 </View>
 
                 {cartItems.length > 0 && <View style={{
-                  height: '35%',
-                  minWidth: '60%',
+                  height: '70%',
+                  minWidth: '65%',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  position: 'absolute', 
+                  position: 'absolute',
                   zIndex: 2,
                   top: 0,
                   right: 0,
@@ -148,7 +160,7 @@ function Home() {
                   fontSize: 14,
                   backgroundColor: "#283618"
                 }}>
-                  <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>{cartItems.length}</Text>
+                  <Text style={{color: 'white', fontSize: 12, fontWeight: 'bold'}}>{cartItems.length}</Text>
                 </View>}
                 </Pressable>
           </View>
@@ -304,6 +316,7 @@ function Home() {
             <Deal
               text={"Health Deals"}
               onPress={dealHandler}
+              onAdd={handleAddToCart}
               item={[
                 {
                   title: "Theraflu Green Tea & Honey Lemon Multi-",
@@ -351,6 +364,7 @@ function Home() {
             <Deal
               text={"Pantry Deals"}
               onPress={dealHandler}
+              onAdd={handleAddToCart}
               item={[
                 {
                   title: "Post Fruity Pebbles Cereal 11oz",
@@ -398,6 +412,7 @@ function Home() {
             <Deal
               text={"Yummy Ice Creams!"}
               onPress={dealHandler}
+              onAdd={handleAddToCart}
               item={[
                 {
                   title: "Ben & Jerry's Churray for Churros Ice Cream Pint",
