@@ -10,7 +10,7 @@ import { useState } from "react";
 import axios from "axios";
 
 function NumberLogin() {
-  const [otp, setOtp] = useState()
+  const [otp, setOtp] = useState('')
   const route = useRoute()
   const phoneNumber = route.params?.phoneNumber || ""
   console.log("number:",phoneNumber)
@@ -24,8 +24,8 @@ function NumberLogin() {
   const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('HomeTabs')
-    console.log("otp: ", otp.join(""))
-    verifyNumber(otp.join(""))
+    // console.log("otp: ", otp.join(""))
+    // verifyNumber(otp.join(""))
   }
   function signUpHandler (){
     navigation.navigate('StartScreen')

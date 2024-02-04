@@ -64,6 +64,7 @@ const CodeInput = ({ length = 6, getOtpData }) => {
       style={{zIndex: 3, position: 'absolute', width: '100%', borderColor: 'black', borderWidth: 0, height: 52, color: 'rgba(0,0,0,0)',}}
       letterSpacing={length * 8}
       onPaste={(event) => handlePaste(event.nativeEvent.clipboardData.getData('text/plain'))}
+      selectionColor={"rgba(0,0,0,0)"}
        />
        
       {otp.map((digit, index) => (

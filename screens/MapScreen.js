@@ -36,12 +36,12 @@ export default function MapScreen() {
   const [info, setInfo] = useState('Hey wassup')
   const ref = useRef(null);
   const [active, setActive] = useState(false)
-  ref?.current?.scrollTo(-665);
+  ref?.current?.scrollTo(-705);
   const [form , setForm] = useState(route.params)
   const onPress = useCallback(() => {
     const isActive = ref?.current?.isActive();
     // ref?.current?.scrollTo(0);
-    ref?.current?.scrollTo(-665);
+    ref?.current?.scrollTo(-705);
   }, []);
   function handleFormChange(field, value) {
     if (field == 'number'){
@@ -203,8 +203,8 @@ export default function MapScreen() {
       initialRegion={{
         latitude:  location.coords.latitude - 0.002,
         longitude: location.coords.longitude,
-        latitudeDelta: 0.001422,
-        longitudeDelta: 0.004321,
+        latitudeDelta: 0.001002,
+        longitudeDelta: 0.003401,
       }}
       customMapStyle={styles.mapStyle}
     >
@@ -218,7 +218,7 @@ export default function MapScreen() {
     
   }
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <View
     style={{flex: 1}}>
       <View style={{flex: 1}}>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -238,20 +238,15 @@ export default function MapScreen() {
               <Pressable onPress={()=> setActive((prev) => !prev )}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
               <Text>Make this the default address</Text>
               </View>
+              <View style={[styles.recommendedView, {height: 65, marginTop: 30}]}>
+                  <FlexButton onPress={validateAddress} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
+              </View>
           </View>
         </BottomSheet>
       </View>
     </GestureHandlerRootView>
     </View>
-    <View style={{flex: 1, width: '100%', height: '15%', paddingHorizontal: '5%',  paddingVertical: '4%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
-            <View style={[styles.recommendedView, {height: '100%'}]}>
-                <FlexButton onPress={validateAddress} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
-            </View>
-            
-                
-    
         </View>
-        </KeyboardAvoidingView>
         
   );
 }

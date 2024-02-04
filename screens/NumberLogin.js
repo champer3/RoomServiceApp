@@ -31,7 +31,7 @@ function NumberLogin() {
   console.log(number)
   const navigation = useNavigation();
   function pressHandler() {
-    verifyNumber()
+    // verifyNumber()
     navigation.navigate("PinLogin", {phoneNumber});
   }
 

@@ -59,20 +59,20 @@ function ProfileDisplay() {
     const isActive = ref?.current?.isActive();
     // ref?.current?.scrollTo(0);
     if (e=='name'){
-      ref?.current?.scrollTo(-470);
+      ref?.current?.scrollTo(-770);
       setText('name')
     } else if (e == 'email'){
-      ref?.current?.scrollTo(-370);
+      ref?.current?.scrollTo(-770);
       setText('email' )
     } else if (e == 'number'){
-      ref?.current?.scrollTo(-380);
+      ref?.current?.scrollTo(-770);
       setText('number' )
     }
     else if (e == 'language'){
-      ref?.current?.scrollTo(-380);
+      ref?.current?.scrollTo(-770);
       setText(e)
     }else if (e == 'password'){
-      ref?.current?.scrollTo(-570);
+      ref?.current?.scrollTo(-770);
       setText(e )
     }
   }, []);
