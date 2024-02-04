@@ -361,7 +361,6 @@ function CheckoutScreen() {
             <Text style={{ color: "white" }}>Make Payment</Text>
           </FlexButton>
         </View>
-<<<<<<< HEAD
         </ScrollView>
         <View style={{flex: 1, width: "100%", paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 1, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
             <View style={{height: '150%', justifyContent: 'space-between', alignItems: 'flex-start'}}>
@@ -389,26 +388,6 @@ function CheckoutScreen() {
         {visible && <Pressable onPress={()=>navigation.navigate('HomeTabs')} style ={{flex: 1,padding: 20, alignItems: 'center', justifyContent: 'center', justifyContent: 'center', zIndex: 2, position: "absolute", height: '100%', backgroundColor: 'rgba(0,0,0,0.9)'}}>
           <OrderSuccess onPress={press} onMove={move}/>
         </Pressable>}
-=======
-      </View>
-      {visible && (
-        <View
-          style={{
-            flex: 1,
-            padding: 20,
-            alignItems: "center",
-            justifyContent: "center",
-            justifyContent: "center",
-            zIndex: 3,
-            position: "absolute",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.9)",
-          }}
-        >
-          <OrderSuccess onPress={press} onMove={move} />
-        </View>
-      )}
->>>>>>> 4c03463dd650ee1ae0129cd1f9c29a3384522eea
     </View>
   );
 }
