@@ -32,7 +32,7 @@ function CreatePassword() {
     password: form.password,
     passwordConfirm: form.password,
   };
-  let authToken;
+  let authToken = '123';
   function handleScreenPress() {
     Keyboard.dismiss();
   }
@@ -41,7 +41,7 @@ function CreatePassword() {
     try {
       handleUpdate();
       console.log(profile);
-      await createAccount();
+      // await createAccount();
       // Call the function to save the token
       await saveTokenToAsyncStorage();
       navigation.navigate("HomeTabs");

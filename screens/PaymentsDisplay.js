@@ -76,6 +76,32 @@ function PaymentsDisplay() {
       card: "",
       id: cards.length,
     });
+    // handleUpdate([
+    //   {
+    //     id: 'pm_1OfVeuK5nIEAEdc38ZwCX0qx',
+    //     object: 'payment_method',
+    //     billing_details: { address: [Object], email: null, name: null, phone: null },
+    //     card: {
+    //       brand: 'visa',
+    //       checks: [Object],
+    //       country: 'US',
+    //       exp_month: 12,
+    //       exp_year: 2027,
+    //       fingerprint: 'zu53W4k5crXMKJ08',
+    //       funding: 'credit',
+    //       generated_from: null,
+    //       last4: '4242',
+    //       networks: [Object],
+    //       three_d_secure_usage: [Object],
+    //       wallet: null
+    //     },
+    //     created: 1706914592,
+    //     customer: 'cus_PUUHx7j4nv1aU6',
+    //     livemode: false,
+    //     metadata: {},
+    //     type: 'card'
+    //   }
+    // ])
   });
   const onEditing = useCallback(() => {
     ref?.current?.scrollTo(-650);
@@ -123,7 +149,8 @@ function PaymentsDisplay() {
           },
         }
       );
-      console.log(paymentMethods.data.paymentMethods)
+      handleUpdate(paymentMethods.data.paymentMethods)
+      
       Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");
     }
@@ -136,42 +163,29 @@ function PaymentsDisplay() {
     //   ref?.current?.scrollTo(scrollHeight);
     // }
   }
-  function handleUpdate() {
-    var image = "";
-    if (getCardType(form.number) === "Amex") {
+  function handleUpdate(res) {
+    const cards = []
+    for (var i = 0; i < res.length; i ++){
+      var image = "";
+    if (res[i]['card']['brand'] === "amex") {
       image = require(`../assets/amex.png`);
-    } else if (getCardType(form.number) === "Visa") {
+    } else if (res[i]['card']['brand'] === "visa") {
       image = require(`../assets/visa.png`);
-    } else if (getCardType(form.number) === "Discover") {
+    } else if (res[i]['card']['brand'] === "discover") {
       image = require(`../assets/discover.png`);
-    } else if (getCardType(form.number) === "Mastercard") {
+    } else if (res[i]['card']['brand'] === "mastercard") {
       image = require(`../assets/mastercard.png`);
     }
+    console.log(res[i]['card']['brand'])
+      cards.push({card: res[i]['card']['brand'], number: res[i]['card']['last4'], image: image})
+    }
+    console.log(cards)
     var newData = {};
-    if (active) {
-      setActive(false);
-      var tempData = {
-        ...data,
-        ["payments"]: [
-          { ...form, card: getCardType(form.number), image: image },
-          ...data.payments,
-        ],
-      };
-      newData = { ...data, ["payments"]: [] };
-      var j = 0;
-      for (let i = 0; i < tempData.payments.length; i++) {
-        newData.payments.push({ ...tempData.payments[i], ["id"]: j });
-        j += 1;
-      }
-    } else {
       newData = {
         ...data,
-        ["payments"]: [
-          ...data.payments,
-          { ...form, card: getCardType(form.number), image: image },
-        ],
-      };
+        ["payments"]: [...cards],
     }
+    console.log(newData)
     dispatch(updateProfile({ id: newData }));
   }
   function handleEdit(index) {
@@ -206,6 +220,7 @@ function PaymentsDisplay() {
     // Return the new data object
     dispatch(updateProfile({ id: newData }));
   }
+  
   function makeDefault(id) {
     const newData = {
       ...data,
@@ -405,7 +420,7 @@ function PaymentsDisplay() {
             <View style={[styles.recommendedView, { paddingBottom: "50%" }]}>
               {cards &&
                 cards.length > 0 &&
-                cards.map(({ card, number, image }, idx) => (
+                cards.map(({card, number, image}, idx) => (
                   <View key={idx}>
                     <Pressable>
                       <CreditCard
@@ -414,8 +429,8 @@ function PaymentsDisplay() {
                           onEditing();
                           setForm({ ...cards[idx] });
                         }}
-                        card={card}
-                        number={number.slice(0, 4)}
+                        card={card.toUpperCase()}
+                        number={number}
                       />
                     </Pressable>
                   </View>
