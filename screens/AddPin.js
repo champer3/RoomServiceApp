@@ -42,12 +42,12 @@ function AddPin() {
         </View>
       </View>
       <View style={{flex: 2}}>
-        <CodeInput getOtpData={getOtp}  length={5} />
+        <CodeInput getOtpData={getOtp}  length={6} />
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Text style={{marginVertical: 20}}>Resend Code</Text>
           <Text style={{marginVertical: 20}}>00:59</Text>
         </View>
-        <Info text="Enter the five-digit code that was sent to the mobile number you previously entered" />
+        <Info text="Enter the six-digit code that was sent to the mobile number you previously entered" />
       </View>
       <View style={{flex: 2, justifyContent: "flex-end"}}>
       <View style={styles.buttonContainer}>

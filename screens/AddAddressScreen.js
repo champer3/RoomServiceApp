@@ -44,11 +44,11 @@ import { updateProfile } from "../Data/profile";
         address: '',
         number: '',
       })
-    ref?.current?.scrollTo(-665);
+    ref?.current?.scrollTo(-765);
     const onPress = useCallback(() => {
       const isActive = ref?.current?.isActive();
       // ref?.current?.scrollTo(0);
-      ref?.current?.scrollTo(-665);
+      ref?.current?.scrollTo(-765);
     }, []);
     
     function selectLocationHandler(event){
@@ -192,7 +192,7 @@ import { updateProfile } from "../Data/profile";
             <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%' }} >
               <View style ={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={{fontWeight: 'bold'}}>Add an Address</Text></View>
               <Input text={'Address Name'} textInputConfig={{cursorColor: '#aaa',value: form.name, onChangeText: handleFormChange.bind(this, 'name')}}/>
-              <Input text={'Address'} onPress={()=>findLocation()} type="address" textInputConfig={{cursorColor: '#aaa',value: form.address, onChangeText: handleFormChange.bind(this, 'address')}}/>
+              <Input text={'Address'} onPress={()=>{findLocation(); Keyboard.dismiss()}} type="address" textInputConfig={{cursorColor: '#aaa',value: form.address, onChangeText: handleFormChange.bind(this, 'address')}}/>
               <Input text={'Contact Name'} textInputConfig={{cursorColor: '#aaa',value: form.nameNo, onChangeText: handleFormChange.bind(this, 'nameNo')}}/>
               <Input keyboard="number-pad" length={14} icon={<PhoneIcon/>} text={'Contact Number'} textInputConfig={{cursorColor: '#aaa',value: form.number, onChangeText: handleFormChange.bind(this, 'number')}}/>
               <View style ={{marginTop: 15, gap: 13, flexDirection: 'row'}}>

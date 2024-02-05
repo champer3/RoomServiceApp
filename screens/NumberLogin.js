@@ -20,6 +20,7 @@ import React, {
   useState,
 } from "react";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function NumberLogin() {
   function handleScreenPress() {
@@ -31,7 +32,7 @@ function NumberLogin() {
   console.log(number)
   const navigation = useNavigation();
   function pressHandler() {
-    verifyNumber()
+    // verifyNumber()
     navigation.navigate("PinLogin", {phoneNumber});
   }
 
@@ -70,8 +71,19 @@ function NumberLogin() {
 
   // .................Google SignIn.........................................................
 
-
-
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('my-key');
+      if (value !== null) {
+        navigation.navigate('HomeTabs')
+      }
+      console.log(value)
+    } catch (e) {
+      // error reading value
+      console.log(e)
+    }
+  };
+  getData()
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>

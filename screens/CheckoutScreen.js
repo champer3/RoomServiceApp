@@ -15,29 +15,17 @@ import { Fontisto } from "@expo/vector-icons";
 import AddressEditable from "../components/AddressEditable";
 import DeliveryMode from "../components/DeliveryMode";
 import { useNavigation } from "@react-navigation/native";
-import { useSelector, useDispatch } from "react-redux";
+import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
-import { useStripe } from "@stripe/stripe-react-native";
+import {useStripe} from '@stripe/stripe-react-native'
 import axios from "axios";
-import { clearCart, completeOrder } from "../Data/cart";
+import {clearCart, completeOrder} from '../Data/cart'
 import OrderSuccess from "../components/Modals/OrderSuccess";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
-const retrieveTokenFromAsyncStorage = async () => {
-  try {
-    const storedToken = await AsyncStorage.getItem("authToken");
-    console.log(storedToken);
-    if (storedToken !== null) {
-      console.log("Retrieved token:", storedToken);
-      return storedToken
-    } else {
-      console.log("Token not found in AsyncStorage.");
-    }
-  } catch (error) {
-    console.error("Error retrieving token:", error);
-  }
-};
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YjUzYjk1OTE5MGY4ZjEyOWU4YjUzYiIsImlhdCI6MTcwNjM3NjA4NywiZXhwIjoxNzA3MjQwMDg3fQ.gWzYLe7TbEQNKphx2Pccyu7bvLy-AMdCHUqTOtSz3r0"
+
 
 function CheckoutScreen() {
   const [visible, setVisible] = useState(false);
@@ -47,7 +35,7 @@ function CheckoutScreen() {
     { mode: "Fast", time: "30-45 \nMinutes", fastest: false },
     { mode: "Schedule", time: "Pick a \ndelivery time", fastest: false },
   ];
-  const cartItems = useSelector((state) => state.cartItems.ids);
+  const [cartItems, setCartItems] = useState([...useSelector((state) => state.cartItems.ids)])
   const data = useSelector((state) => state.profileData.profile);
   const address = [...data.address];
   const dispatch = useDispatch();
@@ -56,15 +44,20 @@ function CheckoutScreen() {
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
   };
-  const navigation = useNavigation();
-  function pressHandler() {
-    checkOut();
-    // if (address.length) {
-    //   navigation.navigate("Make Payment", { total: getTotalSum().toFixed(2) });
-    // }
-    // navigation.navigate('Make Payment')
-    console.log("Make payment button pressed");
+  const navigation = useNavigation()
+  function pressHandler (){
+    if (address.length){
+     
+    // navigation.navigate('Make Payment', {total: getTotalSum().toFixed(2)})
   }
+  }
+  function press(){
+    navigation.navigate('Order Receipt', {total : getTotalSum().toFixed(2), items: temp})
+}
+  function move(){
+    navigation.navigate('Order History')
+}
+  
   // const token = retrieveTokenFromAsyncStorage()
   const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YmQ2ZDgyZTVmYzlhMDJlYTM3YzAzMyIsImlhdCI6MTcwNjkxMzE1NywiZXhwIjoxNzA3Nzc3MTU3fQ.TwpnSDIBnTJPAB1BUjPkz8PPiDztuySl4JcqTHgruxU"
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -95,6 +88,7 @@ function CheckoutScreen() {
     if (error) {
       Alert.alert(`Error code: ${error.code}`, error.message);
     } else {
+      Alert.alert('Success', 'Your order is confirmed!');
       const paymentMethods = await axios.post(
         "http://10.0.0.173:3000/api/v1/payments/payment-methods",
         null,
@@ -105,15 +99,13 @@ function CheckoutScreen() {
           },
         }
       );
-      console.log(paymentMethods.data.paymentMethods)
-      const row = [...cartItems];
-      for (var i = 0; i < cartItems.length; i++) {
-        row[i] = { ...cartItems[i], ["reviews"]: false };
+      const row = [...cartItems]
+      for (var i =0 ; i < cartItems.length; i++ ){
+        row[i] = {...cartItems[i], ['reviews']: false} 
       }
-      console.log(row);
-      dispatch(completeOrder({ id: [...orders, row] }));
-      // dispatch(clearCart({id : cartItems}))
-      setVisible(true);
+      dispatch(completeOrder({id: [...orders, row]}))
+      dispatch(clearCart({id : cartItems}))
+      setVisible(true)
       Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");
     }
@@ -156,7 +148,7 @@ function CheckoutScreen() {
     return filteredList;
   }
   function press() {
-    navigation.navigate("Order Receipt", { total: getTotalSum(), items: temp });
+    navigation.navigate("Order Receipt", { total: getTotalSum().toFixed(2), items: temp });
   }
   function move() {
     navigation.navigate("Order History");
@@ -310,28 +302,38 @@ function CheckoutScreen() {
             <Text style={{ color: "white" }}>Make Payment</Text>
           </FlexButton>
         </View>
-      </View>
-      {visible && (
-        <View
-          style={{
-            flex: 1,
-            padding: 20,
-            alignItems: "center",
-            justifyContent: "center",
-            justifyContent: "center",
-            zIndex: 3,
-            position: "absolute",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.9)",
-          }}
-        >
-          <OrderSuccess onPress={press} onMove={move} />
         </View>
-      )}
+        <View style={{flex: 1, width: "100%", paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 1, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
+            <View style={{height: '150%', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                <Text
+                style={{
+                    color: "#aaa",
+                    fontWeight: "bold",
+                    fontSize: 20,
+                }}
+                > Total Payment</Text>
+                <Text
+                    style={{
+                        color: "black",
+                        fontWeight: "600",
+                        fontSize: 20,
+
+                    }}
+                    > {`$${getTotalSum().toFixed(2)  }`}
+                    </Text>
+            </View>
+            <View style ={{width: '45%', height: '130%'}}>
+                <FlexButton background={!address.length ? "rgba(0,0,0,0.5)" :  '#283618'} onPress={checkOut}><Fontisto name="credit-card" size={24} color="white" /><Text style={{color: 'white'}}>Make Payment</Text></FlexButton>
+            </View>
+        </View>
+        {visible && <Pressable onPress={()=>navigation.navigate('HomeTabs')} style ={{flex: 1,padding: 20, alignItems: 'center', justifyContent: 'center', justifyContent: 'center', zIndex: 2, position: "absolute", height: '100%', backgroundColor: 'rgba(0,0,0,0.9)'}}>
+          <OrderSuccess onPress={press} onMove={move}/>
+        </Pressable>}
     </View>
   );
 }
-export default CheckoutScreen;
+
+export default CheckoutScreen
 
 const styles = StyleSheet.create({
   catHead: {

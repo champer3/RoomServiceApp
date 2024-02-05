@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.4,
         shadowRadius: 5,
-        zIndex: 3
+        zIndex: 4
     },buttonContainer: {
         width: width/1.3,
         height: 65,

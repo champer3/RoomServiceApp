@@ -132,15 +132,15 @@ function Home() {
             <Text
               style={{
                 color: "white",
-                fontSize: 24,
+                fontSize: 16,
                 fontWeight: "bold",
                 letterSpacing: 1,
               }}
             >{`${data.firstName} `}</Text>
             {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
           </View>
-          <View style={[styles.cart, { flex: 0.2}]}>
-          <Pressable style={[styles.cart,]} onPress={cartHandler}>
+          <View style={[styles.cart, { flex: 0.25 }]}>
+          <Pressable style={[styles.cart, {flex: 1}]} onPress={cartHandler}>
 
 
                 <View>
@@ -148,14 +148,13 @@ function Home() {
                 </View>
 
                 {cartItems.length > 0 && <View style={{
-                  height: '70%',
-                  minWidth: '65%',
+                  height: '35%',
+                  minWidth: '32%',
                   justifyContent: 'center',
                   alignItems: 'center',
                   position: 'absolute',
                   zIndex: 2,
                   top: 0,
-                  right: 0,
                   borderRadius: 100,
                   fontSize: 14,
                   backgroundColor: "#283618"
@@ -493,9 +492,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     // borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingRight: 16,
-    paddingVertical: 0,
     borderRadius: 13,
     backgroundColor: "white",
   },

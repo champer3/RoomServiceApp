@@ -66,7 +66,7 @@ function OrderDisplay(){
     const onPress = useCallback(() => {
         const isActive = ref?.current?.isActive();
         // ref?.current?.scrollTo(0);
-        ref?.current?.scrollTo(-610);
+        ref?.current?.scrollTo(-735);
       }, []);
     const handleSelect = (selectedIndex) => {
       setIndex(selectedIndex);

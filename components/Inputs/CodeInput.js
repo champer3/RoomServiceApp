@@ -73,6 +73,7 @@ const CodeInput = ({ length = 6, getOtpData }) => {
       letterSpacing={length * 8}
       selectionColor={'rgba(0,0,0,0)'}
       onPaste={(event) => handlePaste(event.nativeEvent.clipboardData.getData('text/plain'))}
+      selectionColor={"rgba(0,0,0,0)"}
        />
 
       {otp.map((digit, index) => (

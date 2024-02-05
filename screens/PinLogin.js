@@ -10,7 +10,7 @@ import { useState } from "react";
 import axios from "axios";
 
 function NumberLogin() {
-  const [otp, setOtp] = useState()
+  const [otp, setOtp] = useState('')
   const route = useRoute()
   const phoneNumber = route.params?.phoneNumber || ""
   console.log("number:",phoneNumber)
