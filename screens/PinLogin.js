@@ -23,16 +23,15 @@ function NumberLogin() {
   }
   const navigation = useNavigation()
   function pressHandler (){
-    navigation.navigate('HomeTabs')
-    console.log("otp: ", otp)
     verifyNumber(otp)
+    navigation.navigate('HomeTabs')
   }
   function signUpHandler (){
     navigation.navigate('StartScreen')
   }
   const verifyNumber = async(code) =>{
     const response = await axios.get(`http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`);
-    console.log("got here")
+    return response.data.verification
     // console.log(response.data)
   }
   return (
