@@ -14,7 +14,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {TouchableOpacity} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet from '../components/Modals/BottomSheet';
-import { getAddress, getPosition } from "../util/location";
+import { getAddress, getPosition, searchAddress } from "../util/location";
 import Input from "../components/Inputs/Input";
 import PhoneIcon from "../components/PhoneIcon";
 import FlexButton from "../components/Buttons/FlexButton";
@@ -30,6 +30,7 @@ export default function MapScreen() {
     const route = useRoute()
     const navigation = useNavigation()
     const dispatch = useDispatch();
+    const [results, setResults] = useState()
     const data = useSelector((state) => state.profileData.profile)
   const [errorMsg, setErrorMsg] = useState(null);
   const [position , setPosition] = useState(null)
@@ -62,8 +63,16 @@ export default function MapScreen() {
     value = formattedNumber
     } 
     
+    else if (field == 'address'){
+      showSuggestion(value)
+    }
+    
     setForm((prev) => ({...prev, [field]: value}));
     
+  }
+  async function showSuggestion(value){
+    const m = await searchAddress(value)
+    setResults(m)
   }
   async function handleLocation(lat, lng){
       const m = await getAddress(lat, lng)
@@ -231,8 +240,19 @@ export default function MapScreen() {
           <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%' }} >
             <View style ={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={{fontWeight: 'bold'}}>{form.name}</Text><Pressable onPress={deleteAndUpdate} style={({pressed}) => pressed && {opacity: 0.5}}><View style ={{flexDirection: 'row', gap:6, alignItems: 'center'}}><Octicons name="trash" size={24} color="#B22334" /><Text style={{fontWeight: 'bold', color: '#B22334'}}>Delete Address</Text></View></Pressable></View>
             <Input text={'Address Name'} textInputConfig={{cursorColor: '#aaa',value: form.name, onChangeText: handleFormChange.bind(this, 'name')}}/>
-              <Input text={'Address'} onPress={()=>findLocation()} type="address" textInputConfig={{cursorColor: '#aaa',value: form.address, onChangeText: handleFormChange.bind(this, 'address')}}/>
-              <Input text={'Contact Name'} textInputConfig={{cursorColor: '#aaa',value: form.nameNo, onChangeText: handleFormChange.bind(this, 'nameNo')}}/>
+            <View>
+              <Input text={'Address'} onPress={()=>{findLocation(); Keyboard.dismiss()}} type="address" textInputConfig={{cursorColor: '#aaa',value: form.address, onChangeText: handleFormChange.bind(this, 'address')}}/>
+              {results && results.length > 0 && <View style={{ zIndex: 2, backgroundColor: 'white' , width: '100%', paddingTop: 10, marginHorizontal: 10, alignSelf: 'center',  backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 10, marginTop: 7 }}>
+                          {results.slice(0, 4).map((address, index) => (<Pressable onPress={() => {handleFormChange('address', results[index]); Keyboard.dismiss()}} key={index} style={{flexDirection: 'row', gap: 10, marginBottom: 10,  width: '90%', padding: 10}}>
+                            <Octicons name="location" size={24} color="black" />
+                            {/* <ScrollView horizontal> */}
+                            <Text style={{fontSize: 16, fontWeight: 'bold',}} >{address}</Text>
+                            {/* </ScrollView> */}
+                            </Pressable>
+                            
+                          ))}
+                        </View>}
+              </View><Input text={'Contact Name'} textInputConfig={{cursorColor: '#aaa',value: form.nameNo, onChangeText: handleFormChange.bind(this, 'nameNo')}}/>
               <Input keyboard="number-pad" length={14} icon={<PhoneIcon/>} text={'Contact Number'} textInputConfig={{cursorColor: '#aaa',value: form.number, onChangeText: handleFormChange.bind(this, 'number')}}/>
               <View style ={{marginTop: 15, gap: 13, flexDirection: 'row'}}>
               <Pressable onPress={()=> setActive((prev) => !prev )}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
