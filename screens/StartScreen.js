@@ -1,4 +1,4 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
@@ -16,7 +16,7 @@ function StartScreen() {
     navigation.navigate('NumberLogin')
   }
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Pressable onPress={pressHandler} style={{alignSelf: 'flex-end'}}><Text style={{color: "#333333", opacity: 0.7, fontSize: 16, fontWeight: "500", alignSelf: "flex-end"}}>Skip Registration</Text></Pressable>
       <View style={styles.imageContainer}>
         <Image
@@ -69,7 +69,7 @@ function StartScreen() {
         <Text style={{color: "#BC6C25", fontWeight: "700", opacity: 1}}> Sign In</Text>
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: "5%",
-    paddingTop: 20,
+    paddingTop: 45,
     marginTop: -50
   },
   imageContainer: {

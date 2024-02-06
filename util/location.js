@@ -15,14 +15,28 @@ export async function getAddress(lat, lng){
      const address = data.results[0].formatted_address
      return address
 }
+export async function searchAddress(address){
+    const url2 = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${address}&key=${api_key}`
+    const response2 = await fetch(url2);
+    const res = []
+    if (response2.ok) {
+        const data2 = await response2.json();
+        for (var i = 0 ; i < data2.results.length; i++){
+        res.push(data2.results[i].formatted_address)
+        }
+    }
+    
+    return res
+}
 export async function getPosition(address){
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${api_key}`;
     const response = await fetch(url);
     if (!response.ok) {
         return ('Failed to fetch address!')
     }
+    
     const data = await response.json();
-
+    
     if (data.results && data.results.length > 0) {
         const position = data.results[0].geometry.location;
         return position;

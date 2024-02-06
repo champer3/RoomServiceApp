@@ -3,7 +3,9 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
     Button,
     Keyboard,
     KeyboardAvoidingView,
-    Pressable} from "react-native";
+    Pressable,
+    FlatList,
+    ScrollView} from "react-native";
   import MapView from "react-native-maps";
   import * as Location from 'expo-location';
   import { Marker } from "react-native-maps";
@@ -14,7 +16,7 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
   import {TouchableOpacity} from 'react-native';
   import { GestureHandlerRootView } from 'react-native-gesture-handler';
   import BottomSheet from '../components/Modals/BottomSheet';
-  import { getAddress, getPosition } from "../util/location";
+  import { getAddress, getPosition, searchAddress } from "../util/location";
   import Input from "../components/Inputs/Input";
   import PhoneIcon from "../components/PhoneIcon";
   import FlexButton from "../components/Buttons/FlexButton";
@@ -29,6 +31,7 @@ import { updateProfile } from "../Data/profile";
       const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
     const dispatch = useDispatch();
+    const [results, setResults] = useState()
   const data = useSelector((state) => state.profileData.profile)
   const address = [...data.address]
     const [position , setPosition] = useState(null)
@@ -96,9 +99,17 @@ import { updateProfile } from "../Data/profile";
     }
     value = formattedNumber
     } 
+    else if (field == 'address'){
+      showSuggestion(value)
+    }
     
     setForm((prev) => ({...prev, [field]: value}));
     
+  }
+
+  async function showSuggestion(value){
+    const m = await searchAddress(value)
+    setResults(m)
   }
   async function validateAddress(){
     let locationT = await getPosition(form.address);
@@ -177,7 +188,6 @@ import { updateProfile } from "../Data/profile";
       </MapView>
       
     }
-  
     return (
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}>
@@ -189,10 +199,22 @@ import { updateProfile } from "../Data/profile";
           {/* <TouchableOpacity style={styles.button} onPress={onPress} /> */}
           
           <BottomSheet ref={ref}>
-            <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%' }} >
+            <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', }} >
               <View style ={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={{fontWeight: 'bold'}}>Add an Address</Text></View>
               <Input text={'Address Name'} textInputConfig={{cursorColor: '#aaa',value: form.name, onChangeText: handleFormChange.bind(this, 'name')}}/>
+              <View>
               <Input text={'Address'} onPress={()=>{findLocation(); Keyboard.dismiss()}} type="address" textInputConfig={{cursorColor: '#aaa',value: form.address, onChangeText: handleFormChange.bind(this, 'address')}}/>
+              {results && results.length > 0 && <View style={{ zIndex: 2, backgroundColor: 'white' , width: '100%', paddingTop: 10, marginHorizontal: 10, alignSelf: 'center',  backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 10, marginTop: 7 }}>
+                          {results.slice(0, 4).map((address, index) => (<Pressable onPress={() => {handleFormChange('address', results[index]); Keyboard.dismiss()}} key={index} style={{flexDirection: 'row', gap: 10, marginBottom: 10,  width: '90%', padding: 10}}>
+                            <Octicons name="location" size={24} color="black" />
+                            {/* <ScrollView horizontal> */}
+                            <Text style={{fontSize: 16, fontWeight: 'bold',}} >{address}</Text>
+                            {/* </ScrollView> */}
+                            </Pressable>
+                            
+                          ))}
+                        </View>}
+              </View>
               <Input text={'Contact Name'} textInputConfig={{cursorColor: '#aaa',value: form.nameNo, onChangeText: handleFormChange.bind(this, 'nameNo')}}/>
               <Input keyboard="number-pad" length={14} icon={<PhoneIcon/>} text={'Contact Number'} textInputConfig={{cursorColor: '#aaa',value: form.number, onChangeText: handleFormChange.bind(this, 'number')}}/>
               <View style ={{marginTop: 15, gap: 13, flexDirection: 'row'}}>
@@ -202,6 +224,7 @@ import { updateProfile } from "../Data/profile";
               <View style={[styles.recommendedView, {height: 65, marginTop: 20}]}>
                   <FlexButton onPress={validateAddress} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
               </View>
+              
             </View>
           </BottomSheet>
         </View>
