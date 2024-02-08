@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Pressable,
+  Alert,
 } from "react-native";
 import Input from "../components/Inputs/Input";
 import { useNavigation } from "@react-navigation/native";
@@ -31,16 +32,28 @@ function NumberLogin() {
   const phoneNumber = "+1" + phoneNumberString
   console.log(number)
   const navigation = useNavigation();
-  function pressHandler() {
-    // verifyNumber()
-    navigation.navigate("PinLogin", {phoneNumber});
+  async function pressHandler() {
+    const response = await verifyNumber()
+    if(response){
+      navigation.navigate("PinLogin", {phoneNumber});
+    } else{
+      Alert.alert('No account', "There is no account attributed to this number. SignUp!")
+    }
   }
 
   const verifyNumber = async() =>{
-    console.log(phoneNumber)
-    const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
-    console.log("got here")
-    // console.log(response.data)
+    try{
+      console.log("nothing")
+      const checkNumber = await axios.get(`http://10.0.0.173:3000/api/v1/users/getNumber/${phoneNumber}`);
+      if(checkNumber.data){
+        const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
+        console.log("hdhdhh", response.data)
+      }
+      return checkNumber.data
+      // console.log("got here")
+    } catch(err){
+      console.log(err.error)
+    }
   }
   function emailHandler() {
     navigation.navigate("EmailLogin");

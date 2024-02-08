@@ -47,7 +47,7 @@ function CheckoutScreen() {
   const navigation = useNavigation()
   function pressHandler (){
     if (address.length){
-     
+
     // navigation.navigate('Make Payment', {total: getTotalSum().toFixed(2)})
   }
   }
@@ -57,7 +57,7 @@ function CheckoutScreen() {
   function move(){
     navigation.navigate('Order History')
 }
-  
+
   // const token = retrieveTokenFromAsyncStorage()
   const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YmQ2ZDgyZTVmYzlhMDJlYTM3YzAzMyIsImlhdCI6MTcwNjkxMzE1NywiZXhwIjoxNzA3Nzc3MTU3fQ.TwpnSDIBnTJPAB1BUjPkz8PPiDztuySl4JcqTHgruxU"
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -101,7 +101,7 @@ function CheckoutScreen() {
       );
       const row = [...cartItems]
       for (var i =0 ; i < cartItems.length; i++ ){
-        row[i] = {...cartItems[i], ['reviews']: false} 
+        row[i] = {...cartItems[i], ['reviews']: false}
       }
       dispatch(completeOrder({id: [...orders, row]}))
       dispatch(clearCart({id : cartItems}))

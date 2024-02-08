@@ -150,7 +150,7 @@ function PaymentsDisplay() {
         }
       );
       handleUpdate(paymentMethods.data.paymentMethods)
-      
+
       Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");
     }
@@ -220,7 +220,7 @@ function PaymentsDisplay() {
     // Return the new data object
     dispatch(updateProfile({ id: newData }));
   }
-  
+
   function makeDefault(id) {
     const newData = {
       ...data,
