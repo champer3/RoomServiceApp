@@ -1,4 +1,13 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Image,
+  Text,
+  View,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Pressable,
+  Alert,
+} from "react-native";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
@@ -10,95 +19,130 @@ import { useState } from "react";
 import axios from "axios";
 
 function NumberLogin() {
-  const [otp, setOtp] = useState('')
-  const route = useRoute()
-  const phoneNumber = route.params?.phoneNumber || ""
-  console.log("number:",phoneNumber)
-  function getOtp(data){
-    setOtp(data)
+  const [otp, setOtp] = useState("");
+  const route = useRoute();
+  const phoneNumber = route.params?.phoneNumber || "";
+  console.log("number:", phoneNumber);
+  function getOtp(data) {
+    setOtp(data);
   }
 
   function handleScreenPress() {
-    Keyboard.dismiss()
+    Keyboard.dismiss();
   }
-  const navigation = useNavigation()
-  function pressHandler (){
-    verifyNumber(otp)
-    navigation.navigate('HomeTabs')
+  const navigation = useNavigation();
+  function resendCode(){
+    resendVerifyNumber()
   }
-  function signUpHandler (){
-    navigation.navigate('StartScreen')
+  async function pressHandler() {
+    const verifyResponse = await verifyNumber(otp);
+    if(verifyResponse === "approved"){
+      navigation.replace("HomeTabs");
+    }else(
+      Alert.alert('Incorrect OTP', 'Please check your input and try again')
+    )
   }
-  const verifyNumber = async(code) =>{
-    const response = await axios.get(`http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`);
-    return response.data.verification
-    // console.log(response.data)
+  function signUpHandler() {
+    navigation.navigate("StartScreen");
+  }
+  const verifyNumber = async (code) => {
+    try{
+      const response = await axios.get(
+        `http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`
+      );
+      console.log(response.data.verification)
+      return response.data.verification;
+    } catch(err){
+      console.log(err.error)
+    }
+  };
+  const resendVerifyNumber = async() =>{
+    try{
+      console.log(phoneNumber)
+      const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
+      // console.log("got here")
+      console.log(response.data)
+    } catch(err){
+      console.log(err.error)
+    }
   }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.topView}>
-          <View style={styles.welcomeView}>
-            <Text style={styles.text}>Hello,</Text>
-            <Text style={styles.text}>Welcome Back😍</Text>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.topView}>
+            <View style={styles.welcomeView}>
+              <Text style={styles.text}>Hello,</Text>
+              <Text style={styles.text}>Welcome Back😍</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.middleView}>
-          <View style={{ marginBottom: "5%" }}>
-            <CodeInput getOtpData={getOtp} length={6} />
+          <View style={styles.middleView}>
+            <View style={{ marginBottom: "5%" }}>
+              <CodeInput getOtpData={getOtp} length={6} />
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text onPress={resendCode} style={{ marginVertical: 2 }}>Resend Code</Text>
+                <Text style={{ marginVertical: 2 }}>00:59</Text>
+              </View>
+            </View>
+            <View style={styles.buttonContainer}>
+              <Button onPress={pressHandler}>
+                <Text style={{ fontSize: 16, color: "white" }}>Continue</Text>
+                <Image
+                  style={styles.vector}
+                  source={require("../assets/Vector.png")}
+                />
+              </Button>
+            </View>
+            <View>
+              <Info text="Enter the five-digit code that was sent to your registered phone number." />
+            </View>
           </View>
-          <View style={styles.buttonContainer}>
-            <Button onPress = {pressHandler}>
-              <Text style={{ fontSize: 16, color: "white" }}>Continue</Text>
-              <Image
-                style={styles.vector}
-                source={require("../assets/Vector.png")}
-              />
-            </Button>
+          <View style={styles.downView}>
+            <View style={styles.threeContainer}>
+              <View style={styles.line}></View>
+              <Text>or continue with</Text>
+              <View style={styles.line}></View>
+            </View>
+            <View style={[styles.buttonContainer, { marginBottom: 24 }]}>
+              <BareButton borderRadius={24} color="#EEEEEE">
+                <Image
+                  style={styles.facebook}
+                  source={require("../assets/facebook.png")}
+                />
+                <Text> Continue with facebook</Text>
+              </BareButton>
+            </View>
+            <View style={[styles.buttonContainer, { marginBottom: 24 }]}>
+              <BareButton borderRadius={24} color="#EEEEEE">
+                <Image
+                  style={styles.facebook}
+                  source={require("../assets/google.png")}
+                />
+                <Text> Continue with Google</Text>
+              </BareButton>
+            </View>
+            <View style={styles.textContainer}>
+              <Text style={{ color: "#333333", opacity: 0.5 }}>
+                New to RoomService?
+              </Text>
+              <Pressable onPress={signUpHandler}>
+                <Text
+                  style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}
+                >
+                  {" "}
+                  Sign Up
+                </Text>
+              </Pressable>
+            </View>
           </View>
-          <View>
-          <Info text="Enter the five-digit code that was sent to your registered phone number." />
-          </View>
-        </View>
-        <View style={styles.downView}>
-          <View style={styles.threeContainer}>
-            <View style={styles.line}></View>
-            <Text>or continue with</Text>
-            <View style={styles.line}></View>
-          </View>
-          <View style={[styles.buttonContainer, { marginBottom: 24 }]}>
-            <BareButton borderRadius={24} color="#EEEEEE">
-              <Image
-                style={styles.facebook}
-                source={require("../assets/facebook.png")}
-              />
-              <Text> Continue with facebook</Text>
-            </BareButton>
-          </View>
-          <View style={[styles.buttonContainer, { marginBottom: 24 }]}>
-            <BareButton borderRadius={24} color="#EEEEEE">
-              <Image
-                style={styles.facebook}
-                source={require("../assets/google.png")}
-              />
-              <Text> Continue with Google</Text>
-            </BareButton>
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={{ color: "#333333", opacity: 0.5 }}>
-              New to RoomService?
-            </Text>
-            <Pressable onPress = {signUpHandler}>
-            <Text style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}>
-              {" "}
-              Sign Up
-            </Text>
-            </Pressable>
-          </View>
-        </View>
-      </SafeAreaView>
-    </SafeAreaProvider>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </TouchableWithoutFeedback>
   );
 }
@@ -135,12 +179,12 @@ const styles = StyleSheet.create({
   vector: {
     width: "10%",
     resizeMode: "center",
-    marginLeft: 5
+    marginLeft: 5,
   },
   facebook: {
     width: "7%",
     resizeMode: "contain",
-    marginRight: 3
+    marginRight: 3,
   },
   threeContainer: {
     width: "100%",

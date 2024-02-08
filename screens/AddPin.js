@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
 import CodeInput from "../components/Inputs/CodeInput";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
@@ -18,15 +18,38 @@ function AddPin() {
   function handleScreenPress() {
     Keyboard.dismiss()
   }
+  function resendCode(){
+    resendVerifyNumber()
+  }
   const navigation = useNavigation()
-  function pressHandler (){
-    verifyNumber(otp)
-    navigation.navigate('CreatePassword')
+  async function pressHandler (){
+    const verifyResponse = await verifyNumber(otp)
+    if(verifyResponse === "approved"){
+      navigation.navigate('CreatePassword')
+    }else{
+      Alert.alert('Incorrect OTP', 'Please check your input and try again')
+    }
   }
   const verifyNumber = async(code) =>{
-    const response = await axios.get(`http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`);
-    console.log("got here")
-    // console.log(response.data)
+    try{
+      const response = await axios.get(
+        `http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`
+      );
+      console.log(response.data.verification)
+      return response.data.verification;
+    } catch(err){
+      console.log(err.error)
+    }
+  }
+  const resendVerifyNumber = async() =>{
+    try{
+      console.log(phoneNumber)
+      const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
+      // console.log("got here")
+      console.log(response.data)
+    } catch(err){
+      console.log(err.error)
+    }
   }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
@@ -44,7 +67,7 @@ function AddPin() {
       <View style={{flex: 2}}>
         <CodeInput getOtpData={getOtp}  length={6} />
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text style={{marginVertical: 20}}>Resend Code</Text>
+          <Text onPress={resendCode} style={{marginVertical: 20}}>Resend Code</Text>
           <Text style={{marginVertical: 20}}>00:59</Text>
         </View>
         <Info text="Enter the six-digit code that was sent to the mobile number you previously entered" />

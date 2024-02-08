@@ -41,7 +41,7 @@ function CreatePassword() {
     try {
       handleUpdate();
       console.log(profile);
-      // await createAccount();
+      await createAccount();
       // Call the function to save the token
       await saveTokenToAsyncStorage();
       navigation.navigate("HomeTabs");
