@@ -30,7 +30,6 @@ function PaymentScreen() {
     for (var i =0 ; i < cartItems.length; i++ ){
       row[i] = {...cartItems[i], ['reviews']: false} 
     }
-    console.log(row)
     dispatch(completeOrder({id: [...orders, row]}))
     dispatch(clearCart({id : cartItems}))
     setVisible(true)

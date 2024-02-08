@@ -1,6 +1,6 @@
-import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView } from "react-native";
+import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView, RefreshControl } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Pill from '../components/Pills/Pills'
 import { AntDesign } from "@expo/vector-icons";
@@ -14,23 +14,36 @@ import { useRoute } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
 import {addToCart, removeFromCart} from '../Data/cart'
 import CartModal from "../components/Cart/CartModal";
+import CarouselCards from "../components/CarouselCards";
+import OrderSuccess from "../components/Modals/OrderSuccess";
+import ProductPreview from "../components/Product/ProductPreview";
 
 function ProductDisplay() {
     const route = useRoute()
     const title = route.params.title
     const [visible, setVisible] = useState(false)
+    const [refresh, setRefresh] = useState(false)
+    const { width, height } = Dimensions.get("window");
+    const [textShown, setTextShown] = useState(false); //To show ur remaining Text
+const [lengthMore,setLengthMore] = useState(false); //to show the "Read more & Less Line"
+const toggleNumberOfLines = () => { //To toggle the show text or hide it
+    setTextShown(!textShown);
+}
 
+const onTextLayout = useCallback(e =>{
+    setLengthMore(e.nativeEvent.lines.length >=4); //to check the text is more than 4 lines or not
+    // console.log(e.nativeEvent);
+},[]);
+    
+    const timer = useRef()
     useEffect(()=>{
-        const timeoutId = setTimeout(() => {
+        timer.current = setTimeout(() => {
           setVisible(false);
         }, 1500);
       }, [visible])
     const image = route.params.image
   const [index, setIndex] = useState(0);
-  const { width, height } = Dimensions.get("window");
-  const handleSelect = (selectedIndex) => {
-    setIndex(selectedIndex);
-  };
+  const [display, setDisplay] = useState(false)
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids)
   const productItems = useSelector((state) => state.productItems.ids)
@@ -90,7 +103,7 @@ var quantity = 0
 if (newList){
     quantity = newList[route.params.title]
 }
-
+    useEffect(()=>{const timer = setTimeout(()=>setRefresh(false),1000)},[refresh])
   const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('Review', {reviews: route.params.reviews})
@@ -98,12 +111,20 @@ if (newList){
 
   return (
     <View>
-        <ScrollView>
+        <ScrollView refreshControl={<RefreshControl onRefresh={()=>{setRefresh(true)}} refreshing={refresh} />}>
         <View style= {{marginBottom: 120}}>
-            <View style={{alignItems: 'center', backgroundColor: "#FAFAFA", paddingTop:'6%'}}>
-
-                <Image  source={image} style ={{width: width/2, height: height/4 }} />
-                <View
+            
+            <View  style={{backgroundColor: "#FAFAFA", paddingTop:50}} >
+            <CarouselCards data={
+                [
+                    {image: image},
+                    {image: image},
+                    {image: image},
+                    {image: image},
+                    {image: image},
+                    {image: image},
+            ]} index={index} handleIndex={setIndex} onView={()=> setDisplay(true)} />
+            <View
                     style={{
                     flexDirection: "row",
                     backgroundColor: "white",
@@ -111,20 +132,20 @@ if (newList){
                     paddingHorizontal: 6,
                     borderRadius: 30,
                     zIndex: 1,
-                    position: "absolute",top: 0, zIndex: 2 , right: '15%'
+                    position: "absolute",top: 20 , right: '15%'
                     }}
                 >
                     <Text
                     style={{
                         color: "black",
                         fontWeight: "900",
-                        fontSize: 20,
+                        fontSize: 24,
                     }}
                     >
                     {`$${route.params.oldPrice}`}
                     </Text>
                 </View>
-            </View>
+                </View>
             <View  style={{paddingHorizontal: '5%', marginVertical: '4%'}} >
                 <View style ={{width: '100%'}}><Text
                     style={{
@@ -189,24 +210,8 @@ if (newList){
         </View>
         </ScrollView>
 
-        <View style={{flex: 1, width: "100%", minHeight: '60%', flexWrap: 'wrap', paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
-        {visible && <View style ={{
-    justifyContent: 'flex-end',
-    marginHorizontal: 10,
-    width: '90%',
-    alignItems: 'center',opacity: 1, backgroundColor: 'rgba(0,0,0,0)'}}>
-        <View style ={{
-    backgroundColor: 'white',
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,}}><CartModal/></View>
-        </View>}
+        <View style={{flex: 1, width: "100%", minHeight: '60%', flexWrap: 'wrap', paddingVertical: '7%', position: "absolute",bottom: 0, zIndex: 1, backgroundColor: 'white' , flexDirection: 'row', justifyContent: "space-around", alignItems: 'center'}}>
+        
             <View style={{height: '100%', justifyContent: 'space-between', alignItems: 'flex-start'}}>
                 <Text
                 style={{
@@ -229,7 +234,36 @@ if (newList){
                 <FlexButton onPress={()=>handleAddToCart(route.params)} background={'#283618'}><FontAwesome name="shopping-bag" size={24} color="white" /><Text style={{color: 'white'}}>Add to cart</Text></FlexButton>
             </View>
         </View>
-
+        {visible && <View style ={{
+    justifyContent: 'flex-end',
+    marginHorizontal: 10,
+    zIndex: 3, position: "absolute",bottom : 0,
+    width: width -20,
+    alignItems: 'center',opacity: 1, backgroundColor: 'rgba(0,0,0,0)'}}>
+        <View style ={{
+    backgroundColor: 'white',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,}}><CartModal/></View>
+        </View>}
+        {display && <Pressable onPress={()=> setDisplay(false)} style ={{flex: 1, alignItems: 'center', justifyContent: 'center', justifyContent: 'center', zIndex: 3, position: "absolute", height: '100%', backgroundColor: 'rgba(0,0,0,0.9)'}}>
+          <Pressable onPress={()=> setDisplay(false)} style={{position: 'absolute', top: 5, left : 5, zIndex : 100}}><AntDesign name="closecircle" size={34} color="white" /></Pressable>
+          <ProductPreview data={
+                [
+                    {image: image},
+                    {image: image},
+                    {image: image},
+                    {image: image},
+                    {image: image},
+                    {image: image},
+            ]} index={index} handleIndex={setIndex}/>
+        </Pressable>}
     </View>
   );
 }

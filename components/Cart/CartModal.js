@@ -17,7 +17,7 @@ export default CartModal
 
 const styles = StyleSheet.create({
     container: {
-        height: 80,
+        height: 180,
         width: "100%",
         backgroundColor: "white",
         flexDirection: "row",
@@ -49,13 +49,13 @@ const styles = StyleSheet.create({
         marginLeft: 10
     },
     topText: {
-        fontSize: 18,
+        fontSize: 24,
         fontWeight: "700",
         color: "#283618",
         marginBottom: 5
     },
     text: {
-        fontSize: 14,
+        fontSize: 20,
         fontWeight: "300",
         color: "#283618",
         opacity: 0.7

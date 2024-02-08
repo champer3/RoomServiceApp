@@ -51,7 +51,7 @@ function Product({ image, title, oldPrice, newPrice, reviews, category, widths =
   }
   function pressHandler (){
     navigation.navigate('Product', {image: image, title : title, reviews: reviews, oldPrice: oldPrice, category: category })
-    console.log("pressed")
+
   }
   const productItems = useSelector((state) => state.productItems.ids)
 
