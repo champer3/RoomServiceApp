@@ -1,35 +1,130 @@
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
   View,
+  Dimensions,
+  Image
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
 import BoxItemCategory from "../../components/Category/BoxItemCategory";
 import ItemCategory from "../../components/Category/ItemCategory";
+import ProductCategory from "../../components/Category/ProductCategory";
 import SearchCat from "../../components/Category/SearchCat";
 import Pill from "../../components/Pills/Pills";
 import Search from "../../components/Search/Search";
 import RecentList from "../../components/RecentList";
 import Input from "../../components/Inputs/Input";
 import { useNavigation } from "@react-navigation/native";
-
+import { Ionicons} from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart, removeFromCart } from "../../Data/cart";
+import { useState, useRef, useEffect } from "react";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
+import IncrementDecrementBtn from "../../components/Buttons/IncrementDecrementBtn";
+import BottomSheet from '../../components/Modals/BottomSheet';
+const { width, height } = Dimensions.get("window");
 function Category() {
   function handleScreenPress() {
     Keyboard.dismiss()
   }
+  const [chosen, setChosen] = useState([])
+  const ref2 = useRef(null);
+  const [value, setValue] = useState('')
   const navigation = useNavigation()
     function pressHandler (){
         navigation.navigate('CategorySearch')
     }
     function cartHandler (){
-      navigation.navigate('Cart')
+      if(value.length > 0){
+        setValue('')
+      } else{
+      navigation.navigate('Home')}
     }
+    const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cartItems.ids);
+  const productItems = useSelector((state) => state.productItems.ids);
+  const categoryObject = {};
+  
+  productItems.forEach((item) => {
+    const category = item.category;
+
+    if (!categoryObject[category]) {
+      // If the category key doesn't exist, create it with an array containing the current item
+      categoryObject[category] = [item];
+    } else {
+      // If the category key already exists, push the current item to the existing array
+      categoryObject[category].push(item);
+    }
+  });
+  function createFoodDictionary(foodArray) {
+    let foodDictionary = {};
+    for (let i = 0; i < foodArray.length; i++) {
+        foodDictionary[foodArray[i][0]] = 0;
+    }
+    return foodDictionary;
+  }
+  const [option, setOption] = useState()
+  // Example usage:
+  let [foodStore, setFood] = useState({})
+  const [foodDictionary, setFoodDictionary] = useState(foodStore);
+    const [pro , setPro] = useState({})
+  
+  const [extra, setExtra] = useState()
+  const [plus, setPlus] = useState([])
+  function findPrice(foodName) {
+    for (let i = 0; i < extra.length; i++) {
+      if (extra[i][0] === foodName) {
+        return extra[i][1];
+      }
+    }
+    return "Item not found in the menu";
+  }
+  useEffect(()=>{
+    if (plus.length == 2){
+      
+      dispatch(addToCart({ id: pro }))
+        for (var i = 0; i < plus.length; i ++){
+          dispatch(addToCart({ id: {'title': plus[i], 'oldPrice': findPrice(plus[i]), quantity: 1} }))
+        }
+        setPlus([])
+        ref2?.current?.scrollTo(0)
+        setFoodDictionary(foodStore)
+    }
+  },[plus])
+  function handleAddToCart(product) {
+    setPro(product)
+    if (product.extras){
+      setExtra(product.extras)
+      setFoodDictionary(createFoodDictionary(product.extras))
+  
+  }
+  if (product.extras || product.options ){
+    ref2?.current?.scrollTo(-570);}else{
+    dispatch(addToCart({ id: product }));}
+  }
+  function toggleNumberInArray2(number) {
+    setChosen((prev)=> {
+        const array = [...prev]
+        const index = array.indexOf(number);
+    if (index === -1) {
+        // Number is not in the array, so add it
+        array.push(number);
+    } else {
+        // Number is already in the array, so remove it
+        array.splice(index, 1);
+    }
+    return array
+    })
+  }
   let browse = (
     <>
       <View style={styles.browseView}>
@@ -60,19 +155,7 @@ function Category() {
 
   let check = (
     <View style={styles.browseView}>
-      <View style={styles.horizontalCat}>
-        <Text style={styles.text}>Categories</Text>
-        <ItemCategory
-              items={[
-                { text: "Alcohol", image: require("../../assets/Alcohol.png") },
-                { text: "Frozen", image: require("../../assets/frozen.png") },
-                { text: "Ice Cream", image: require("../../assets/icecream.png") },
-                { text: "Food", image: require("../../assets/food.png") },
-                { text: "Snacks", image: require("../../assets/snack.png") }
-              ]}
-              onPress = {pressHandler}
-            />
-      </View>
+      
       <View style={styles.history}>
         <Text style={styles.text}>Most Searched</Text>
         <Search
@@ -91,23 +174,45 @@ function Category() {
             "gifts",
             "diary",
             "hat",
-          ]} onPress ={pressHandler}
+          ]} onPress ={setValue}
         />
       </View>
     </View>
   );
+  function searchTitles(items, searchPhrase) {
+    const result = [];
+
+    // Iterate through each item in the array
+    items.forEach(item => {
+        // Check if the title or related keywords contain the search phrase
+        if (item.title.toLowerCase().includes(searchPhrase.toLowerCase())) {
+            // If found, push the title into the result array
+            result.push(item);
+        } else if (item.related) {
+            // If the item has related keywords, check each related keyword
+            item.related.forEach(keyword => {
+                if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+                    // If found, push the title into the result array
+                    result.push(item);
+                }
+            });
+        }
+    });
+
+    return result;
+}
+const result = searchTitles(productItems, value);
   return (
-    <TouchableWithoutFeedback onPress={handleScreenPress}>
     <SafeAreaProvider>
+      <GestureHandlerRootView style={{flex: 1}}>
       <SafeAreaView style={styles.container}>
         <View style={styles.search}>
-        <Input text={'Search'} icon={<EvilIcons name="search" size={24} color="#aaa" />} ><View style={styles.cart}>
-              <Pressable onPress={cartHandler}>
-                <View>
-                  <Feather name="shopping-cart" size={24} color="black" />
-                </View>
+        <Input text={'Search'} icon={<EvilIcons name="search" size={24} color="#aaa" />} textInputConfig={{cursorColor: '#aaa',value: value, onChangeText: (e)=>setValue(e)}}>
+              <Pressable  style={styles.cart} onPress={cartHandler}>
+              <AntDesign name="close" size={20} color="black" />
+               <Text style={{fontWeight: 'thin'}}>Cancel</Text>
               </Pressable>
-            </View></Input>
+    </Input>
           <View style={styles.cart}>
             <Pressable>
               <View>
@@ -116,14 +221,90 @@ function Category() {
             </Pressable>
           </View>
         </View>
-        {check}
+        <View style={[styles.horizontalCat, {height: value.length ? height/8  : height/5.5,}]}>
+        {!value.length && <Text style={styles.text}>Categories</Text>}
+        <ItemCategory
+              items={[
+                { text: "Alcohol", image: require("../../assets/Alcohol.png") },
+                { text: "Frozen", image: require("../../assets/frozen.png") },
+                { text: "Ice Cream", image: require("../../assets/icecream.png") },
+                { text: "Food", image: require("../../assets/food.png") },
+                { text: "Snacks", image: require("../../assets/snack.png") }
+              ]}
+              onPress = {pressHandler}
+            />
+      </View>
+
+        {!value.length && check}
         {/* <View style={styles.recentView}>
         <Text style={styles.text}>Recent</Text>
         <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
       </View> */}
+      {value && <ProductCategory items={result} onPress={handleAddToCart} />}
+      {!result.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>No results found</Text></View>}
+      <BottomSheet ref={ref2}>
+        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
+          <View style={{ marginBottom: 230}}>
+        {pro.addOn && <View style={{gap: 25, paddingTop: 30, marginBottom: 50}}>
+                            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Choose Exotic Flavor'}</Text>
+                                {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
+                            </View>
+                            <Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>{`Choose up to ${2}`}</Text>
+                            {pro.extras.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15}}>
+                                <View>
+                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
+                                </View>
+                                <Pressable onPress={()=>{chosen.length < 2 || chosen.indexOf(idx) !== - 1 ? toggleNumberInArray2(idx): {}}}>
+                                <MaterialCommunityIcons name={`${chosen.indexOf(idx) === - 1 ? "checkbox-blank-outline" : "checkbox-marked"  }`} size={24} color={`${chosen.length < 2 || chosen.indexOf(idx) !== - 1 ?  'black': 'rgba(0,0,0,0.05)' }`} />
+                                </Pressable>
+                            </View>)}
+
+                        </View>}
+              {pro.options &&<View><View style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15,}}>
+                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Choose One'}</Text>
+                                {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
+                            </View>
+              {pro.options.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 13,}}>
+                                <View>
+                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
+                                </View>
+                                <Pressable onPress={()=> { dispatch(addToCart({ id: pro }));ref2?.current?.scrollTo(0); setChosen([])}}>
+                                <Ionicons name={`${idx == option ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="black" />
+                                </Pressable>
+                            </View>)}</View>}
+              {pro.nutrient && pro.nutrient == 'protein' && <View style={{gap: 25, paddingTop: 30}}>
+                            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Pick Your Sides'}</Text>
+                                <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View>
+                            </View>
+                            <Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>{`Choose ${2}`}</Text>
+                            {pro.extras.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15}}>
+                                <View>
+                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item[0]}</Text>
+                                    <Text>{item[1] ? `+ $${item[1]}` : ''}</Text>
+                                </View>
+                                <View>
+                                <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={()=>{setFoodDictionary((prev)=>{return {...prev, [item[0]] : foodDictionary[item[0]]+1}});setPlus((prev)=> {const arr = [...prev]; arr.push(item[0]); return arr})}}  onDecrease={()=>{setFoodDictionary((prev)=>{return {...prev, [item[0]] : (foodDictionary[item[0]] ?foodDictionary[item[0]] : 1) -1}}); setPlus((prev)=>{const arr = [...prev]; arr.splice(prev.indexOf(item[0]), 1); return arr})}}/>
+                                </View>
+                            </View>)}
+
+                        </View>}
+                    {pro.instructions && <View 
+        style ={{color: 'white', backgroundColor : 'white'}}><TextInput
+        multiline
+        placeholder="Special Instructions?"
+        cursorColor={'#aaa'}
+        numberOfLines={6}
+        clearButtonMode="always"
+        style={{paddingHorizontal: 10}}
+      /></View>
+      }</View>
+        </ScrollView>
+        </BottomSheet>
       </SafeAreaView>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
-    </TouchableWithoutFeedback>
   );
 }
 
@@ -131,9 +312,9 @@ export default Category;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     marginHorizontal: "2%",
-    marginTop: "10%",
+    marginTop: "5%",
+    flex: 1
   },
   search: {
     flexDirection: "row",
@@ -149,12 +330,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   cart: {
-    justifyContent: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    borderWidth: 1,
     padding: 16,
-    borderRadius: 16,
-    marginLeft: 8,
+    paddingRight: 30,
+    width: width/4.2,
   },
   browseText: {
     fontSize: 24,
@@ -172,11 +353,16 @@ const styles = StyleSheet.create({
   },
   horizontalCat: {
     width: "100%",
-    height: '29%'
-
+    
+    marginVertical: 8,
   },
   history: {
     marginTop: "10%"
   },
   text: { fontWeight: "500", fontSize: 20, marginBottom: 20 },
+  image: {
+    height: height / 3,
+    alignSelf: "center",
+    resizeMode: 'contain'
+  },
 });

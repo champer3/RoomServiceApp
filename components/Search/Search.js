@@ -4,7 +4,7 @@ import Pill from "../Pills/Pills"
 function Search({items, onPress}){
 
     return <View style ={styles.container}>
-        {items.map((item, ind)=> <Pill key={ind} text={item} onPress={onPress}/>)}
+        {items.map((item, ind)=> <Pill key={ind} text={item} onPress={()=>onPress(item)}/>)}
     </View>
 }
 

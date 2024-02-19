@@ -21,7 +21,7 @@ import {clearCart, completeOrder} from '../Data/cart'
 const { width, height } = Dimensions.get("window");
 function OrderDisplay(){
   const orders = useSelector((state) => state.cartItems.order)
-    const [index, setIndex] = useState(1);
+    const [index, setIndex] = useState(0);
     const [rating, setrating] = useState(0);
     const data = useSelector((state) => state.profileData.profile)
     const dispatch = useDispatch();
@@ -131,10 +131,10 @@ function OrderDisplay(){
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
     </View>} */}
-    {index == 1 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
+    {index == 0 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
     {newList && newList.map(({title, image, quantity, oldPrice, reviews}, idx)=><ProductAction key={idx} price={oldPrice} quantity={quantity} title={title} image={image}>
-      {reviews && <Pill text={"Delivered"} type="null"/>}
-      {!reviews && <FlexButton onPress={()=>{onPress(); setForm((prev) => {return { ...prev, ['title']:  title}})}} background={'#283618'}><Text style={{fontSize: 10, color: 'white', fontWeight: 'bold'}}>Leave A Review</Text></FlexButton>}
+      {reviews && <Pill text={"Delivering"} type="null"/>}
+      {/* {!reviews && <FlexButton onPress={()=>{onPress(); setForm((prev) => {return { ...prev, ['title']:  title}})}} background={'#283618'}><Text style={{fontSize: 10, color: 'white', fontWeight: 'bold'}}>Leave A Review</Text></FlexButton>} */}
     </ProductAction>)}
         
     </View>}

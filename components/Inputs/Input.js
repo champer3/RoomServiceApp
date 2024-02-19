@@ -18,7 +18,8 @@ const  Input = ({
   children,
   color,
   textInputConfig,
-  onPress
+  onPress, 
+  onInteract
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPassword = () => {
@@ -57,7 +58,8 @@ const  Input = ({
     width /= 7 / length;
   }
   return (
-    <View
+    <Pressable
+      onPress={onInteract}
       style={{
         width: "100%",
         flexDirection: "row",
@@ -127,7 +129,7 @@ const  Input = ({
       >
         {children}
       </View>
-    </View>
+    </Pressable>
   );
 };
 

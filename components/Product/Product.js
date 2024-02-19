@@ -14,7 +14,7 @@ const { width, height } = Dimensions.get("window");
 
 
 
-function Product({ image, title, oldPrice, newPrice, reviews, category, widths = 89 , onAdd}) {
+function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, nutrient, description, instructions, widths = 89 ,options,extras, onAdd}) {
   let size = widths;
   const [show, setShow] = useState(false)
   const navigation = useNavigation()
@@ -50,7 +50,7 @@ function Product({ image, title, oldPrice, newPrice, reviews, category, widths =
       quantity = newList[title]
   }
   function pressHandler (){
-    navigation.navigate('Product', {image: image, title : title, reviews: reviews, oldPrice: oldPrice, category: category })
+    navigation.navigate('Product', {image: image, title : title, reviews: reviews, oldPrice: oldPrice, addOn: addOn, category: category,nutrient : nutrient, instructions: instructions, description: description,extras: extras, options: options })
 
   }
   const productItems = useSelector((state) => state.productItems.ids)
@@ -80,7 +80,7 @@ function Product({ image, title, oldPrice, newPrice, reviews, category, widths =
   return (
     <View style={[styles.container]}>
       <View style={[styles.priceView, {backgroundColor: newPrice ? "#283618" : 'white', fontStyle: newPrice ? "italic" : 'normal',}]}>
-        <Text style={[styles.priceText, {color : newPrice ? 'white' : 'black'}]}>{`$${oldPrice}`}</Text>
+        <Text style={[styles.priceText, {color : newPrice ? 'white' : 'black'}]}>{`$${oldPrice.toFixed(2)}`}</Text>
         {newPrice && <Text style={styles.crossPrice}>{`$${newPrice}`}</Text>}
       </View>
       <View style={styles.imageContainer}>
@@ -127,14 +127,14 @@ function Product({ image, title, oldPrice, newPrice, reviews, category, widths =
             </View>
           </Pressable>
           <View style={{ height: height / 18 }}>
-            {(!show || !quantity) && <FlexButton color={"#aaa"} borderRadius={5} width={1.5} onPress={()=>{onAdd({image, title, oldPrice, newPrice,}); setShow(true)}}>
+            {(!show || !quantity) && <FlexButton color={"#aaa"} borderRadius={5} width={1.5} onPress={()=>{onAdd({image, title, oldPrice, newPrice, addOn, nutrient, extras, options}); setShow(true)}}>
               <Text style={{ fontSize: 10 }}>
                 {" "}
                 <Feather name="shopping-cart" size={10} color="black" /> Add to
                 Cart
               </Text>
             </FlexButton>}
-            {show && quantity && <IncrementDecrementBtn minValue={quantity} onIncrease={()=>{handleAddToCart({ image, title, oldPrice,})}} onDecrease ={()=>{handleRemoveFromCart({ image, title, oldPrice})}}/>}
+            {show && quantity && <IncrementDecrementBtn minValue={quantity} onIncrease={()=>{onAdd({image, title, oldPrice, newPrice, addOn, nutrient, extras, options})}} onDecrease ={()=>{handleRemoveFromCart({ image, title, oldPrice})}}/>}
           </View>
         </View>
       </View>

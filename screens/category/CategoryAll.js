@@ -5,6 +5,8 @@ import {
     Text,
     TextInput,
     View,
+  Dimensions,
+  Image
   } from "react-native";
   import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
   import { Feather, EvilIcons } from "@expo/vector-icons";
@@ -16,7 +18,12 @@ import {
   import RecentList from "../../components/RecentList";
   import { useNavigation } from "@react-navigation/native";
 import Input from "../../components/Inputs/Input";
-  
+import ProductCategory from "../../components/Category/ProductCategory";
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart, removeFromCart } from "../../Data/cart";
+import { useState } from "react";
+
+const { width, height } = Dimensions.get("window");
   function CategoryAll() {
     const navigation = useNavigation()
     function pressHandler (){
@@ -25,6 +32,25 @@ import Input from "../../components/Inputs/Input";
     function cartHandler (){
         navigation.navigate('Cart')
       }
+      const dispatch = useDispatch();
+      const cartItems = useSelector((state) => state.cartItems.ids);
+      const productItems = useSelector((state) => state.productItems.ids);
+      const categoryObject = {};
+      
+      function handleAddToCart(product) {
+        dispatch(addToCart({ id: product }));
+      }
+      productItems.forEach((item) => {
+        const category = item.category;
+    
+        if (!categoryObject[category]) {
+          // If the category key doesn't exist, create it with an array containing the current item
+          categoryObject[category] = [item];
+        } else {
+          // If the category key already exists, push the current item to the existing array
+          categoryObject[category].push(item);
+        }
+      });
     let browse = (
       <>
         <View style={styles.browseView}>
@@ -46,7 +72,7 @@ import Input from "../../components/Inputs/Input";
         </View>
       </>
     );
-  
+    const [value, setValue] = useState('')
     let check = (
       <View style={styles.browseView}>
         <View style={styles.horizontalCat}>
@@ -93,11 +119,34 @@ import Input from "../../components/Inputs/Input";
         </View>
       </View>
     );
+    function searchTitles(items, searchPhrase) {
+      const result = [];
+  
+      // Iterate through each item in the array
+      items.forEach(item => {
+          // Check if the title or related keywords contain the search phrase
+          if (item.title.toLowerCase().includes(searchPhrase.toLowerCase())) {
+              // If found, push the title into the result array
+              result.push(item);
+          } else if (item.related) {
+              // If the item has related keywords, check each related keyword
+              item.related.forEach(keyword => {
+                  if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+                      // If found, push the title into the result array
+                      result.push(item);
+                  }
+              });
+          }
+      });
+  
+      return result;
+  }
+  const result = searchTitles(productItems, value);
     return (
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
           <View style={styles.search}>
-            <Input text={'Search'} icon={<EvilIcons name="search" size={24} color="#aaa" />} ><View style={styles.cart}>
+          <Input text={'Search'} icon={<EvilIcons name="search" size={24} color="#aaa" />} textInputConfig={{cursorColor: '#aaa',value: value, onChangeText: (e)=>setValue(e)}}><View style={styles.cart}>
               <Pressable onPress={cartHandler}>
                 <View>
                   <Feather name="shopping-cart" size={24} color="black" />
@@ -110,7 +159,13 @@ import Input from "../../components/Inputs/Input";
             </View> */}
             
           </View>
-          {browse}
+          {!value.length && browse}
+        {/* <View style={styles.recentView}>
+        <Text style={styles.text}>Recent</Text>
+        <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
+      </View> */}
+      {value && <ProductCategory items={result} onPress={handleAddToCart} />}
+      {!result.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>No results found</Text></View>}
           {/* <View style={styles.recentView}>
           <Text style={styles.text}>Recent</Text>
           <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
@@ -170,5 +225,11 @@ import Input from "../../components/Inputs/Input";
       marginTop: "10%"
     },
     text: { fontWeight: "500", fontSize: 20, marginBottom: 20 },
-  });
+    image: {
+      height: height / 3,
+      alignSelf: "center",
+      resizeMode: 'contain'
+    },
+  }
+  );
   

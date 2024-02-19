@@ -6,20 +6,24 @@ import {
   Pressable,
   Image,
   Dimensions,
-  ScrollView,
   Button,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import ItemCategory from "../components/Category/ItemCategory";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import ProductHorizontal from "../components/Category/ProductHorizontal";
 import Deal from "../components/Category/Deal";
 import { useNavigation } from "@react-navigation/native";
 import Input from "../components/Inputs/Input";
 const { width, height } = Dimensions.get("window");
+import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { useSelector, useDispatch } from "react-redux";
 import { addToCart, removeFromCart } from "../Data/cart";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import BottomSheet from '../components/Modals/BottomSheet';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -36,6 +40,18 @@ function Home() {
       return "Good Evening!";
     }
   }
+  const [option, setOption] = useState()
+  const ref = useRef(null);
+  function createFoodDictionary(foodArray) {
+    let foodDictionary = {};
+    for (let i = 0; i < foodArray.length; i++) {
+        foodDictionary[foodArray[i][0]] = 0;
+    }
+    return foodDictionary;
+}
+
+// Example usage:
+let [foodStore, setFood] = useState({})
 
   const retrieveTokenFromAsyncStorage = async () => {
     try {
@@ -65,8 +81,8 @@ function Home() {
   //     console.error("Error fetching data:", error);
   //   }
   // };
-
-
+  const [foodDictionary, setFoodDictionary] = useState(foodStore);
+  const [pro , setPro] = useState({})
   useEffect(() => {
     console.log("hit the useEffect");
     // fetchData();
@@ -104,11 +120,44 @@ function Home() {
   function dealHandler() {
     navigation.navigate("All Deals");
   }
+  const [extra, setExtra] = useState()
+  const [plus, setPlus] = useState([])
+  function findPrice(foodName) {
+    for (let i = 0; i < extra.length; i++) {
+      if (extra[i][0] === foodName) {
+        return extra[i][1];
+      }
+    }
+    return "Item not found in the menu";
+  }
+  
+  useEffect(()=>{
+    if (plus.length == 2){
+      
+      dispatch(addToCart({ id: pro }))
+        for (var i = 0; i < plus.length; i ++){
+          dispatch(addToCart({ id: {'title': plus[i], 'oldPrice': findPrice(plus[i]), quantity: 1} }))
+        }
+        setPlus([])
+        ref?.current?.scrollTo(0)
+        setFoodDictionary(foodStore)
+    }
+},[plus])
   function handleAddToCart(product) {
-    dispatch(addToCart({ id: product }));
+    setPro(product)
+    if (product.extras){
+      setExtra(product.extras)
+      setFoodDictionary(createFoodDictionary(product.extras))
+  
+  }
+  if (product.extras || product.options ){
+  
+    ref?.current?.scrollTo(-570);}else{
+    dispatch(addToCart({ id: product }));}
   }
   return (
     <SafeAreaProvider>
+      <GestureHandlerRootView style ={{flex: 1}}>
       <SafeAreaView style={styles.container}>
         <View
           style={{
@@ -164,13 +213,18 @@ function Home() {
                 </Pressable>
           </View>
         </View>
-        <View style={styles.search}>
-          <Input
+          <Pressable style={[styles.search, {marginTop: 10}]} onPress={()=> navigation.navigate('Search')}>
+            <View style={{flexDirection: 'row', gap: 20,borderColor: 'white', borderWidth: 1, borderRadius: 10, alignItems: "center",paddingVertical: 12, paddingHorizontal: 16 }}>
+              <EvilIcons name="search" size={24} color="white" />
+              <Text style={{color: 'white', fontSize: 16}}>Search items</Text>
+            </View>
+            {/* <Input
+            onInteract={()=> navigation.navigate('Search')}
             color={"white"}
             icon={<EvilIcons name="search" size={24} color="white" />}
             text={"Search items"}
-          ></Input>
-        </View>
+          ></Input> */}
+          </Pressable>
         <ScrollView style={{ backgroundColor: "white" }}>
           <View style={[styles.horizontalCat, { marginTop: 20 }]}>
             <View style={styles.catHead}>
@@ -263,7 +317,7 @@ function Home() {
           <View style={styles.recommendedView}>
             <Text style={styles.text}>Recommended Foods</Text>
             <ProductHorizontal
-              items={categoryObject["food"]}
+              items={categoryObject["food"].slice(0,6)}
               onPress={handleAddToCart}
             />
           </View>
@@ -460,7 +514,68 @@ function Home() {
             </View>
           </View>
         </ScrollView>
+        <BottomSheet ref={ref}>
+        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
+          <View style={{ marginBottom: 100}}>
+        {pro.addOn && <View style={{gap: 25, paddingTop: 30, marginBottom: 50}}>
+                            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Choose Exotic Flavor'}</Text>
+                                {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
+                            </View>
+                            <Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>{`Choose up to ${2}`}</Text>
+                            {pro.extras.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15}}>
+                                <View>
+                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
+                                </View>
+                                <Pressable onPress={()=>toggleNumberInArray(idx)}>
+                                <MaterialCommunityIcons name={`${selected.indexOf(idx) === - 1 ? "checkbox-blank-outline" : "checkbox-marked"  }`} size={24} color={`${selected.length < 2 || selected.indexOf(idx) !== - 1 ?  'black': 'rgba(0,0,0,0.05)' }`} />
+                                </Pressable>
+                            </View>)}
+
+                        </View>}
+              {pro.options &&<View><View style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15,}}>
+                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Choose One'}</Text>
+                                {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
+                            </View>
+              {pro.options.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 13,}}>
+                                <View>
+                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
+                                </View>
+                                <Pressable onPress={()=> { dispatch(addToCart({ id: pro }));ref?.current?.scrollTo(0)}}>
+                                <Ionicons name={`${idx == option ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="black" />
+                                </Pressable>
+                            </View>)}</View>}
+              {pro.nutrient && pro.nutrient == 'protein' && <View style={{gap: 25, paddingTop: 30}}>
+                            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Pick Your Sides'}</Text>
+                                <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View>
+                            </View>
+                            <Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>{`Choose ${2}`}</Text>
+                            {pro.extras.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15}}>
+                                <View>
+                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item[0]}</Text>
+                                    <Text>{item[1] ? `+ $${item[1]}` : ''}</Text>
+                                </View>
+                                <View>
+                                <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={()=>{setFoodDictionary((prev)=>{return {...prev, [item[0]] : foodDictionary[item[0]]+1}});setPlus((prev)=> {const arr = [...prev]; arr.push(item[0]); return arr})}}  onDecrease={()=>{setFoodDictionary((prev)=>{return {...prev, [item[0]] : (foodDictionary[item[0]] ?foodDictionary[item[0]] : 1) -1}}); setPlus((prev)=>{const arr = [...prev]; arr.splice(prev.indexOf(item[0]), 1); return arr})}}/>
+                                </View>
+                            </View>)}
+
+                        </View>}
+                    {pro.instructions && <View 
+        style ={{color: 'white', backgroundColor : 'white'}}><TextInput
+        multiline
+        placeholder="Special Instructions?"
+        cursorColor={'#aaa'}
+        numberOfLines={6}
+        clearButtonMode="always"
+        style={{paddingHorizontal: 10}}
+      /></View>
+      }</View>
+        </ScrollView>
+        </BottomSheet>
       </SafeAreaView>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
@@ -473,7 +588,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#283618",
   },
   search: {
-    flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: "5%",
     paddingBottom: 20,

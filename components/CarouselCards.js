@@ -11,7 +11,7 @@ const CarouselCardItem = ({item, index, onPress }) => {
     <Pressable onPress={onPress} style ={{width: width, alignItems: 'center' }} key={index}>
       <Image
         source={item.image}
-        style ={{width: width/1.3, height: height/3 }} 
+        style ={{width: width, height: height/2 }} 
       />
     </Pressable>
   )
