@@ -16,9 +16,14 @@ import Info from "../components/Info";
 import CodeInput from "../components/Inputs/CodeInput";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { updateProfile } from "../Data/profile";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function NumberLogin() {
+  const dispatch = useDispatch();
+  let authToken
   const [otp, setOtp] = useState("");
   const route = useRoute();
   const phoneNumber = route.params?.phoneNumber || "";
@@ -27,45 +32,92 @@ function NumberLogin() {
     setOtp(data);
   }
 
+  const loginData = async () => {
+    try {
+      const response = await axios.post(
+        `http://10.0.0.173:3000/api/v1/users/loginWithNumber/`,
+        JSON.stringify({ phoneNumber }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("token", response.data.data.user);
+      authToken = response.data.token
+      console.log(authToken)
+      return response.data.data.user;
+    } catch (err) {
+      console.log(err.error);
+    }
+  };
+
   function handleScreenPress() {
     Keyboard.dismiss();
   }
   const navigation = useNavigation();
-  function resendCode(){
-    resendVerifyNumber()
+  function resendCode() {
+    resendVerifyNumber();
   }
   async function pressHandler() {
     const verifyResponse = await verifyNumber(otp);
-    if(verifyResponse === "approved"){
-      navigation.replace("HomeTabs");
-    }else(
-      Alert.alert('Incorrect OTP', 'Please check your input and try again')
-    )
+    if (verifyResponse === "approved") {
+      const loginInfo = await loginData();
+      console.log("login data: ", loginInfo)
+      await saveTokenToAsyncStorage()
+      dispatch(
+        updateProfile({
+          id: {
+            firstName: loginInfo.firstName,
+            lastName: loginInfo.lastName,
+            phoneNumber: loginInfo.phoneNumber,
+            email: loginInfo.email,
+            password: loginInfo.password,
+            payments: [],
+            address: []
+          },
+        })
+      );
+    navigation.replace("HomeTabs");
+    } else
+      Alert.alert("Incorrect OTP", "Please check your input and try again");
   }
   function signUpHandler() {
     navigation.navigate("StartScreen");
   }
   const verifyNumber = async (code) => {
-    try{
+    try {
       const response = await axios.get(
         `http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`
       );
-      console.log(response.data.verification)
+      console.log(response.data.verification);
       return response.data.verification;
-    } catch(err){
-      console.log(err.error)
+    } catch (err) {
+      console.log(err.error);
     }
   };
-  const resendVerifyNumber = async() =>{
-    try{
-      console.log(phoneNumber)
-      const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
+  const resendVerifyNumber = async () => {
+    try {
+      console.log(phoneNumber);
+      const response = await axios.get(
+        `http://10.0.0.173:3000/getCode/${phoneNumber}`
+      );
       // console.log("got here")
-      console.log(response.data)
-    } catch(err){
-      console.log(err.error)
+      console.log(response.data);
+    } catch (err) {
+      console.log(err.error);
     }
-  }
+  };
+
+  const saveTokenToAsyncStorage = async () => {
+    try {
+      await AsyncStorage.setItem("authToken", authToken);
+      console.log("Token saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
@@ -86,7 +138,9 @@ function NumberLogin() {
                   justifyContent: "space-between",
                 }}
               >
-                <Text onPress={resendCode} style={{ marginVertical: 2 }}>Resend Code</Text>
+                <Text onPress={resendCode} style={{ marginVertical: 2 }}>
+                  Resend Code
+                </Text>
                 <Text style={{ marginVertical: 2 }}>00:59</Text>
               </View>
             </View>

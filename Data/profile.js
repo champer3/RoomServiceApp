@@ -5,8 +5,8 @@ const profile = createSlice({
     initialState: {
         profile : {
             firstName: '',
-            secondName: '',
-            number: '',
+            lastName: '',
+            phoneNumber: '+',
             email: '',
             language: 'English (United States)',
             password: '',

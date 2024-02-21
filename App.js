@@ -242,7 +242,8 @@ function HomeTabs() {
   );
 }
 
-const STRIPE_KEY = "pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"
+const STRIPE_KEY =
+  "pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV";
 
 export default function App() {
   return (
@@ -250,18 +251,17 @@ export default function App() {
       <StripeProvider publishableKey={STRIPE_KEY}>
         <NavigationContainer>
           <StatusBar style="light" />
-
           <Stack.Navigator>
             {/* <Stack.Screen
               name="OnBoarding"
               component={OnBoarding}
               options={{ headerShown: false }}
             /> */}
-            <Stack.Screen
+            {/* <Stack.Screen
               name="Authentication"
               component={Authentication}
               options={{ headerShown: false }}
-            />
+            /> */}
             <Stack.Screen
               name="HomeTabs"
               component={HomeTabs}

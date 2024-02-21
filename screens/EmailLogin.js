@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Pressable } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Pressable, Alert } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
@@ -6,14 +6,42 @@ import BareButton from "../components/Buttons/BareButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { updateProfile } from "../Data/profile";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function EmailLogin() {
+  const dispatch = useDispatch();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const postData = {
+    email,
+    password,
+  };
   const navigation = useNavigation()
   function handleScreenPress() {
     Keyboard.dismiss()
   }
-  function pressHandler (){
-    navigation.navigate('HomeTabs')
+  async function pressHandler (){
+    const response = await createAccount()
+    if(typeof response !== 'undefined'){
+      dispatch(
+        updateProfile({
+          id: {
+            firstName: response.firstName,
+            lastName: response.lastName,
+            phoneNumber: response.phoneNumber,
+            email: response.email,
+            password: response.password,
+          },
+        })
+      );
+      navigation.replace('HomeTabs')
+    }else{
+      Alert.alert("Invalid input", "check the email or password")
+    }
   }
   function numberHandler (){
     navigation.navigate('NumberLogin')
@@ -21,6 +49,35 @@ function EmailLogin() {
   function signUpHandler (){
     navigation.navigate('StartScreen')
   }
+
+  const saveTokenToAsyncStorage = async (authToken) => {
+    try {
+      await AsyncStorage.setItem("authToken", authToken);
+      console.log("Token saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
+  };
+
+  const createAccount = async () => {
+    try {
+      const response = await axios.post(
+        `http://10.0.0.173:3000/api/v1/users/login`,
+        JSON.stringify(postData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const authToken = response.data.token;
+      console.log(response.data.data.user)
+      await saveTokenToAsyncStorage(authToken)
+      return response.data.data.user
+    } catch (err) {
+      console.log(err.error);
+    }
+  };
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
@@ -41,11 +98,19 @@ function EmailLogin() {
         <Input
           type="email"
           text="Email"
+          textInputConfig={{
+            onChangeText: (text) => setEmail(text),
+            value: email,
+          }}
           icon={<MaterialIcons name="email" size={24} color="#aaa" />}
         />
         <Input
           type="password"
           text="Password"
+          textInputConfig={{
+            onChangeText: (text) => setPassword(text),
+            value: password,
+          }}
           secured ={true}
           icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
         />

@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Pressable,
+  Alert,
 } from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -32,18 +33,23 @@ function AddNumber() {
   function handleUpdate() {
     dispatch(updateProfile({ id: form }));
   }
-  const phoneNumberString = form.number.replace(/[^0-9]/g, '');
-  const phoneNumber = "+1" + phoneNumberString
+  const phoneNumberString = form.number !== undefined || null ? form.number.replace(/[^0-9]/g, '') : null;
+  // const phoneNumberString = form.number;
+  const phoneNumber = "+1" + phoneNumberString;
   const verifyNumber = async () => {
-    console.log(phoneNumber);
-    const response = await axios.get(
-      `http://10.0.0.173:3000/getCode/${phoneNumber}`
-    );
-    console.log("got here");
+    try {
+      const response = await axios.get(
+        `http://10.0.0.173:3000/getCode/${phoneNumber}`
+      );
+      console.log("got here");
+    } catch (err) {
+      console.log(err.error);
+    }
     // console.log(response.data)
   };
   function handleFormChange(field, value) {
     if (field == "number") {
+      // const cleanedInput = value;
       const cleanedInput = value.replace(/\D/g, "");
 
       // Add brackets dynamically based on entered digits
@@ -65,11 +71,28 @@ function AddNumber() {
     }
     setForm((prev) => ({ ...prev, [field]: value }));
   }
-  function handleSubmit() {
+  async function handleSubmit() {
     if (form.number.length == 14) {
-      handleUpdate();
-      verifyNumber()
-      navigation.navigate("AddPin", {phoneNumber});
+      try {
+        console.log(phoneNumber)
+        const checkNumber = await axios.get(
+          `http://10.0.0.173:3000/api/v1/users/getNumber/${phoneNumber}`
+        );
+        console.log(checkNumber.data.data)
+        if (checkNumber.data.data) {
+          Alert.alert(
+            "Phone Number already exist",
+            "go ahead and login with your Phone Number"
+          );
+        } else {
+          console.log("bdhbsjbdv");
+          handleUpdate();
+          // verifyNumber();
+          navigation.navigate("AddPin", { phoneNumber });
+        }
+      } catch (err) {
+        console.log(err);
+      }
     } else {
       setWarning("Provide a valid number");
     }

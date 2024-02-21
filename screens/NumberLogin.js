@@ -35,7 +35,7 @@ function NumberLogin() {
   async function pressHandler() {
     const response = await verifyNumber()
     if(response){
-      navigation.navigate("PinLogin", {phoneNumber});
+    navigation.navigate("PinLogin", {phoneNumber});
     } else{
       Alert.alert('No account', "There is no account attributed to this number. SignUp!")
     }
@@ -43,13 +43,12 @@ function NumberLogin() {
 
   const verifyNumber = async() =>{
     try{
-      console.log("nothing")
       const checkNumber = await axios.get(`http://10.0.0.173:3000/api/v1/users/getNumber/${phoneNumber}`);
-      if(checkNumber.data){
+      if(checkNumber.data.data){
         const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
         console.log("hdhdhh", response.data)
       }
-      return checkNumber.data
+      return checkNumber.data.data
       // console.log("got here")
     } catch(err){
       console.log(err.error)
