@@ -5,7 +5,7 @@ const { width, height } = Dimensions.get("window");
 
 
 
-function ProductAction({title, image, price, reviews, category, quantity, action,  children }) {
+function ProductAction({title, image, price, reviews, category, quantity, action, onTap, children }) {
   const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('Product', {title: title, image : image, reviews: reviews, oldPrice: price, category: category })
@@ -25,7 +25,7 @@ function ProductAction({title, image, price, reviews, category, quantity, action
             paddingHorizontal: 30,
           }}
         >
-          <Pressable style={({ pressed }) => pressed && { opacity: 0.5 }}>
+          <Pressable onPress={onTap} style={({ pressed }) => pressed && { opacity: 0.5 }}>
             <Image
               style={styles.image}
               source={image}
@@ -53,7 +53,7 @@ function ProductAction({title, image, price, reviews, category, quantity, action
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 9, alignItems: 'center' }}
               >
-                <Text style={{fontWeight: 'bold', fontSize: 18}}>{`$${(quantity ? price*quantity : price).toFixed(2)}`}</Text>
+                <Text style={{fontWeight: 'bold', fontSize: 18}}>{`$${(price).toFixed(2)}`}</Text>
                 {quantity != null && <View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 5, borderRadius: 50}}>
                     <Text>{quantity}</Text>
                 </View>}

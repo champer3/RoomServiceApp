@@ -105,18 +105,13 @@ function handleRemoveFromCart(product){
 }
 function addQuantityToObjects(inputList) {
 
-    const titleCountMap = {};
-
-    // Loop through the inputList to count occurrences of each title
-    inputList.forEach((obj) => {
-        const title = obj.title;
-        if (title == route.params.title){
-        // Increment the count for the title or initialize to 1 if it doesn't exist
-        titleCountMap[title] = (titleCountMap[title] || 0) + 1;}
+    const result = {};
+    inputList.forEach(obj => {
+        const title = Object.keys(obj)[0];
+        const arrayLength = obj[title].length;
+        result[title] = arrayLength;
     });
-    return titleCountMap
-
-
+    return result;
 }
 function createFoodDictionary(foodArray) {
     let foodDictionary = {};

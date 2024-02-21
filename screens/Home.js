@@ -21,7 +21,7 @@ import Input from "../components/Inputs/Input";
 const { width, height } = Dimensions.get("window");
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart } from "../Data/cart";
+import { addToCart, removeFromCart, addOptions } from "../Data/cart";
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from '../components/Modals/BottomSheet';
 import axios from "axios";
@@ -133,11 +133,13 @@ let [foodStore, setFood] = useState({})
   
   useEffect(()=>{
     if (plus.length == 2){
-      
-      dispatch(addToCart({ id: pro }))
-        for (var i = 0; i < plus.length; i ++){
-          dispatch(addToCart({ id: {'title': plus[i], 'oldPrice': findPrice(plus[i]), quantity: 1} }))
+      let price = 0
+      for (var i = 0; i < plus.length; i ++){
+          price += findPrice(plus[i])
         }
+      dispatch(addToCart({ id: {...pro, ['oldPrice']: pro['oldPrice']+price} }))
+      dispatch(addOptions({id: {'title': pro.title, 'options': {'Sides' : plus}}}))
+        
         setPlus([])
         ref?.current?.scrollTo(0)
         setFoodDictionary(foodStore)
@@ -155,6 +157,7 @@ let [foodStore, setFood] = useState({})
     ref?.current?.scrollTo(-570);}else{
     dispatch(addToCart({ id: product }));}
   }
+  console.log(cartItems[0])
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style ={{flex: 1}}>
@@ -516,7 +519,7 @@ let [foodStore, setFood] = useState({})
         </ScrollView>
         <BottomSheet ref={ref}>
         <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
-          <View style={{ marginBottom: 100}}>
+          <View style={{ marginBottom: 400}}>
         {pro.addOn && <View style={{gap: 25, paddingTop: 30, marginBottom: 50}}>
                             <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                                 <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Choose Exotic Flavor'}</Text>
@@ -541,7 +544,7 @@ let [foodStore, setFood] = useState({})
                                 <View>
                                     <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
                                 </View>
-                                <Pressable onPress={()=> { dispatch(addToCart({ id: pro }));ref?.current?.scrollTo(0)}}>
+                                <Pressable onPress={()=> { dispatch(addToCart({ id: pro }));dispatch(addOptions({id: {'title': pro.title, 'options': {'Picked' : pro.options[idx]}}}));ref?.current?.scrollTo(0)}}>
                                 <Ionicons name={`${idx == option ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="black" />
                                 </Pressable>
                             </View>)}</View>}
@@ -557,7 +560,7 @@ let [foodStore, setFood] = useState({})
                                     <Text>{item[1] ? `+ $${item[1]}` : ''}</Text>
                                 </View>
                                 <View>
-                                <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={()=>{setFoodDictionary((prev)=>{return {...prev, [item[0]] : foodDictionary[item[0]]+1}});setPlus((prev)=> {const arr = [...prev]; arr.push(item[0]); return arr})}}  onDecrease={()=>{setFoodDictionary((prev)=>{return {...prev, [item[0]] : (foodDictionary[item[0]] ?foodDictionary[item[0]] : 1) -1}}); setPlus((prev)=>{const arr = [...prev]; arr.splice(prev.indexOf(item[0]), 1); return arr})}}/>
+                                <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={()=>{setFoodDictionary((prev)=>{return {...prev, [item[0]] : foodDictionary[item[0]]+1}});setPlus((prev)=> {const arr = [...prev]; arr.push(item[0]); return arr})}}  onDecrease={()=>{setFoodDictionary((prev)=>{return {...prev, [item[0]] : (foodDictionary[item[0]] ?foodDictionary[item[0]] : 1) -1}}); setPlus((prev)=>{const arr = [...prev];  const index = prev.indexOf(item[0]); if (index != -1){arr.splice(index, 1)}; return arr})}}/>
                                 </View>
                             </View>)}
 
