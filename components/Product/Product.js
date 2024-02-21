@@ -161,8 +161,8 @@ const styles = StyleSheet.create({
   },
   textContainer: { marginBottom: 5 },
   image: {
-    maxWidth: width / 3.7,
-    height: height / 8,
+    maxWidth: width / 3.3,
+    height: height / 7,
     alignSelf: "center",
   },
   text: { fontSize: 14, fontWeight: 500 },

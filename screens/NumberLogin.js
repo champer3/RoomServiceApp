@@ -35,7 +35,7 @@ function NumberLogin() {
   async function pressHandler() {
     const response = await verifyNumber()
     if(response){
-      navigation.navigate("PinLogin", {phoneNumber});
+    navigation.navigate("PinLogin", {phoneNumber});
     } else{
       Alert.alert('No account', "There is no account attributed to this number. SignUp!")
     }

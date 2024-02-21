@@ -19,9 +19,11 @@ import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function NumberLogin() {
   const dispatch = useDispatch();
+  let authToken
   const [otp, setOtp] = useState("");
   const route = useRoute();
   const phoneNumber = route.params?.phoneNumber || "";
@@ -41,7 +43,9 @@ function NumberLogin() {
           },
         }
       );
-      // console.log(response.data);
+      console.log("token", response.data.data.user);
+      authToken = response.data.token
+      console.log(authToken)
       return response.data.data.user;
     } catch (err) {
       console.log(err.error);
@@ -60,6 +64,7 @@ function NumberLogin() {
     if (verifyResponse === "approved") {
       const loginInfo = await loginData();
       console.log("login data: ", loginInfo)
+      await saveTokenToAsyncStorage()
       dispatch(
         updateProfile({
           id: {
@@ -68,10 +73,12 @@ function NumberLogin() {
             phoneNumber: loginInfo.phoneNumber,
             email: loginInfo.email,
             password: loginInfo.password,
+            payments: [],
+            address: []
           },
         })
       );
-      navigation.replace("HomeTabs");
+    navigation.replace("HomeTabs");
     } else
       Alert.alert("Incorrect OTP", "Please check your input and try again");
   }
@@ -101,6 +108,16 @@ function NumberLogin() {
       console.log(err.error);
     }
   };
+
+  const saveTokenToAsyncStorage = async () => {
+    try {
+      await AsyncStorage.setItem("authToken", authToken);
+      console.log("Token saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
