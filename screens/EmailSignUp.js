@@ -1,4 +1,13 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Image,
+  Text,
+  View,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Pressable,
+  Alert,
+} from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
@@ -6,73 +15,93 @@ import Info from "../components/Info";
 import BareButton from "../components/Buttons/BareButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from 'react';
+import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import {useSelector, useDispatch} from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
+import axios from "axios";
 
 function EmailSignUp() {
   function handleScreenPress() {
     Keyboard.dismiss();
   }
-  const navigation = useNavigation()
-  function signInHandler (){
-    navigation.navigate('NumberLogin')
+  const navigation = useNavigation();
+  function signInHandler() {
+    navigation.navigate("NumberLogin");
   }
   const dispatch = useDispatch();
-  const data = useSelector((state) => state.profileData.profile)
-  
-  const [warning, setWarning] = useState()
-  const [form , setForm] = useState(data)
-  function handleUpdate(){
-    dispatch(updateProfile({id : form}))
- }
-  function handleFormChange(field, value) {
-    if (field == 'number'){
-      const cleanedInput = value.replace(/\D/g, '');
+  const data = useSelector((state) => state.profileData.profile);
 
-    // Add brackets dynamically based on entered digits
-    let formattedNumber = '';
-    for (let i = 0; i < cleanedInput.length; i++) {
-      if (i === 0) {
-        formattedNumber += '(';
-      } else if (i === 3) {
-        formattedNumber += ') ';
-      } else if (i === 6) {
-        formattedNumber += '-';
-      }
-      formattedNumber += cleanedInput[i];
-    }
-    value = formattedNumber
-    }
-    if (field == 'email'){
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-        if (!emailRegex.test(value)) {
-          setWarning('Provide a valid email address')
-        } else{
-          setWarning()
-        } 
-    }
-    setForm((prev) => ({...prev, [field]: value}));
-    
+  const [warning, setWarning] = useState();
+  const [form, setForm] = useState(data);
+  function handleUpdate() {
+    dispatch(updateProfile({ id: form }));
   }
-  function handleSubmit(){
-    if (!(warning) && form.email && form.firstName && form.secondName){
-    handleUpdate();navigation.navigate('AddNumber')}
+  function handleFormChange(field, value) {
+    if (field == "number") {
+      // const cleanedInput = value.replace(/\D/g, '');
+      const cleanedInput = value.replace(/\D/g, "");
+
+      // Add brackets dynamically based on entered digits
+      let formattedNumber = "";
+      for (let i = 0; i < cleanedInput.length; i++) {
+        if (i === 0) {
+          formattedNumber += "(";
+        } else if (i === 3) {
+          formattedNumber += ") ";
+        } else if (i === 6) {
+          formattedNumber += "-";
+        }
+        formattedNumber += cleanedInput[i];
       }
+      value = formattedNumber;
+    }
+    if (field == "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(value)) {
+        setWarning("Provide a valid email address");
+      } else {
+        setWarning();
+      }
+    }
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+  async function handleSubmit() {
+    if (!warning && form.email && form.firstName && form.secondName) {
+      // console.log(form);
+      try {
+        const checkEmail = await axios.get(
+          `http://10.0.0.173:3000/api/v1/users/getEmail/${form.email}`
+        );
+        console.log(checkEmail)
+        if (checkEmail.data.data) {
+          Alert.alert(
+            "Email already exist",
+            "go ahead and login with your email address"
+          );
+        } else {
+          console.log("bdhbsjbdv");
+          handleUpdate();
+          navigation.navigate("AddNumber");
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
-        <View style={styles.welcomeView}>
+          <View style={styles.welcomeView}>
             <Text style={styles.text}>Hello,</Text>
             <Text style={styles.text}>Create An Account🤩</Text>
             <View style={styles.lineContainer}>
-              <View style={[styles.line, { backgroundColor: "#283618" }]}></View>
               <View
-                style={[styles.line]}
+                style={[styles.line, { backgroundColor: "#283618" }]}
               ></View>
+              <View style={[styles.line]}></View>
               <View style={styles.line}></View>
               <View style={styles.line}></View>
             </View>
@@ -85,13 +114,41 @@ function EmailSignUp() {
               justifyContent: "start",
               //   borderWidth: 2,
               //   borderColor: "black",
-              marginTop: 35
+              marginTop: 35,
             }}
           >
-            <Input text={'Email Address'} icon={<MaterialIcons name="email" size={24} color="#aaa" />} textInputConfig={{cursorColor: '#aaa',value: form.email, onChangeText: handleFormChange.bind(this, 'email')}}/>
-            <Input text={'First Name'} icon={<Ionicons name="person" size={24} color={'#aaa'}/> } textInputConfig={{cursorColor: '#aaa',value: form.firstName, onChangeText: handleFormChange.bind(this, 'firstName')}}/>
-            <Input text={'Last Name'} icon={<Ionicons name="person" size={24} color={'#aaa'}/> } textInputConfig={{cursorColor: '#aaa',value: form.secondName, onChangeText: handleFormChange.bind(this, 'secondName')}}/>
-            {warning && <Info text={`${warning}                                            `}/>}
+            <Input
+              text={"Email Address"}
+              icon={<MaterialIcons name="email" size={24} color="#aaa" />}
+              textInputConfig={{
+                cursorColor: "#aaa",
+                value: form.email,
+                onChangeText: handleFormChange.bind(this, "email"),
+              }}
+            />
+            <Input
+              text={"First Name"}
+              icon={<Ionicons name="person" size={24} color={"#aaa"} />}
+              textInputConfig={{
+                cursorColor: "#aaa",
+                value: form.firstName,
+                onChangeText: handleFormChange.bind(this, "firstName"),
+              }}
+            />
+            <Input
+              text={"Last Name"}
+              icon={<Ionicons name="person" size={24} color={"#aaa"} />}
+              textInputConfig={{
+                cursorColor: "#aaa",
+                value: form.secondName,
+                onChangeText: handleFormChange.bind(this, "secondName"),
+              }}
+            />
+            {warning && (
+              <Info
+                text={`${warning}                                            `}
+              />
+            )}
 
             {/* <Text
               style={{
@@ -106,14 +163,14 @@ function EmailSignUp() {
 
             <View style={styles.buttonContainer}>
               <Button onPress={handleSubmit}>
-                <Text style={{ fontSize: 16, color: "white" }}>Continue  </Text>
+                <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
                 <Image
                   style={styles.vector}
                   source={require("../assets/Vector.png")}
                 />
               </Button>
             </View>
-{/*
+            {/*
             <Text
               style={{
                 color: "#BC6C25",
@@ -150,18 +207,13 @@ function EmailSignUp() {
             >
               <BareButton borderRadius={24} color="#EEEEEE">
                 <Image
-                  style={[styles.facebook, {resizeMode: "center"}]}
+                  style={[styles.facebook, { resizeMode: "center" }]}
                   source={require("../assets/facebook.png")}
                 />
                 <Text> Continue with facebook</Text>
               </BareButton>
             </View>
-            <View
-              style={[
-                styles.buttonContainer,
-
-              ]}
-            >
+            <View style={[styles.buttonContainer]}>
               <BareButton borderRadius={24} color="#EEEEEE">
                 <Image
                   style={styles.facebook}
@@ -175,9 +227,11 @@ function EmailSignUp() {
                 Already have an account?
               </Text>
               <Pressable onPress={signInHandler}>
-              <Text style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}>
-                Sign In
-              </Text>
+                <Text
+                  style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}
+                >
+                  Sign In
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -224,7 +278,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 65,
     marginBottom: 10,
-    marginTop: 8
+    marginTop: 8,
   },
   vector: {
     width: "10%",
@@ -233,7 +287,7 @@ const styles = StyleSheet.create({
   facebook: {
     width: "7%",
     resizeMode: "contain",
-    marginRight: 3
+    marginRight: 3,
   },
   threeContainer: {
     width: "100%",

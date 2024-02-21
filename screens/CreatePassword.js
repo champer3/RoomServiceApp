@@ -24,10 +24,12 @@ function CreatePassword() {
   const [form, setForm] = useState(data);
   console.log("FORM: ", form);
   const profile = useSelector((state) => state.profileData.profile);
+  const phoneNumberString = form.number.replace(/[^0-9]/g, '');
+  const phoneNumber = "+1" + phoneNumberString
   const postData = {
     firstName: form.firstName,
     lastName: form.secondName,
-    phoneNumber: form.number,
+    phoneNumber,
     email: form.email,
     password: form.password,
     passwordConfirm: form.password,
@@ -74,8 +76,9 @@ function CreatePassword() {
     } catch (err) {
       console.log(err.error);
     }
-    // console.log(response.data)
   };
+
+
 
   // Save the token to AsyncStorage
   const saveTokenToAsyncStorage = async () => {
