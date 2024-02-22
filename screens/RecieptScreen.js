@@ -23,31 +23,59 @@ function RecieptScreen() {
     
     const [cartItems, setCartItems] = useState([...route.params.items])
     function getTotalSum() {
-        return cartItems.reduce((sum, obj) => sum + obj.oldPrice, 0);
+        var totalPrice = 0;
+    cartItems.forEach(obj => {
+      const title = Object.keys(obj)[0];
+        const titleArray = Object.values(obj)[0];
+        
+        titleArray.forEach(item => {
+            totalPrice += item.oldPrice;
+        });
+        cost[title] = totalPrice
+    });
+    return totalPrice
       } 
+      const cost = {}
       function addQuantityToObjects(inputList) {
         const titleCountMap = {};
-    
+
+        const result = {};
+      inputList.forEach(obj => {
+          const title = Object.keys(obj)[0];
+          const arrayLength = obj[title].length;
+          result[title] = arrayLength;
+      });
         // Loop through the inputList to count occurrences of each title
         inputList.forEach((obj) => {
             const title = obj.title;
-    
+  
             // Increment the count for the title or initialize to 1 if it doesn't exist
             titleCountMap[title] = (titleCountMap[title] || 0) + 1;
         });
-    
+        
+        
+      inputList.forEach(obj => {
+        var totalPrice = 0;
+        const title = Object.keys(obj)[0];
+          const titleArray = Object.values(obj)[0];
+          
+          titleArray.forEach(item => {
+              totalPrice += item.oldPrice;
+          });
+          cost[title] = totalPrice
+      });
         // Loop through the inputList again to create a new list with quantity key
         const newList = inputList.map((obj) => {
-            const title = obj.title;
-            const quantity = titleCountMap[title];
-    
+            const title = Object.keys(obj)[0];
+            const quantity = result[title];
+  
             // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
             titleCountMap[title] = 0;
-    
-            return { ...obj, quantity };
+  
+            return { ...obj[title][0], ['oldPrice'] : cost[title], quantity };
         });
         const filteredList = newList.filter((obj) => obj.quantity !== 0);
-    
+  
         return filteredList;
     }
     function getFormattedDate() {
@@ -81,6 +109,7 @@ function RecieptScreen() {
     // Example usage:
     const todayFormatted = getFormattedDate();
     const newList = addQuantityToObjects(cartItems);
+    console.log(newList)
     let cnst = newList.map(({ title, quantity, oldPrice }) => `
     <tr>
       <td>${title}</td>
@@ -307,7 +336,7 @@ const selectPrinter = async () => {
         <ScrollView>
         <View style={styles.recommendedView}>
             <View style={{gap: 20}}>
-            {newList.map(({title, image, quantity, oldPrice}, idx)=><ProductAction key={idx} price={oldPrice*quantity} title={title} image={image}><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
+            {newList.map(({title, image, quantity, oldPrice}, idx)=><ProductAction key={idx} price={oldPrice} title={title} image={image}><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
                     <Text style ={{fontWeight: 'bold', fontSize: 18}}
                     >{quantity}</Text>
                 </View></ProductAction>)}
@@ -338,8 +367,6 @@ const selectPrinter = async () => {
         </View>
         <View style={[styles.recommendedView,{marginVertical: '10%', marginTop: '5%', marginHorizontal: '5%', paddingBottom: '2%',borderWidth: 2, borderColor: 'rgba(0,0,0,0.05)', borderRadius: 20,justifyContent: 'space-between'}]}>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            <Text style={styles.text}>Payment Method</Text>
-            <Text style={[styles.text, {color : 'black'}]}>Mastercard 8745</Text>
             </View>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
             <Text style={styles.text}>Order Id</Text>
