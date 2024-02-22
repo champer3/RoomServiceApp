@@ -36,29 +36,47 @@ function OrderDisplay(){
             rate.push('staro')
         }
     }
+    const cost = {}
     function addQuantityToObjects(inputList) {
       const titleCountMap = {};
-  
+
+      const result = {};
+    inputList.forEach(obj => {
+        const title = Object.keys(obj)[0];
+        const arrayLength = obj[title].length;
+        result[title] = arrayLength;
+    });
       // Loop through the inputList to count occurrences of each title
       inputList.forEach((obj) => {
           const title = obj.title;
-  
+
           // Increment the count for the title or initialize to 1 if it doesn't exist
           titleCountMap[title] = (titleCountMap[title] || 0) + 1;
       });
-  
+      
+      
+    inputList.forEach(obj => {
+      var totalPrice = 0;
+      const title = Object.keys(obj)[0];
+        const titleArray = Object.values(obj)[0];
+        
+        titleArray.forEach(item => {
+            totalPrice += item.oldPrice;
+        });
+        cost[title] = totalPrice
+    });
       // Loop through the inputList again to create a new list with quantity key
       const newList = inputList.map((obj) => {
-          const title = obj.title;
-          const quantity = titleCountMap[title];
-  
+          const title = Object.keys(obj)[0];
+          const quantity = result[title];
+
           // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
           titleCountMap[title] = 0;
-  
-          return { ...obj, quantity };
+
+          return { ...obj[title][0], ['oldPrice'] : cost[title], quantity };
       });
       const filteredList = newList.filter((obj) => obj.quantity !== 0);
-  
+
       return filteredList;
   }
     var newList;
@@ -133,7 +151,7 @@ function OrderDisplay(){
     </View>} */}
     {index == 0 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
     {newList && newList.map(({title, image, quantity, oldPrice, reviews}, idx)=><ProductAction key={idx} price={oldPrice} quantity={quantity} title={title} image={image}>
-      {reviews && <Pill text={"Delivering"} type="null"/>}
+      {<Pill text={"Delivering"} type="null"/>}
       {/* {!reviews && <FlexButton onPress={()=>{onPress(); setForm((prev) => {return { ...prev, ['title']:  title}})}} background={'#283618'}><Text style={{fontSize: 10, color: 'white', fontWeight: 'bold'}}>Leave A Review</Text></FlexButton>} */}
     </ProductAction>)}
         

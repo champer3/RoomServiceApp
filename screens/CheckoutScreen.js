@@ -250,7 +250,7 @@ function CheckoutScreen() {
             {newList.map(({ title, image, quantity, oldPrice }, idx) => (
               <ProductAction
                 key={idx}
-                price={oldPrice * quantity}
+                price={oldPrice}
                 title={title}
                 image={image}
               >
