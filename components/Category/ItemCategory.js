@@ -2,11 +2,11 @@ import { ScrollView, StyleSheet, Text, View } from "react-native"
 import Item from "../Item/Item"
 
 
-function ItemCategory({items, onPress}){
+function ItemCategory({items, onPress, color}){
 
     return <ScrollView  horizontal={true}>
         <View style={styles.container}>
-        {items.map(({text, image},index) => <Item key={index} text={text} image={image} onPress = {onPress}/>)}
+        {items.map(({text, image},index) => <Item key={index} color={color} text={text} image={image} onPress = {onPress}/>)}
         </View>
     </ScrollView>
 }
@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
         width: "100%",
         // height: "45%",
         paddingRight: 10,
+        marginLeft: 10,
         gap: 15
     }
 })

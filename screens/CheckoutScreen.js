@@ -72,46 +72,37 @@ function CheckoutScreen() {
   };
 
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const checkOut =  () => {
-    // const token = await retrieveTokenFromAsyncStorage();
-    // console.log("This is the token I recieved: ", token);
-    // const response = await axios.post(
-    //   "http://10.0.0.173:3000/api/v1/payments/checkout-session",
-    //   null,
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${token}`,
-    //       // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
-    //     },
-    //   }
-    // );
-    // console.log("got here");
-    // console.log(response.data);
-    // const initPayment = await initPaymentSheet({
-    //   merchantDisplayName: "RoomService",
-    //   paymentIntentClientSecret: response.data.clientSecret,
-    //   customerEphemeralKeySecret: response.data.ephemeralKey,
-    //   customerId: response.data.customer,
-    //   // defaultBillingDetails: {
-    //   //   name: 'Jane Doe',
-    //   // }
-    // });
+  const checkOut =  async () => {
+    const token = await retrieveTokenFromAsyncStorage();
+    console.log("This is the token I recieved: ", token);
+    const response = await axios.post(
+      "http://10.0.0.173:3000/api/v1/payments/checkout-session",
+      {
+        amount: getTotalSum()
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
+        },
+      }
+    );
+    console.log("got here");
+    console.log(response.data);
+    const initPayment = await initPaymentSheet({
+      merchantDisplayName: "RoomService",
+      paymentIntentClientSecret: response.data.clientSecret,
+      customerEphemeralKeySecret: response.data.ephemeralKey,
+      customerId: response.data.customer,
+      // defaultBillingDetails: {
+      //   name: 'Jane Doe',
+      // }
+    });
 
-    // const { error } = await presentPaymentSheet();
-    // if (error) {
-    //   Alert.alert(`Error code: ${error.code}`, error.message);
-    // } else {
-    //   Alert.alert("Success", "Your order is confirmed!");
-    //   const paymentMethods = await axios.post(
-    //     "http://10.0.0.173:3000/api/v1/payments/payment-methods",
-    //     null,
-    //     {
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //         // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
-    //       },
-    //     }
-    //   );
+    const { error } = await presentPaymentSheet();
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
       const row = [...cartItems];
       for (var i = 0; i < cartItems.length; i++) {
         row[i] = { ...cartItems[i], ["reviews"]: false };
@@ -120,8 +111,20 @@ function CheckoutScreen() {
       dispatch(clearCart({ id: cartItems }));
       setVisible(true);
       Alert.alert("Success", "Your order is confirmed!");
+      const paymentMethods = await axios.post(
+        "http://10.0.0.173:3000/api/v1/payments/payment-methods",
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',  // adjust the content type based on your API requirements
+          },
+        }
+      );
+
+      // Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");
-    // }
+    }
     // console.log("async nigga pressed")
   };
 
@@ -134,7 +137,7 @@ function CheckoutScreen() {
     cartItems.forEach(obj => {
       const title = Object.keys(obj)[0];
         const titleArray = Object.values(obj)[0];
-        
+
         titleArray.forEach(item => {
             totalPrice += item.oldPrice;
         });
@@ -159,13 +162,13 @@ function CheckoutScreen() {
           // Increment the count for the title or initialize to 1 if it doesn't exist
           titleCountMap[title] = (titleCountMap[title] || 0) + 1;
       });
-      
-      
+
+
     inputList.forEach(obj => {
       var totalPrice = 0;
       const title = Object.keys(obj)[0];
         const titleArray = Object.values(obj)[0];
-        
+
         titleArray.forEach(item => {
             totalPrice += item.oldPrice;
         });

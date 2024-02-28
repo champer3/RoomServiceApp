@@ -3,9 +3,10 @@ import {
   View,
   Dimensions,
   ImageBackground,
+  StatusBar,
   Text,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
+// import { StatusBar } from "expo-status-bar";
 import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
 import { Pressable } from "react-native";
@@ -23,6 +24,7 @@ function OnBoard1() {
   }
   return (
     <View style={styles.container}>
+      <StatusBar hidden={false} barStyle="dark-content" />
       <ImageBackground
         style={styles.backgroundImage}
         source={require("../../assets/onboard1.jpg")}
@@ -91,7 +93,7 @@ const styles = StyleSheet.create({
     flex: 1,
     // margin: 24,
     justifyContent: "flex-end",
-    opacity: 0.9,
+    // opacity: 0.,
   },
   buttonView: {
     height: 50,

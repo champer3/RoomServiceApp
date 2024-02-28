@@ -117,7 +117,8 @@ function Authentication() {
 }
 function Home2() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+    screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}>
       <Stack.Screen
         name="HomeDefault"
         component={Home}
@@ -250,7 +251,7 @@ export default function App() {
     <Provider store={store}>
       <StripeProvider publishableKey={STRIPE_KEY}>
         <NavigationContainer>
-          <StatusBar style="light" />
+          {/* <StatusBar style="light" /> */}
           <Stack.Navigator>
             {/* <Stack.Screen
               name="OnBoarding"
