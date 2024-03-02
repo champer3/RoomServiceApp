@@ -7,6 +7,7 @@ import {
   Keyboard,
   Pressable,
   Alert,
+  StatusBar,
 } from "react-native";
 import Input from "../components/Inputs/Input";
 import { useNavigation } from "@react-navigation/native";
@@ -28,32 +29,39 @@ function NumberLogin() {
     Keyboard.dismiss();
   }
   const [number, setNumber] = useState("");
-  const phoneNumberString = number.replace(/[^0-9]/g, '');
-  const phoneNumber = "+1" + phoneNumberString
-  console.log(number)
+  const phoneNumberString = number.replace(/[^0-9]/g, "");
+  const phoneNumber = "+1" + phoneNumberString;
+  console.log(number);
   const navigation = useNavigation();
   async function pressHandler() {
-    const response = await verifyNumber()
-    if(response){
-    navigation.navigate("PinLogin", {phoneNumber});
-    } else{
-      Alert.alert('No account', "There is no account attributed to this number. SignUp!")
+    const response = await verifyNumber();
+    if (response) {
+      navigation.navigate("PinLogin", { phoneNumber });
+    } else {
+      Alert.alert(
+        "No account",
+        "There is no account attributed to this number. SignUp!"
+      );
     }
   }
 
-  const verifyNumber = async() =>{
-    try{
-      const checkNumber = await axios.get(`http://10.0.0.173:3000/api/v1/users/getNumber/${phoneNumber}`);
-      if(checkNumber.data.data){
-        const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
-        console.log("hdhdhh", response.data)
+  const verifyNumber = async () => {
+    try {
+      const checkNumber = await axios.get(
+        `http://10.0.0.173:3000/api/v1/users/getNumber/${phoneNumber}`
+      );
+      if (checkNumber.data.data) {
+        const response = await axios.get(
+          `http://10.0.0.173:3000/getCode/${phoneNumber}`
+        );
+        console.log("hdhdhh", response.data);
       }
-      return checkNumber.data.data
+      return checkNumber.data.data;
       // console.log("got here")
-    } catch(err){
-      console.log(err.error)
+    } catch (err) {
+      console.log(err.error);
     }
-  }
+  };
   function emailHandler() {
     navigation.navigate("EmailLogin");
   }
@@ -85,21 +93,22 @@ function NumberLogin() {
 
   const getData = async () => {
     try {
-      const value = await AsyncStorage.getItem('my-key');
+      const value = await AsyncStorage.getItem("my-key");
       if (value !== null) {
-        navigation.navigate('HomeTabs')
+        navigation.navigate("HomeTabs");
       }
-      console.log(value)
+      console.log(value);
     } catch (e) {
       // error reading value
-      console.log(e)
+      console.log(e);
     }
   };
-  getData()
+  getData();
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
+          <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.topView}>
             <View style={styles.welcomeView}>
               <Text style={styles.text}>Hello,</Text>

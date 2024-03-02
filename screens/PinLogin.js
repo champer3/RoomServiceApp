@@ -7,6 +7,7 @@ import {
   Keyboard,
   Pressable,
   Alert,
+  StatusBar,
 } from "react-native";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
@@ -122,6 +123,7 @@ function NumberLogin() {
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
+        <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.topView}>
             <View style={styles.welcomeView}>
               <Text style={styles.text}>Hello,</Text>

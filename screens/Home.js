@@ -6,14 +6,18 @@ import {
   Pressable,
   Image,
   Dimensions,
+  StatusBar,
   Button,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import ItemCategory from "../components/Category/ItemCategory";
-import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
+import {
+  GestureHandlerRootView,
+  ScrollView,
+} from "react-native-gesture-handler";
 import ProductHorizontal from "../components/Category/ProductHorizontal";
 import Deal from "../components/Category/Deal";
 import { useNavigation } from "@react-navigation/native";
@@ -23,12 +27,14 @@ import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { useSelector, useDispatch } from "react-redux";
 import { addToCart, removeFromCart, addOptions } from "../Data/cart";
 import { useEffect, useState, useRef } from "react";
-import BottomSheet from '../components/Modals/BottomSheet';
+import BottomSheet from "../components/Modals/BottomSheet";
+import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
 
 function Home() {
+  const [barStyle, setBarStyle] = useState("light-content");
   function getGreeting() {
     var currentTime = new Date();
     var hours = currentTime.getHours();
@@ -41,30 +47,30 @@ function Home() {
       return "Good Evening!";
     }
   }
-  const [option, setOption] = useState()
+  const [option, setOption] = useState();
   const ref = useRef(null);
   function createFoodDictionary(foodArray) {
     let foodDictionary = {};
     for (let i = 0; i < foodArray.length; i++) {
-        foodDictionary[foodArray[i][0]] = 0;
+      foodDictionary[foodArray[i][0]] = 0;
     }
     return foodDictionary;
-}
+  }
 
-// Example usage:
-let [foodStore, setFood] = useState({})
+  // Example usage:
+  let [foodStore, setFood] = useState({});
 
   const retrieveTokenFromAsyncStorage = async () => {
     try {
-      const storedToken = await AsyncStorage.getItem('authToken');
-      console.log(storedToken)
+      const storedToken = await AsyncStorage.getItem("authToken");
+      console.log(storedToken);
       if (storedToken !== null) {
-        console.log('Retrieved token:', storedToken);
+        console.log("Retrieved token:", storedToken);
       } else {
-        console.log('Token not found in AsyncStorage.');
+        console.log("Token not found in AsyncStorage.");
       }
     } catch (error) {
-      console.error('Error retrieving token:', error);
+      console.error("Error retrieving token:", error);
     }
   };
   const [datas, setDatas] = useState(null);
@@ -83,7 +89,7 @@ let [foodStore, setFood] = useState({})
   //   }
   // };
   const [foodDictionary, setFoodDictionary] = useState(foodStore);
-  const [pro , setPro] = useState({})
+  const [pro, setPro] = useState({});
   useEffect(() => {
     console.log("hit the useEffect");
     // fetchData();
@@ -135,8 +141,8 @@ let [foodStore, setFood] = useState({})
   function dealHandler() {
     navigation.navigate("All Deals");
   }
-  const [extra, setExtra] = useState()
-  const [plus, setPlus] = useState([])
+  const [extra, setExtra] = useState();
+  const [plus, setPlus] = useState([]);
   function findPrice(foodName) {
     for (let i = 0; i < extra.length; i++) {
       if (extra[i][0] === foodName) {
@@ -222,93 +228,142 @@ let [foodStore, setFood] = useState({})
   }
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView style ={{flex: 1}}>
-      <SafeAreaView style={styles.container}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            paddingHorizontal: "5%",
-            paddingTop: "2%",
-          }}
-        >
-          <View style={{ gap: 6 }}>
-            <Text
-              style={{
-                color: "white",
-                fontSize: 13,
-                letterSpacing: 0.4,
-                fontWeight: "bold",
-              }}
-            >
-              {greeting}
-            </Text>
-            <Text
-              style={{
-                color: "white",
-                fontSize: 16,
-                fontWeight: "bold",
-                letterSpacing: 1,
-              }}
-            >{`${data.firstName} `}</Text>
-            {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
-          </View>
-          <View style={[styles.cart, { flex: 0.25 }]}>
-          <Pressable style={[styles.cart, {flex: 1}]} onPress={cartHandler}>
-
-
-                <View>
-                  <Feather name="shopping-cart" size={24} color="black" />
+      {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <LinearGradient
+            // colors={["#19171A", "#01418D", "#2873CC"]}
+            // colors={["#19171A", "#2F5A8C", "#2873CC"]}
+            colors={["#092642", "#033360", "#0961B4", "#0578E5"]}
+            // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
+          >
+            <SafeAreaView style={styles.top}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  paddingHorizontal: "5%",
+                  paddingTop: "2%",
+                }}
+              >
+                <View style={{ gap: 6 }}>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 16,
+                      letterSpacing: 0.4,
+                      fontWeight: 400,
+                    }}
+                  >
+                    {greeting}
+                  </Text>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 16,
+                      fontWeight: 200,
+                      letterSpacing: 1,
+                    }}
+                  >{`${data.firstName} `}</Text>
+                  {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
                 </View>
+                <View style={[styles.cart, {width: 40, height: 40}]}>
+                  <Pressable
+                    onPress={cartHandler}
+                  >
+                    <View>
+                      <Feather name="shopping-cart" size={20} color="white" />
+                    </View>
 
-                {cartItems.length > 0 && <View style={{
-                  height: '35%',
-                  minWidth: '32%',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  position: 'absolute',
-                  zIndex: 2,
-                  top: 0,
-                  borderRadius: 100,
-                  fontSize: 14,
-                  backgroundColor: "#283618"
-                }}>
-                  <Text style={{color: 'white', fontSize: 12, fontWeight: 'bold'}}>{cartItems.length}</Text>
-                </View>}
-                </Pressable>
-          </View>
-        </View>
-          <Pressable style={[styles.search, {marginTop: 10}]} onPress={()=> navigation.navigate('Search')}>
-            <View style={{flexDirection: 'row', gap: 20,borderColor: 'white', borderWidth: 1, borderRadius: 10, alignItems: "center",paddingVertical: 12, paddingHorizontal: 16 }}>
-              <EvilIcons name="search" size={24} color="white" />
-              <Text style={{color: 'white', fontSize: 16}}>Search items</Text>
-            </View>
-            {/* <Input
+                    {cartItems.length > 0 && (
+                      <View
+                        style={{
+                          height: "35%",
+                          minWidth: "32%",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          position: "absolute",
+                          zIndex: 2,
+                          top: 0,
+                          borderRadius: 100,
+                          fontSize: 14,
+                          backgroundColor: "#283618",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: "white",
+                            fontSize: 12,
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {cartItems.length}
+                        </Text>
+                      </View>
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+              <Pressable
+                style={[styles.search, { marginTop: 10 }]}
+                onPress={() => navigation.navigate("Search")}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 10,
+                    borderColor: "white",
+                    borderWidth: 1,
+                    borderRadius: 20,
+                    backgroundColor: "white",
+                    alignItems: "center",
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <EvilIcons name="search" size={24} color="black" />
+                  <Text
+                    style={{ color: "black", fontSize: 16, fontWeight: 500 }}
+                  >
+                    search RoomService
+                  </Text>
+                </View>
+                {/* <Input
             onInteract={()=> navigation.navigate('Search')}
             color={"white"}
             icon={<EvilIcons name="search" size={24} color="white" />}
             text={"Search items"}
           ></Input> */}
-          </Pressable>
-        <ScrollView style={{ backgroundColor: "white" }}>
-          <View style={[styles.horizontalCat, { marginTop: 20 }]}>
-            <View style={styles.catHead}>
-              <Text style={styles.text}>Popular Categories</Text>
-              <Pressable onPress={chooseHandler}>
-                <Text style={{ color: "#BC6C25", fontSize: 12 }}>See All</Text>
               </Pressable>
-            </View>
-            <ItemCategory
-              items={[
-                { text: "Alcohol", image: require("../assets/Alcohol.png") },
-                { text: "Frozen", image: require("../assets/frozen.png") },
-                { text: "Ice Cream", image: require("../assets/icecream.png") },
-                { text: "Food", image: require("../assets/food.png") },
-                { text: "Snacks", image: require("../assets/snack.png") },
-              ]}
-            />
+              <View style={{height: 100, marginBottom: 12}}>
+              <ItemCategory
+                items={[
+                  { text: "Alcohol", image: require("../assets/Alcohol.png") },
+                  { text: "Frozen", image: require("../assets/frozen.png") },
+                  {
+                    text: "Ice Cream",
+                    image: require("../assets/icecream.png"),
+                  },
+                  { text: "Food", image: require("../assets/food.png") },
+                  { text: "Snacks", image: require("../assets/snack.png") },
+                ]}
+                color="white"
+              />
+              </View>
+            </SafeAreaView>
+          </LinearGradient>
+          <ScrollView style={{ backgroundColor: "white" }}>
+            <View style={[styles.horizontalCat, { marginTop: 2 }]}>
+              {/* <View style={styles.catHead}>
+                <Text style={styles.text}>Popular Categories</Text>
+                <Pressable onPress={chooseHandler}>
+                  <Text style={{ color: "#BC6C25", fontSize: 12 }}>
+                    See All
+                  </Text>
+                </Pressable>
+              </View> */}
 
-            {/* <ScrollView style={{borderWidth: 1}} horizontal={true}>
+              {/* <ScrollView style={{borderWidth: 1}} horizontal={true}>
               <View style={{flex: 1}}>
             <Pressable onPress={dealHandler} stylye ={{borderWidth: 1}}>
               <Image
@@ -331,251 +386,254 @@ let [foodStore, setFood] = useState({})
               />
             </Pressable>
           </ScrollView> */}
-            <ScrollView horizontal={true}>
+              <ScrollView horizontal={true} style={{ height: 200}}>
+                <View
+                  style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15, justifyContent: "center", alignItems: "center" }}
+                >
+                  <Pressable onPress={dealHandler}>
+                    <View style={styles.imageContainer}>
+                      <Image
+                        style={styles.image}
+                        source={require("../assets/deal1.png")}
+                      />
+                    </View>
+                  </Pressable>
+                  <Pressable onPress={dealHandler}>
+                    <View style={styles.imageContainer}>
+                      <Image
+                        style={styles.image}
+                        source={require("../assets/deal2.png")}
+                      />
+                    </View>
+                  </Pressable>
+                  <Pressable onPress={dealHandler}>
+                    <View style={styles.imageContainer}>
+                      <Image
+                        style={styles.image}
+                        source={require("../assets/deal3.png")}
+                      />
+                    </View>
+                  </Pressable>
+                  <Pressable onPress={dealHandler}>
+                    <View style={styles.imageContainer}>
+                      <Image
+                        style={styles.image}
+                        source={require("../assets/deal4.png")}
+                      />
+                    </View>
+                  </Pressable>
+                  <Pressable onPress={dealHandler}>
+                    <View style={styles.imageContainer}>
+                      <Image
+                        style={styles.image}
+                        source={require("../assets/deal5.png")}
+                      />
+                    </View>
+                  </Pressable>
+                </View>
+              </ScrollView>
+            </View>
+
+            <View style={styles.recommendedView}>
+              <Text style={styles.text}>Recommended Foods</Text>
+              <ProductHorizontal
+                items={categoryObject["food"].slice(0, 6)}
+                onPress={handleAddToCart}
+              />
+            </View>
+
+            <View style={[styles.recommendedView, { alignItems: "center" }]}>
+              <Deal
+                text={"Best Grocery Deals!"}
+                onPress={dealHandler}
+                onAdd={handleAddToCart}
+                item={[
+                  {
+                    title: "Woodstock Organic Frozen Broccoli Florets 10oz",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/cr3.png"),
+                    category: "frozen",
+                  },
+                  {
+                    title: "Woodstock Frozen Organic Mixed Berries 10oz",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/cr2.png"),
+                  },
+                  {
+                    title: "Sambazon Original Blend Smoothie Superfruit Pack",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/cr1.png"),
+                  },
+                ]}
+                color="#039F03"
+              />
+            </View>
+            <View style={styles.recommendedView}>
+              <Text style={styles.text}>Snacks For You</Text>
+              <ProductHorizontal
+                items={categoryObject["snacks"]}
+                onPress={handleAddToCart}
+              />
+            </View>
+            <View style={styles.recommendedView}>
+              <Text style={styles.text}>Alcohol</Text>
+              <ProductHorizontal
+                items={categoryObject["alcohol"]}
+                onPress={handleAddToCart}
+              />
+            </View>
+            <View style={[styles.recommendedView, { alignItems: "center" }]}>
+              <Deal
+                text={"Health Deals"}
+                onPress={dealHandler}
+                onAdd={handleAddToCart}
+                item={[
+                  {
+                    title: "Theraflu Green Tea & Honey Lemon Multi-",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/h1.png"),
+                  },
+                  {
+                    title: "Stix Early Pregnancy Test 2ct",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/h2.png"),
+                  },
+                  {
+                    title: "Equaline Cotton Swabs 375ct",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/h3.png"),
+                  },
+                  {
+                    title: "Q-Tips Cotton Swabs 170ct",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/h4.png"),
+                  },
+                  {
+                    title: "Equaline Cotton Swabs 375ct",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/h3.png"),
+                  },
+                ]}
+                color="#00CED1"
+              />
+            </View>
+
+            <View style={styles.recommendedView}>
+              <Text style={styles.text}>Drinks</Text>
+              <ProductHorizontal
+                items={categoryObject["drink"]}
+                onPress={handleAddToCart}
+              />
+            </View>
+            <View style={[styles.recommendedView, { alignItems: "center" }]}>
+              <Deal
+                text={"Pantry Deals"}
+                onPress={dealHandler}
+                onAdd={handleAddToCart}
+                item={[
+                  {
+                    title: "Post Fruity Pebbles Cereal 11oz",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/p1.png"),
+                  },
+                  {
+                    title:
+                      "Stix Early Pregnancy TGeneral Mills Cinnamon Toast Crunch Cereal 12ozest 2ct",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/p2.png"),
+                  },
+                  {
+                    title: "Post Marshmallow Fruity Pebbles Cereal 11oz $5.69",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/p3.png"),
+                  },
+                  {
+                    title: "Post Cocoa Pebbles Cereal 11oz",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/p4.png"),
+                  },
+                  {
+                    title: "Post Honey Bunches of Oats Honey Roasted 12oz",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/p5.png"),
+                  },
+                ]}
+                color="#D2B48C"
+              />
+            </View>
+            <View style={styles.recommendedView}>
+              <Text style={styles.text}>Home</Text>
+              <ProductHorizontal
+                items={categoryObject["home"]}
+                onPress={handleAddToCart}
+              />
+            </View>
+            <View style={styles.recommendedView}>
+              <Deal
+                text={"Yummy Ice Creams!"}
+                onPress={dealHandler}
+                onAdd={handleAddToCart}
+                item={[
+                  {
+                    title: "Ben & Jerry's Churray for Churros Ice Cream Pint",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/i1.png"),
+                  },
+                  {
+                    title: "Milk Bar Gingerbread Latte Pint 14oz",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/i2.png"),
+                  },
+                  {
+                    title: "Milk Bar Candy Cane Cookies & Cream Pint 14oz$7.99",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/i3.png"),
+                  },
+                  {
+                    title: "Jeni's, Boozy Eggnog Ice Cream Pint 16oz",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/i4.png"),
+                  },
+                  {
+                    title: "Jeni's, White Chocolate Peppermint Ice Cream Pi",
+                    oldPrice: 4.99,
+                    newPrice: "10.00",
+                    image: require("../assets/i5.png"),
+                  },
+                ]}
+                color="#98FB98"
+              />
+            </View>
+            <View style={[styles.recommendedView, { alignItems: "center" }]}>
               <View
                 style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15 }}
               >
                 <Pressable onPress={dealHandler}>
-                  <View style={styles.imageContainer}>
+                  <View style={[styles.imageContainer, { width: width - 30 }]}>
                     <Image
                       style={styles.image}
-                      source={require("../assets/deal1.png")}
-                    />
-                  </View>
-                </Pressable>
-                <Pressable onPress={dealHandler}>
-                  <View style={styles.imageContainer}>
-                    <Image
-                      style={styles.image}
-                      source={require("../assets/deal2.png")}
-                    />
-                  </View>
-                </Pressable>
-                <Pressable onPress={dealHandler}>
-                  <View style={styles.imageContainer}>
-                    <Image
-                      style={styles.image}
-                      source={require("../assets/deal3.png")}
-                    />
-                  </View>
-                </Pressable>
-                <Pressable onPress={dealHandler}>
-                  <View style={styles.imageContainer}>
-                    <Image
-                      style={styles.image}
-                      source={require("../assets/deal4.png")}
-                    />
-                  </View>
-                </Pressable>
-                <Pressable onPress={dealHandler}>
-                  <View style={styles.imageContainer}>
-                    <Image
-                      style={styles.image}
-                      source={require("../assets/deal5.png")}
+                      source={require("../assets/deals.png")}
                     />
                   </View>
                 </Pressable>
               </View>
-            </ScrollView>
-          </View>
-
-          <View style={styles.recommendedView}>
-            <Text style={styles.text}>Recommended Foods</Text>
-            <ProductHorizontal
-              items={categoryObject["food"].slice(0,6)}
-              onPress={handleAddToCart}
-            />
-          </View>
-
-          <View style={[styles.recommendedView, { alignItems: "center" }]}>
-            <Deal
-              text={"Best Grocery Deals!"}
-              onPress={dealHandler}
-              onAdd={handleAddToCart}
-              item={[
-                {
-                  title: "Woodstock Organic Frozen Broccoli Florets 10oz",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/cr3.png"),
-                  category: "frozen",
-                },
-                {
-                  title: "Woodstock Frozen Organic Mixed Berries 10oz",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/cr2.png"),
-                },
-                {
-                  title: "Sambazon Original Blend Smoothie Superfruit Pack",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/cr1.png"),
-                },
-              ]}
-              color="#039F03"
-            />
-          </View>
-          <View style={styles.recommendedView}>
-            <Text style={styles.text}>Snacks For You</Text>
-            <ProductHorizontal
-              items={categoryObject["snacks"]}
-              onPress={handleAddToCart}
-            />
-          </View>
-          <View style={styles.recommendedView}>
-            <Text style={styles.text}>Alcohol</Text>
-            <ProductHorizontal
-              items={categoryObject["alcohol"]}
-              onPress={handleAddToCart}
-            />
-          </View>
-          <View style={[styles.recommendedView, { alignItems: "center" }]}>
-            <Deal
-              text={"Health Deals"}
-              onPress={dealHandler}
-              onAdd={handleAddToCart}
-              item={[
-                {
-                  title: "Theraflu Green Tea & Honey Lemon Multi-",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/h1.png"),
-                },
-                {
-                  title: "Stix Early Pregnancy Test 2ct",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/h2.png"),
-                },
-                {
-                  title: "Equaline Cotton Swabs 375ct",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/h3.png"),
-                },
-                {
-                  title: "Q-Tips Cotton Swabs 170ct",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/h4.png"),
-                },
-                {
-                  title: "Equaline Cotton Swabs 375ct",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/h3.png"),
-                },
-              ]}
-              color="#00CED1"
-            />
-          </View>
-
-          <View style={styles.recommendedView}>
-            <Text style={styles.text}>Drinks</Text>
-            <ProductHorizontal
-              items={categoryObject["drink"]}
-              onPress={handleAddToCart}
-            />
-          </View>
-          <View style={[styles.recommendedView, { alignItems: "center" }]}>
-            <Deal
-              text={"Pantry Deals"}
-              onPress={dealHandler}
-              onAdd={handleAddToCart}
-              item={[
-                {
-                  title: "Post Fruity Pebbles Cereal 11oz",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/p1.png"),
-                },
-                {
-                  title:
-                    "Stix Early Pregnancy TGeneral Mills Cinnamon Toast Crunch Cereal 12ozest 2ct",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/p2.png"),
-                },
-                {
-                  title: "Post Marshmallow Fruity Pebbles Cereal 11oz $5.69",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/p3.png"),
-                },
-                {
-                  title: "Post Cocoa Pebbles Cereal 11oz",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/p4.png"),
-                },
-                {
-                  title: "Post Honey Bunches of Oats Honey Roasted 12oz",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/p5.png"),
-                },
-              ]}
-              color="#D2B48C"
-            />
-          </View>
-          <View style={styles.recommendedView}>
-            <Text style={styles.text}>Home</Text>
-            <ProductHorizontal
-              items={categoryObject["home"]}
-              onPress={handleAddToCart}
-            />
-          </View>
-          <View style={styles.recommendedView}>
-            <Deal
-              text={"Yummy Ice Creams!"}
-              onPress={dealHandler}
-              onAdd={handleAddToCart}
-              item={[
-                {
-                  title: "Ben & Jerry's Churray for Churros Ice Cream Pint",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/i1.png"),
-                },
-                {
-                  title: "Milk Bar Gingerbread Latte Pint 14oz",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/i2.png"),
-                },
-                {
-                  title: "Milk Bar Candy Cane Cookies & Cream Pint 14oz$7.99",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/i3.png"),
-                },
-                {
-                  title: "Jeni's, Boozy Eggnog Ice Cream Pint 16oz",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/i4.png"),
-                },
-                {
-                  title: "Jeni's, White Chocolate Peppermint Ice Cream Pi",
-                  oldPrice: 4.99,
-                  newPrice: "10.00",
-                  image: require("../assets/i5.png"),
-                },
-              ]}
-              color="#98FB98"
-            />
-          </View>
-          <View style={[styles.recommendedView, { alignItems: "center" }]}>
-            <View style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15 }}>
-              <Pressable onPress={dealHandler}>
-                <View style={[styles.imageContainer, { width: width - 30 }]}>
-                  <Image
-                    style={styles.image}
-                    source={require("../assets/deals.png")}
-                  />
-                </View>
-              </Pressable>
             </View>
           </View>
         </ScrollView>
@@ -664,11 +722,17 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#283618",
+    backgroundColor: "white",
+    // backgroundColor: "#283618",
+    // borderWidth: 4,
+  },
+  top: {
+    // backgroundColor: "white",
+    // borderWidth: 4,
   },
   search: {
     justifyContent: "space-between",
-    paddingHorizontal: "5%",
+    paddingHorizontal: "3%",
     paddingBottom: 20,
   },
   input: {
@@ -685,8 +749,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     // borderWidth: 1,
-    borderRadius: 13,
-    backgroundColor: "white",
+    borderRadius: 10,
+    backgroundColor: "#002547",
+    // backgroundColor: "#023C72",
+    borderColor: "white",
+    // borderWidth: 1
   },
   image: {
     resizeMode: "contain",
