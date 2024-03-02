@@ -72,7 +72,7 @@ const cart = createSlice({
                 state.ids.splice(indexToRemove, 1);
             }},
         clearCart : (state) => {state.ids.length = 0},
-        completeOrder: (state, action) => {state.order = [...action.payload.id]}
+        completeOrder: (state, action) => {state.order.push(action.payload.id)}
     }
 })
 

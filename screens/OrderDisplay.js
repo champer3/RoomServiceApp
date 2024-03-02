@@ -16,6 +16,7 @@ import { RotateInDownLeft } from "react-native-reanimated";
 import {useSelector, useDispatch} from 'react-redux'
 import { addReview } from "../Data/Items";
 import {clearCart, completeOrder} from '../Data/cart'
+import OrderDescription from "../components/OrderDescription";
 
 
 const { width, height } = Dimensions.get("window");
@@ -36,6 +37,15 @@ function OrderDisplay(){
             rate.push('staro')
         }
     }
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date);
+      const day = date.getDate();
+      const year = date.getFullYear();
+      
+      return `${month} ${day}, ${year} order`;
+  }
+  
     const cost = {}
     function addQuantityToObjects(inputList) {
       const titleCountMap = {};
@@ -89,13 +99,13 @@ function OrderDisplay(){
     const handleSelect = (selectedIndex) => {
       setIndex(selectedIndex);
     };
-    for (var i =0 ; i < orders.length; i++ ){
-      if (newList){
-      newList = [...addQuantityToObjects(orders[i]), ...newList]}
-      else{
-        newList = [...addQuantityToObjects(orders[i])] 
-      }
-    }
+    // for (var i =0 ; i < orders.length; i++ ){
+    //   if (newList){
+    //   newList = [...addQuantityToObjects(orders[i]), ...newList]}
+    //   else{
+    //     newList = [...addQuantityToObjects(orders[i])] 
+    //   }
+    // }
     function handleFormChange(value){
       setForm((prev) => {return { ...prev, ['reviews']: {...prev.reviews, ['comment'] : value}}});
 
@@ -136,9 +146,8 @@ function OrderDisplay(){
             </Pressable>
         </View>
     </View>
-    <View style={{flex: 1}}>
-    <ScrollView>
-    
+    <ScrollView >
+    <View style={{flex: 1}} >
     <View style={styles.recommendedView}>
         <Input icon={<Ionicons name="search-outline" size={24} color="#aaa" />} text={'Search orders'}/>
     </View>
@@ -149,19 +158,14 @@ function OrderDisplay(){
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
     </View>} */}
-    {index == 0 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
-    {newList && newList.map(({title, image, quantity, oldPrice, reviews}, idx)=><ProductAction key={idx} price={oldPrice} quantity={quantity} title={title} image={image}>
-      {<Pill text={"Delivering"} type="null"/>}
-      {/* {!reviews && <FlexButton onPress={()=>{onPress(); setForm((prev) => {return { ...prev, ['title']:  title}})}} background={'#283618'}><Text style={{fontSize: 10, color: 'white', fontWeight: 'bold'}}>Leave A Review</Text></FlexButton>} */}
-    </ProductAction>)}
-        
-    </View>}
-
-    
+    <View style={styles.recommendedView}>
+    {index == 0 && orders.map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} address={address} order={order} id={id} date={date} /></View>)}
+       
+    </View>
+    </View>
     </ScrollView>
     
    
-    </View>
     <BottomSheet ref={ref}>
           <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 10 }} >
             <View style ={{justifyContent: 'space-between', flexDirection: 'row', marginBottom: 25}}><Text style={{fontWeight: 'bold'}}>Leave A Review</Text></View>

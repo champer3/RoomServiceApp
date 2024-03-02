@@ -4,7 +4,25 @@ export function getMapPreview(lat, lng){
     const url = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=14&size=600x300&maptype=roadmap&markers=color:#C91C1C%7Clabel:S%7C${lat},${lng}&key=${api_key}`
     return url
 }
-
+import {decode} from "@mapbox/polyline"; //please install this package before running!
+export const getDirections = async (startLoc, destinationLoc) => {
+  try {
+    let resp = await fetch(
+      `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination=${destinationLoc}&key=${api_key}`
+    );
+    let respJson = await resp.json();
+    let points = decode(respJson.routes[0].overview_polyline.points);
+    let coords = points.map((point, index) => {
+      return {
+        latitude: point[0],
+        longitude: point[1]
+      };
+    });
+    return coords;
+  } catch (error) {
+    return error;
+  }
+};
 export async function getAddress(lat, lng){
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${api_key}&enable_address_descriptor=true`;
     const response = await fetch(url);

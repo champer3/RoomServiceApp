@@ -1,16 +1,13 @@
 import { Image, Pressable, Dimensions, ScrollView } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+
 const { width, height } = Dimensions.get("window");
 import { AntDesign } from "@expo/vector-icons";
 import { EvilIcons } from '@expo/vector-icons';
 
 
 function ProductDescription({title, image, price, reviews, category, side,flavour,option,instruction,quantity, action,onPress, onTap, children }) {
-  const navigation = useNavigation()
-  function pressHandler (){
-    navigation.navigate('Product', {title: title, image : image, reviews: reviews, oldPrice: price, category: category })
-  }
+  
   return (
     <View style={[styles.container]}>
       <View style={styles.imageContainer}>
@@ -43,7 +40,7 @@ function ProductDescription({title, image, price, reviews, category, side,flavou
         <View style={{ flex: -1.5, justifyContent: 'space-between',gap: 9 }}>
           
             <View style={styles.textContainer}>
-                <View style= {{width: '50%'}}>
+                <View style= {{width: '65%'}}>
               <Text
                 style={[styles.text]}
                 ellipsizeMode="tail"
@@ -54,10 +51,10 @@ function ProductDescription({title, image, price, reviews, category, side,flavou
                   : ""}
               </Text>
               </View>
-              {(side || option  || instruction  || !flavour.length == 0) && <Pressable onPress={onPress} style={styles.right}>
+              {(side || option  || instruction  || !flavour.length == 0) && onPress && <Pressable onPress={onPress} style={styles.right}>
         <AntDesign name="edit" size={25} color="#BC6C25" />
       </Pressable>}
-              <Pressable onPress={action} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={35} color="#B22334" /></Pressable>
+              {action && <Pressable onPress={action} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={35} color="#B22334" /></Pressable>}
               
             </View>
             <ScrollView style={{gap: 12}}>

@@ -23,7 +23,7 @@ import Deal from "../components/Category/Deal";
 import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart } from "../Data/cart";
+import { addToCart, removeFromCart, deleteFromCart } from "../Data/cart";
 import CartModal from "../components/Cart/CartModal";
 import CarouselCards from "../components/CarouselCards";
 import OrderSuccess from "../components/Modals/OrderSuccess";
@@ -49,7 +49,7 @@ function ProductDisplay() {
     // console.log(e.nativeEvent);
   }, []);
   const [plus, setPlus] = useState([]);
-
+  console.log(route.params)
   const timer = useRef();
   const image = route.params.image;
   const [index, setIndex] = useState(0);
@@ -59,6 +59,14 @@ function ProductDisplay() {
   const cartItems = useSelector((state) => state.cartItems.ids);
   const productItems = useSelector((state) => state.productItems.ids);
   const categoryObject = {};
+  function findPrice(foodName) {
+    for (let i = 0; i < route.params.extras.length; i++) {
+      if (route.params.extras[i][0] === foodName) {
+        return route.params.extras[i][1];
+      }
+    }
+    return "Item not found in the menu";
+  }
   const getAverageRatingByTitle = (title) => {
     const item = productItems.find((item) => item.title === title);
 
@@ -73,13 +81,13 @@ function ProductDisplay() {
       return 0; // Indicate that there are no reviews or the item is not found
     }
   };
-  useEffect(() => {
-    if (plus.length == 2) {
-      handleAddToCart(route.params);
-      setPlus([]);
-      setFoodDictionary(foodStore);
-    }
-  }, [plus]);
+  // useEffect(() => {
+  //   if (plus.length == 2) {
+  //     handleAddToCart(route.params);
+  //     setPlus([]);
+  //     setFoodDictionary(foodStore);
+  //   }
+  // }, [plus]);
   productItems.forEach((item) => {
     const category = item.category;
 
@@ -91,15 +99,36 @@ function ProductDisplay() {
       categoryObject[category].push(item);
     }
   });
-  function handleAddToCart(product) {
-    if (option >= 0 && route.params.options) {
-      dispatch(addToCart({ id: product }));
-      setVisible(true);
-      setOption();
-    } else if (!route.params.options) {
-      dispatch(addToCart({ id: product }));
-      setVisible(true);
+  function handleAddToCart() {
+    let price = 0;
+    let newItem ={}
+    if (plus && plus.length > 0){
+    for (var i = 0; i < plus.length; i ++){
+        price += findPrice(plus[i])
+      }
+      newItem = {...newItem, ...{ 'Sides' : plus}}
     }
+    if (option != undefined){
+      newItem = {...newItem, ... {'Picked' : route.params.options[option]}}
+    }
+    if (selected && selected.length > 0){
+      newItem = {...newItem, ... {'Flavour' : selected}}
+    }
+    setPlus([])
+    setOption()
+    setSelected([])
+    
+    setFoodDictionary(foodStore)
+    dispatch(addToCart({id : {title: route.params.title, ...{...route.params, ...newItem, ['oldPrice'] : route.params.oldPrice + price} }}))
+  
+    // if (option >= 0 && route.params.options) {
+    //   dispatch(addToCart({ id: product }));
+    //   setVisible(true);
+    //   setOption();
+    // } else if (!route.params.options) {
+    //   dispatch(addToCart({ id: product }));
+    //   setVisible(true);
+    // }
   }
   function handleAddToCartInc(product) {
     console.log(product);
@@ -113,16 +142,49 @@ function ProductDisplay() {
     }
 }
 function handleRemoveFromCart(product){
-  dispatch(removeFromCart({id : product}))
+  dispatch(deleteFromCart({id : product}))
 }
+const cost = {}
 function addQuantityToObjects(inputList) {
+    const titleCountMap = {};
 
     const result = {};
-    inputList.forEach(obj => {
-        const title = Object.keys(obj)[0];
-        const arrayLength = obj[title].length;
-        result[title] = arrayLength;
+  inputList.forEach(obj => {
+      const title = Object.keys(obj)[0];
+      const arrayLength = obj[title].length;
+      result[title] = arrayLength;
+  });
+    // Loop through the inputList to count occurrences of each title
+    inputList.forEach((obj) => {
+        const title = obj.title;
+
+        // Increment the count for the title or initialize to 1 if it doesn't exist
+        titleCountMap[title] = (titleCountMap[title] || 0) + 1;
     });
+    
+    
+  inputList.forEach(obj => {
+    var totalPrice = 0;
+    const title = Object.keys(obj)[0];
+      const titleArray = Object.values(obj)[0];
+      
+      titleArray.forEach(item => {
+          totalPrice += item.oldPrice;
+      });
+      cost[title] = totalPrice
+  });
+    // Loop through the inputList again to create a new list with quantity key
+    const newList = inputList.map((obj) => {
+        const title = Object.keys(obj)[0];
+        const quantity = result[title];
+
+        // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
+        titleCountMap[title] = 0;
+
+        return { ...obj[title][0], ['oldPrice'] : cost[title], quantity };
+    });
+    const filteredList = newList.filter((obj) => obj.quantity !== 0);
+
     return result;
 }
 function createFoodDictionary(foodArray) {
@@ -154,8 +216,9 @@ function createFoodDictionary(foodArray) {
     });
   }
   const [foodDictionary, setFoodDictionary] = useState(foodStore);
-  console.log(plus);
+  
   const newList = addQuantityToObjects(cartItems);
+  console.log(newList);
   var quantity = 0;
   if (newList) {
     quantity = newList[route.params.title];
@@ -278,9 +341,9 @@ function createFoodDictionary(foodArray) {
                 <IncrementDecrementBtn
                   minValue={quantity}
                   onIncrease={() => {
-                    if (plus.length >= 2 || !route.params.extras) {
-                      handleAddToCartInc(route.params);
-                    }
+                    if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0))
+                handleAddToCart();
+
                   }}
                   onDecrease={() => handleRemoveFromCart(route.params)}
                 />
@@ -366,7 +429,7 @@ function createFoodDictionary(foodArray) {
                             {item}
                           </Text>
                         </View>
-                        <Pressable onPress={() => toggleNumberInArray(idx)}>
+                        <Pressable onPress={() => {selected.length < 2 || selected.indexOf(idx) !== - 1 ? toggleNumberInArray(idx): {}}}>
                           <MaterialCommunityIcons
                             name={`${
                               selected.indexOf(idx) === -1
@@ -512,55 +575,9 @@ function createFoodDictionary(foodArray) {
                             <Text>{item[1] ? `+ $${item[1]}` : ""}</Text>
                           </View>
                           <View>
-                            {(plus.length < 2 ||
-                              (plus.length &&
-                                plus.indexOf(item[0]) !== -1)) && (
-                              <IncrementDecrementBtn
-                                minValue={foodDictionary[item[0]]}
-                                onIncrease={() => {
-                                  if (plus.length < 2) {
-                                    setFoodDictionary((prev) => {
-                                      return {
-                                        ...prev,
-                                        [item[0]]: foodDictionary[item[0]] + 1,
-                                      };
-                                    });
-                                    handleAddToCart({
-                                      title: item[0],
-                                      oldPrice: item[1],
-                                      quantity: foodDictionary[item[0]],
-                                    });
-                                    console.log(item[0]);
-                                    setPlus((prev) => {
-                                      const arr = [...prev];
-                                      arr.push(item[0]);
-                                      return arr;
-                                    });
-                                  }
-                                }}
-                                onDecrease={() => {
-                                  setFoodDictionary((prev) => {
-                                    return {
-                                      ...prev,
-                                      [item[0]]:
-                                        (foodDictionary[item[0]]
-                                          ? foodDictionary[item[0]]
-                                          : 1) - 1,
-                                    };
-                                  });
-                                  handleRemoveFromCart({
-                                    title: item[0],
-                                    oldPrice: item[1],
-                                    quantity: foodDictionary[item[0]],
-                                  });
-                                  setPlus((prev) => {
-                                    const arr = [...prev];
-                                    arr.splice(prev.indexOf(item[0]), 1);
-                                    return arr;
-                                  });
-                                }}
-                              />
-                            )}
+                          {(plus.length < 2 || (plus.length && plus.indexOf(item[0]) !== -1)) && <View>
+                                  <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={()=>{if (plus.length < 2){setFoodDictionary((prev)=>{return {...prev, [item[0]] : foodDictionary[item[0]]+1}});setPlus((prev)=> {const arr = [...prev]; arr.push(item[0]); return arr})}}}  onDecrease={()=>{if (plus.length > 0){setFoodDictionary((prev)=>{return {...prev, [item[0]] : (foodDictionary[item[0]] ?foodDictionary[item[0]] : 1) -1}});setPlus((prev)=>{const arr = [...prev]; const index = prev.indexOf(item[0]); if (index != -1){arr.splice(index, 1)}; return arr}) }}}/>
+                                </View>}
                           </View>
                         </View>
                       ))}
@@ -579,7 +596,7 @@ function createFoodDictionary(foodArray) {
                   </View>
                 )}
               </View>
-              <View style={styles.catHead}>
+              {/* <View style={styles.catHead}>
                 <Text
                   style={{
                     color: "black",
@@ -595,7 +612,7 @@ function createFoodDictionary(foodArray) {
                     .filter((item) => item.title !== route.params.title)}
                   onPress={handleAddToCart}
                 />
-              </View>
+              </View> */}
               <View style={styles.catHead}>
                 {/* <Deal text={'Shop Related Products'}/> */}
               </View>
@@ -647,15 +664,15 @@ function createFoodDictionary(foodArray) {
           >
             {" "}
             {`$${
-              !quantity ? 0 : (route.params.oldPrice * quantity).toFixed(2)
+              !quantity ? 0 : cost[route.params.title]
             }`}
           </Text>
         </View>
         <View style={{ width: "40%", height: 70 }}>
           <FlexButton
             onPress={() => {
-              if (plus.length >= 2 || !route.params.extras)
-                handleAddToCart(route.params);
+              if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0))
+                handleAddToCart();
             }}
             background={"#283618"}
           >

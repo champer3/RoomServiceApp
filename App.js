@@ -41,6 +41,7 @@ import CheckoutScreen from "./screens/CheckoutScreen";
 import AddAddressScreen from "./screens/AddAddressScreen";
 import { store } from "./Data/Store";
 import { StripeProvider } from "@stripe/stripe-react-native";
+import Delivery from "./screens/Delivery";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -340,6 +341,11 @@ export default function App() {
               name="Add Address"
               component={AddAddressScreen}
               options={{ headerShadowVisible: false, title: "New Address" }}
+            />
+            <Stack.Screen
+              name="Delivery Status"
+              component={Delivery}
+              options={{ headerShadowVisible: false, title: "Status" }}
             />
           </Stack.Navigator>
         </NavigationContainer>
