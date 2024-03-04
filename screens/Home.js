@@ -33,7 +33,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
-import DynamicHeader from "../components/DynamicHeader";
 
 function Home() {
   const [barStyle, setBarStyle] = useState("light-content");
@@ -258,13 +257,13 @@ const timer = useRef()
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={styles.container}><LinearGradient
+        <View style={styles.container}><LinearGradient
             // colors={["#19171A", "#01418D", "#2873CC"]}
             // colors={["#19171A", "#2F5A8C", "#2873CC"]}
             colors={["#4F6B30", "#425928", "#354820", '#283618']}
             // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
           >
-            {/* <SafeAreaView style={styles.top}> */}
+            <SafeAreaView onTouchStart={()=>ref?.current?.scrollTo(0)} style={styles.top}>
               <View
                 style={[styles.top,{
                   flexDirection: "row",
@@ -388,11 +387,12 @@ const timer = useRef()
                 color="white"
               />
               </View>}
-            {/* </SafeAreaView> */}
+            </SafeAreaView>
           </LinearGradient>
           <ScrollView 
           scrollEventThrottle={16}
           onScroll={(e)=>handleScroll(e)}
+          onTouchStart={()=>ref?.current?.scrollTo(0)} 
            style={{ backgroundColor: "white" }}>
             <View style={[styles.horizontalCat, { marginTop: 2 }]}>
               {/* <View style={styles.catHead}>
@@ -752,7 +752,7 @@ const timer = useRef()
       }</View>
         </ScrollView>
         </BottomSheet>
-      </SafeAreaView>
+      </View>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

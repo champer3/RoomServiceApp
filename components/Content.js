@@ -4,7 +4,7 @@ import { Pressable } from "react-native";
 
 function Content({icon,  title, info, onPress }) {
   return (
-    <Pressable onPress = {onPress} style={[styles.container ]}>
+    <View style={[styles.container ]}>
       <View style={styles.icon}>
       {icon && <View style ={{ backgroundColor: "#FAFAFA",
             padding: 20,
@@ -29,10 +29,10 @@ function Content({icon,  title, info, onPress }) {
         </Text>
       </View>
       </View>
-      <View style={styles.radio}>
+      <Pressable onPress = {onPress} style={styles.radio}>
       <Ionicons name="chevron-forward-sharp" size={30} color="rgba(0,0,0,0.35)" />
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 }
 

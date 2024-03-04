@@ -252,7 +252,7 @@ export default function App() {
     <Provider store={store}>
       <StripeProvider publishableKey={STRIPE_KEY}>
         <NavigationContainer>
-          <StatusBar style="light" />
+          {/* <StatusBar style="light" /> */}
           <Stack.Navigator>
             {/* <Stack.Screen
               name="OnBoarding"

@@ -91,8 +91,8 @@ function ProfileDisplay() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
-        <ScrollView style={{ marginBottom: "15%" }}>
+      <View style={{ flex: 1 }}>
+        <ScrollView onTouchStart={()=>ref?.current?.scrollTo(0)} style={{ marginBottom: "15%" }}>
           <View
             style={[
               styles.recommendedView,
@@ -308,7 +308,7 @@ function ProfileDisplay() {
             </View>
           </View>
         </BottomSheet>
-      </Pressable>
+      </View>
     </GestureHandlerRootView>
   );
 }

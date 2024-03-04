@@ -183,14 +183,37 @@ function filterItems(filteringOptions) {
     return hasFilteringOption && isname;
   });
 }
-
+const [value, setValue] = useState("");
 // Example usage:
 const [filteredItems, setFilteredItems] = useState(filterItems(restrictions));
+function searchTitles(items, searchPhrase) {
+  const result = [];
+
+  // Iterate through each item in the array
+  items.forEach((item) => {
+    // Check if the title or related keywords contain the search phrase
+    if (item.title.toLowerCase().includes(searchPhrase.toLowerCase())) {
+      // If found, push the title into the result array
+      result.push(item);
+    } else if (item.related) {
+      // If the item has related keywords, check each related keyword
+      item.related.forEach((keyword) => {
+        if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+          // If found, push the title into the result array
+          result.push(item);
+        }
+      });
+    }
+  });
+
+  return result;
+}
+const result = searchTitles(filteredItems, value);
 
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style ={{flex: 1}}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView onTouchStart={()=>{ref?.current?.scrollTo(0);ref2?.current?.scrollTo(0)}} style={styles.container}>
         <ImageBackground
           borderRadius={16}
           style={styles.backgroundImgStyle}
@@ -200,7 +223,11 @@ const [filteredItems, setFilteredItems] = useState(filterItems(restrictions));
             <Text style={styles.text}>{name}</Text>
           </View>
         </ImageBackground>
-        <Input icon={<EvilIcons name="search" size={24} color="#aaa" />} text={'Search'}/>
+        <Input icon={<EvilIcons name="search" size={24} color="#aaa" />} text={'Search'} textInputConfig={{
+          cursorColor: "#aaa",
+          value: value,
+          onChangeText: (e) => setValue(e),
+          onTouchStart: ()=>{ref?.current?.scrollTo(0);ref2?.current?.scrollTo(0)}}} />
         {/* <View style={styles.input}>
           <EvilIcons name="search" size={24} color="#aaa" />
           <TextInput
@@ -218,7 +245,7 @@ const [filteredItems, setFilteredItems] = useState(filterItems(restrictions));
             </Text>
           </Pressable>
         </View>
-        {categoryObject[name.toLowerCase()] && <ProductCategory items={filteredItems} onPress={handleAddToCart} />}
+        {categoryObject[name.toLowerCase()] && <ProductCategory onTouch={()=>{ref?.current?.scrollTo(0);ref2?.current?.scrollTo(0)}} items={result} onPress={handleAddToCart} />}
         {!categoryObject[name.toLowerCase()] && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>We don’t have this item yet 😥😥.</Text></View>}
         {/* {visible && <View style ={{
     justifyContent: 'flex-end',
@@ -237,7 +264,12 @@ const [filteredItems, setFilteredItems] = useState(filterItems(restrictions));
     shadowRadius: 4,
     elevation: 5,}}><CartModal/></View>
         </View>} */}
-        <BottomSheet ref={ref}>
+               {/* <View>
+        <Product />
+        <Product />
+        </View> */}
+      </SafeAreaView>
+      <BottomSheet ref={ref}>
         <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 ,}} >
           <View style={{ paddingBottom: 250}}>
             {Object.keys(filter).map((item, idx)=><View style ={{ marginBottom: 19}} key={idx}><View style={{flexDirection: 'row', justifyContent: 'space-between',}}>
@@ -318,11 +350,7 @@ const [filteredItems, setFilteredItems] = useState(filterItems(restrictions));
         </ScrollView>
         </BottomSheet>
 
-        {/* <View>
-        <Product />
-        <Product />
-        </View> */}
-      </SafeAreaView>
+
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
@@ -334,7 +362,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginHorizontal: "2%",
-    marginTop: "10%",
+    paddingTop: 10,
   },
   catHead: {
     marginVertical: "10%",

@@ -131,7 +131,6 @@ function ProductDisplay() {
     // }
   }
   function handleAddToCartInc(product) {
-    console.log(product);
     if (option >= 0 && route.params.options) {
       dispatch(addToCart({ id: product }));
       setVisible(true);
@@ -340,11 +339,10 @@ function createFoodDictionary(foodArray) {
               <View style={{ height: "auto", width: "30%" }}>
                 <IncrementDecrementBtn
                   minValue={quantity}
-                  onIncrease={() => {
-                    if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0))
-                handleAddToCart();
-
-                  }}
+                  onIncrease ={() => {
+                    if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
+                      handleAddToCart();
+                  }else if(!route.params.extras && !route.params.options){handleAddToCart();}}}
                   onDecrease={() => handleRemoveFromCart(route.params)}
                 />
               </View>
@@ -671,9 +669,9 @@ function createFoodDictionary(foodArray) {
         <View style={{ width: "40%", height: 70 }}>
           <FlexButton
             onPress={() => {
-              if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0))
+              if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
                 handleAddToCart();
-            }}
+            }else if(!route.params.extras && !route.params.options){handleAddToCart();}}}
             background={"#283618"}
           >
             <FontAwesome name="shopping-bag" size={24} color="white" />
