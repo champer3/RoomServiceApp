@@ -8,6 +8,7 @@ import {
   Dimensions,
   StatusBar,
   Button,
+  Animated
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
@@ -32,6 +33,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
+import DynamicHeader from "../components/DynamicHeader";
 
 function Home() {
   const [barStyle, setBarStyle] = useState("light-content");
@@ -47,6 +49,8 @@ function Home() {
       return "Good Evening!";
     }
   }
+  const orders = useSelector((state) => state.cartItems.order)
+  const [isVisible, setIsVisible] = useState(true);
   const [option, setOption] = useState();
   const ref = useRef(null);
   function createFoodDictionary(foodArray) {
@@ -56,7 +60,6 @@ function Home() {
     }
     return foodDictionary;
   }
-
   // Example usage:
   let [foodStore, setFood] = useState({});
 
@@ -73,6 +76,9 @@ function Home() {
       console.error("Error retrieving token:", error);
     }
   };
+  function orderHandler(){
+    navigation.navigate('Order History')
+  }
   const [datas, setDatas] = useState(null);
   // const [request, response, promptAsync] = Google.useAuthRequest({
   //   androidClientId: "1036326714736-ca9qlbpotp81psarrg0pk9s3b27tiigo.apps.googleusercontent.com"
@@ -90,11 +96,27 @@ function Home() {
   // };
   const [foodDictionary, setFoodDictionary] = useState(foodStore);
   const [pro, setPro] = useState({});
-  useEffect(() => {
-    console.log("hit the useEffect");
-    // fetchData();
-  }, []);
-
+  // useEffect(() => {
+  //   console.log("hit the useEffect");
+  //   // fetchData();
+  // }, []);
+  function countDeliveringOrders(orders) {
+    // Initialize a counter variable
+    let count = 0;
+    
+    // Iterate through the orders array
+    for (let i = 0; i < orders.length; i++) {
+      // Check if the status of the order is "Delivering"
+      if (orders[i].status === "Delivering") {
+        // If the status is "Delivering", increment the counter
+        count++;
+      }
+    }
+    
+    // Return the count of "Delivering" orders
+    return count;
+  }
+  const deliveringOrdersCount = countDeliveringOrders(orders);
   const data = useSelector((state) => state.profileData.profile);
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids);
@@ -213,6 +235,9 @@ function Home() {
 //         setFoodDictionary(foodStore)
 //     }
 // },[plus])
+const [blink, setBlink] = useState(true)
+const timer = useRef()
+// useEffect(()=>{if (deliveringOrdersCount > 0){timer.current = setTimeout(()=>{setBlink((prev)=> !prev)},5)}})
   function handleAddToCart(product) {
     setPro(product)
     setPlus([])
@@ -226,33 +251,35 @@ function Home() {
     ref?.current?.scrollTo(-570);}else{
     dispatch(addToCart({ id: product }));}
   }
+  function handleScroll(event) {
+    setIsVisible(event.nativeEvent.contentOffset.y <= 0); 
+   }
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <LinearGradient
+        <SafeAreaView style={styles.container}><LinearGradient
             // colors={["#19171A", "#01418D", "#2873CC"]}
             // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-            colors={["#092642", "#033360", "#0961B4", "#0578E5"]}
+            colors={["#4F6B30", "#425928", "#354820", '#283618']}
             // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
           >
-            <SafeAreaView style={styles.top}>
+            {/* <SafeAreaView style={styles.top}> */}
               <View
-                style={{
+                style={[styles.top,{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   paddingHorizontal: "5%",
-                  paddingTop: "2%",
-                }}
+                  paddingTop: "8%",
+                }]}
               >
-                <View style={{ gap: 6 }}>
+                {deliveringOrdersCount <= 0 && <View style={{ gap: 6 }}>
                   <Text
                     style={{
                       color: "white",
                       fontSize: 16,
                       letterSpacing: 0.4,
-                      fontWeight: 400,
+                      fontWeight: 900,
                     }}
                   >
                     {greeting}
@@ -261,13 +288,24 @@ function Home() {
                     style={{
                       color: "white",
                       fontSize: 16,
-                      fontWeight: 200,
+                      fontWeight: 800,
                       letterSpacing: 1,
                     }}
                   >{`${data.firstName} `}</Text>
                   {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
-                </View>
-                <View style={[styles.cart, {width: 40, height: 40}]}>
+                </View>}
+                {deliveringOrdersCount >= 1 && <View style={{padding: 15,paddingHorizontal: 25, backgroundColor: 'white', borderRadius: 16, gap: 10, borderBottomWidth: 5, borderBottomColor: '#283618',  }}>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <View style={{width: 33}} >
+                  {blink && <MaterialCommunityIcons name="checkbox-blank-circle" size={22} color="#4F6B30" />}
+                  </View>
+                  <View>
+                    <Text style={{ fontWeight: 900}}>{` ${deliveringOrdersCount} ${deliveringOrdersCount > 1 ? 'orders are' : "order is"} on the way`}</Text>
+                    </View>
+                  </View>
+                  <View style={{height: 40, width: 124}}><FlexButton onPress={orderHandler} color={'#283618'}  background={"#4F6B30"} ><Text style={{fontSize: 12, fontWeight: 900, color: 'white'}}>View Orders</Text></FlexButton></View>
+                </View>}
+                <View style={[styles.cart, {width: 50, height: 40}]}>
                   <Pressable
                     onPress={cartHandler}
                   >
@@ -278,23 +316,23 @@ function Home() {
                     {cartItems.length > 0 && (
                       <View
                         style={{
-                          height: "35%",
-                          minWidth: "32%",
+                          height: "85%",
+                          minWidth: "35%",
                           justifyContent: "center",
                           alignItems: "center",
                           position: "absolute",
                           zIndex: 2,
-                          top: 0,
+                          top: -10,
+                          rigth:  -90,
                           borderRadius: 100,
-                          fontSize: 14,
-                          backgroundColor: "#283618",
+                          backgroundColor: "#425928",
                         }}
                       >
                         <Text
                           style={{
                             color: "white",
                             fontSize: 12,
-                            fontWeight: "bold",
+                            fontWeight: 900,
                           }}
                         >
                           {cartItems.length}
@@ -325,7 +363,7 @@ function Home() {
                   <Text
                     style={{ color: "black", fontSize: 16, fontWeight: 500 }}
                   >
-                    search RoomService
+                    Search RoomService
                   </Text>
                 </View>
                 {/* <Input
@@ -335,7 +373,7 @@ function Home() {
             text={"Search items"}
           ></Input> */}
               </Pressable>
-              <View style={{height: 100, marginBottom: 12}}>
+              {isVisible && <View style={{height: 100, marginBottom: 12}}>
               <ItemCategory
                 items={[
                   { text: "Alcohol", image: require("../assets/Alcohol.png") },
@@ -349,10 +387,13 @@ function Home() {
                 ]}
                 color="white"
               />
-              </View>
-            </SafeAreaView>
+              </View>}
+            {/* </SafeAreaView> */}
           </LinearGradient>
-          <ScrollView style={{ backgroundColor: "white" }}>
+          <ScrollView 
+          scrollEventThrottle={16}
+          onScroll={(e)=>handleScroll(e)}
+           style={{ backgroundColor: "white" }}>
             <View style={[styles.horizontalCat, { marginTop: 2 }]}>
               {/* <View style={styles.catHead}>
                 <Text style={styles.text}>Popular Categories</Text>
@@ -635,7 +676,7 @@ function Home() {
                 </Pressable>
               </View>
             </View>
-          </View>
+        
         </ScrollView>
         <BottomSheet ref={ref}>
         <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
@@ -750,7 +791,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // borderWidth: 1,
     borderRadius: 10,
-    backgroundColor: "#002547",
+    backgroundColor: '#283618',
     // backgroundColor: "#023C72",
     borderColor: "white",
     // borderWidth: 1

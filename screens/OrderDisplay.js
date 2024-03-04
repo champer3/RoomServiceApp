@@ -37,6 +37,7 @@ function OrderDisplay(){
             rate.push('staro')
         }
     }
+    
     function formatDate(dateString) {
       const date = new Date(dateString);
       const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date);
@@ -89,6 +90,7 @@ function OrderDisplay(){
 
       return filteredList;
   }
+  console.log(orders)
     var newList;
     const ref = useRef(null);
     const onPress = useCallback(() => {
@@ -129,7 +131,6 @@ function OrderDisplay(){
       }
       dispatch(completeOrder({id: menuItems}))
     }
-    console.log(orders)
     return  <GestureHandlerRootView style={{ flex: 1 }}><View style={{flex: 1}}>
     
     <View style={[{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, marginHorizontal: '5%', gap: 20, borderBottomColor: 'rgba(0,0,0,0.075)'}]}>

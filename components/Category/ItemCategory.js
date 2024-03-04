@@ -4,7 +4,7 @@ import Item from "../Item/Item"
 
 function ItemCategory({items, onPress, color}){
 
-    return <ScrollView  horizontal={true}>
+    return <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
         <View style={styles.container}>
         {items.map(({text, image},index) => <Item key={index} color={color} text={text} image={image} onPress = {onPress}/>)}
         </View>

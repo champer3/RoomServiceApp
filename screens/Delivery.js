@@ -97,7 +97,7 @@ export default function Delivery() {
     resizeMode="center"
   />
 </Marker>
-    <Marker coordinate={{
+   {driver && <Marker coordinate={{
       latitude: driver.latitude,
       longitude: driver.longitude,
 
@@ -108,7 +108,7 @@ export default function Delivery() {
     resizeMethod="resize"
     resizeMode="center"
   />
-</Marker>
+</Marker>}
 {coords.length > 0 && <Polyline coordinates={coords} strokeWidth={5} strokeColor="#BC6C25"
             />}
     </MapView>

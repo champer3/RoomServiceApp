@@ -265,8 +265,7 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
     const ref3 = useRef()
   return (
     <GestureHandlerRootView  style = {{flex: 1, paddingTop: 20}}>
-      <Pressable onPress={()=>{ref2?.current?.scrollTo(0);ref?.current?.scrollTo(0); ref3?.current?.scrollTo(0); }}>
-        <ScrollView  style={{marginBottom: '19%' }}>
+        <ScrollView onTouchStart={()=>{ref2?.current?.scrollTo(0);ref?.current?.scrollTo(0); ref3?.current?.scrollTo(0); }} style={{marginBottom: '19%' }}>
 
         {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
         {cartItems.length > 0 && <><View style={{marginHorizontal: '10%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
@@ -304,7 +303,6 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
   ]} color = '#039F03' />
         </View>
         </ScrollView>
-        </Pressable>
         <BottomSheet ref={ref}>
         <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
           <View style={{ marginBottom: 590}}>

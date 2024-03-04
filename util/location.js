@@ -23,6 +23,17 @@ export const getDirections = async (startLoc, destinationLoc) => {
     return error;
   }
 };
+export const getDuration = async (startLoc, destinationLoc) => {
+  try {
+    let resp = await fetch(
+      `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination=${destinationLoc}&key=${api_key}`
+    );
+    let respJson = await resp.json();
+    return (respJson.routes[0].legs[0].duration.text)
+  } catch (error) {
+    return error;
+  }
+};
 export async function getAddress(lat, lng){
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${api_key}&enable_address_descriptor=true`;
     const response = await fetch(url);

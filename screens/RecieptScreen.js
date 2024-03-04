@@ -14,6 +14,7 @@ import {clearCart, completeOrder} from '../Data/cart'
 import { useNavigation , useRoute} from "@react-navigation/native";
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
+import {Mailer} from 'react-native-mail'
 
 const { width, height } = Dimensions.get("window");
 function RecieptScreen() {
@@ -36,6 +37,49 @@ function RecieptScreen() {
     return totalPrice
       } 
       const cost = {}
+      function getItems(inputList){
+        const titleCountMap = [];
+
+        const result = {};
+      inputList.forEach(obj => {
+          const title = obj[Object.keys(obj)[0]];
+         titleCountMap.push(...title)
+
+      });
+        // Loop through the inputList to count occurrences of each title
+    //     inputList.forEach((obj) => {
+    //         const title = obj.title;
+  
+    //         // Increment the count for the title or initialize to 1 if it doesn't exist
+    //         titleCountMap[title] = (titleCountMap[title] || 0) + 1;
+    //     });
+        
+        
+    //   inputList.forEach(obj => {
+    //     var totalPrice = 0;
+    //     const title = Object.keys(obj)[0];
+    //       const titleArray = Object.values(obj)[0];
+          
+    //       titleArray.forEach(item => {
+    //           totalPrice += item.oldPrice;
+    //       });
+    //       cost[title] = totalPrice
+    //   });
+    //     // Loop through the inputList again to create a new list with quantity key
+    //     const newList = inputList.map((obj) => {
+    //         const title = Object.keys(obj)[0];
+    //         const quantity = result[title];
+  
+    //         // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
+    //         titleCountMap[title] = 0;
+  
+    //         return { ...obj[title][0], ['oldPrice'] : cost[title], quantity };
+    //     });
+    //     const filteredList = newList.filter((obj) => obj.quantity !== 0);
+  
+        return titleCountMap;
+      }
+      const order = getItems(cartItems)
       function addQuantityToObjects(inputList) {
         const titleCountMap = {};
 
@@ -109,13 +153,33 @@ function RecieptScreen() {
     // Example usage:
     const todayFormatted = getFormattedDate();
     const newList = addQuantityToObjects(cartItems);
-    console.log(newList)
-    let cnst = newList.map(({ title, quantity, oldPrice }) => `
+    console.log(order)
+    let cnst = order.map(({title,image, Sides, Flavour, extras, Picked, oldPrice}) => `
     <tr>
-      <td>${title}</td>
-      <td>${quantity}</td>
-      <td>$${oldPrice}</td>
-      <td>$${oldPrice * quantity}</td>
+    <td>
+            <div style="display: flex; align-items: start; flex-direction: column;">
+            <img src=${image}>
+                <h2 style="font-size: 25px; font-weight: bolder; font-family: Georgia, 'Times New Roman', Times, serif; font-style: oblique;">${title}</h2>
+                ${Picked ? `<p>${Picked}</p>` : ''}
+            </div>
+        </td>
+        <td style="padding-top: 20px;">
+            ${Sides ? `
+                <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
+                    <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Sides</p>
+                    ${Sides.map(side => `<p style="font-size: large; font-weight: 200; text-align: center; font-style: oblique;">${side}</p>`).join('')}
+                </div>
+            ` : ''}
+            ${Flavour ? `
+                <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
+                    <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Flavours</p>
+                    ${Flavour.map(flavour => `<p style="font-size: large; font-weight: 200; text-align: center; font-style: oblique;">${extras[flavour]}</p>`).join('')}
+                </div>
+            ` : ''}
+        </td>
+                <td style="display: flex; align-items: center; justify-content: center;padding-top: 20px;"><p style="font-size: large; font-style: oblique;font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;">$${oldPrice}</p></div></td>
+              </tr>
+                <td></td>
     </tr>
   `)
     let content =  ''
@@ -134,7 +198,11 @@ function RecieptScreen() {
         body {
             margin: 0;
             padding: 0;
-            font-family: 'PT Sans', sans-serif;
+            display:flex;
+            height: 100vh;
+            width: 100vw;
+            flex-direction: column;
+            gap: 20px
         }
 
         @page {
@@ -177,72 +245,72 @@ function RecieptScreen() {
         }
 
         .items thead {
-            text-align: center;
-        }
-
-        .center-align {
-            text-align: center;
+            text-align: left;
         }
 
         .bill-details td {
             font-size: 25px;
         }
 
-        .receipt {
-            font-size: medium;
-        }
 
         .items .heading {
-            font-size: 16px;
-            text-transform: uppercase;
-            border-top:1px solid black;
+            font-size: 23px;
+            /* text-transform: uppercase; */
+            font-weight: 900;
+            font-style: oblique;
             margin-bottom: 4px;
             border-bottom: 1px solid black;
             vertical-align: middle;
         }
 
-        .items thead tr th:first-child,
+        /* .items thead tr th:first-child,
         .items tbody tr td:first-child {
             width: 47%;
             min-width: 47%;
             max-width: 47%;
             word-break: break-all;
             text-align: left;
-        }
+        } */
 
         .items td {
             font-size: 15px;
-            text-align: right;
+            /* text-align: right; */
             vertical-align: bottom;
         }
 
-        .price::before {
-            font-family: Arial;
+        .price {
+            font-style: oblique;
+            font-size: 26px; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;
             text-align: right;
         }
 
         .sum-up {
             text-align: right !important;
+            font-style: oblique;
+            font-size: large; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;
         }
         .total {
-            font-size: 17px;
-            border-top:1px dashed black !important;
-            border-bottom:1px dashed black !important;
+            font-size: 22px;
+            font-style: oblique;
+            font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;
+            border-top:1px ridge black !important;
         }
         .total.text, .total.price {
             text-align: right;
         }
         .line {
-            border-top:1px solid black !important;
+            border-top: 1px solid black !important;
         }
         .heading.rate {
-            width: 20%;
+            width: 25%;
+            text-align: center;
         }
         .heading.amount {
-            width: 25%;
+            width: 35%;
+            text-align: center;
         }
         .heading.qty {
-            width: 5%
+            width: 25%;
         }
         p {
             padding: 1px;
@@ -259,28 +327,28 @@ function RecieptScreen() {
         <div id="logo" class="media" data-src="logo.png" src="./logo.png"></div>
 
     </header>
-    <p>Order ID: O673DGU</p>
+    <p style="font-size: large;margin-left: 5px; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif; font-style: oblique;"> Order ID: ${route.params.id}</p>
     <table class="bill-details">
         <tbody>
             <tr>
-                <th class="center-align" colspan="2"><span class="receipt">Order Receipt</span></th>
+                <th class="center-align" colspan="2"><span style="font-size: xx-large;font-style: oblique; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;" class="receipt">Order Receipt</span></th>
             </tr>
         </tbody>
     </table>
     
-    <table class="items">
+    <table class="items" style="border: 2px  solid black; outline: 2px ridge  wheat; padding: 0 10px 0 10px;margin-right: 5px ;border-radius: 20px;">
         <thead>
             <tr>
-                <th class="heading name">Item</th>
-                <th class="heading qty">Qty</th>
-                <th class="heading rate">Rate</th>
-                <th class="heading amount">Amount</th>
+                <th class="heading qty">Item</th>
+                <th class="heading rate">Extras</th>
+                <th class="heading name" style="text-align: 'center'"><p style="text-align: center;">Price</p></th>
+                <th class="heading amount">Instruction</th>
+                
             </tr>
         </thead>
        
         <tbody>
-        ${cnst}
-            <tr>
+${cnst}
                 <td colspan="3" class="sum-up line">Subtotal</td>
                 <td class="line price">$${getTotalSum().toFixed(2)}</td>
             </tr>
@@ -295,12 +363,12 @@ function RecieptScreen() {
             </tr>
         </tbody>
     </table>
-    <section>
-        <p style="text-align:center">
+    <section >
+        <p style="text-align:center ; font-style: oblique;font-size: large; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;">
             Thank you for your visit!
         </p>
     </section>
-    <footer style="text-align:center">
+    <footer style="font-style: oblique; font-size: 31px; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;text-align:center">
         <p>RoomService</p>
     </footer>
 </body>
@@ -324,7 +392,6 @@ const printToFile = async () => {
   console.log('File has been saved to:', uri);
   await shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
 };
-
 const selectPrinter = async () => {
   const printer = await Print.selectPrinterAsync(); // iOS only
   setSelectedPrinter(printer);
@@ -370,7 +437,7 @@ const selectPrinter = async () => {
             </View>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
             <Text style={styles.text}>Order Id</Text>
-            <Text style={[styles.text, {color : 'black'}]}>O673DGU</Text>
+            <Text style={[styles.text, {color : 'black'}]}>{route.params.id}</Text>
             </View>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
             <Text style={styles.text}>Date</Text>

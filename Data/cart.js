@@ -72,12 +72,19 @@ const cart = createSlice({
                 state.ids.splice(indexToRemove, 1);
             }},
         clearCart : (state) => {state.ids.length = 0},
-        completeOrder: (state, action) => {state.order.push(action.payload.id)}
+        completeOrder: (state, action) => {state.order.push(action.payload.id)},
+        updateOrder: (state, action) => { const index = state.order.findIndex(item => item.id === action.payload.id.uid); // Find the object with the given id
+        if (index !== -1) {
+            const order = state.order[index] 
+            order.time = action.payload.id.time; // Add the delivery time to the found order object
+            console.log("Delivery time added successfully:", order);
+        } }
     }
 })
 
 export const addToCart = cart.actions.addToCart
 export const updateCart = cart.actions.updateCart
+export const updateOrder = cart.actions.updateOrder
 export const deleteItem = cart.actions.deleteItem
 export const removeFromCart = cart.actions.removeFromCart
 export const deleteFromCart = cart.actions.deleteFromCart

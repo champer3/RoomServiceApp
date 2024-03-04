@@ -5,9 +5,14 @@ const { width, height } = Dimensions.get("window");
 import { Octicons } from '@expo/vector-icons';
 
 import { Fontisto } from '@expo/vector-icons';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import * as Location from 'expo-location';
 import { AntDesign } from "@expo/vector-icons";
+import { useSelector, useDispatch } from "react-redux";
+import {updateOrder } from "../Data/cart";
 import { EvilIcons } from '@expo/vector-icons';
 import FlexButton from "./Buttons/FlexButton";
+import { getAddress, getPosition, searchAddress, getDuration } from "../util/location";
 
 
 function OrderDescription({address, date, id,order, price, status = 'Delivering' }) {
@@ -15,6 +20,45 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
   function pressHandler (){
     navigation.navigate('Delivery Status', {address: address})
   }
+  const [time, setTime] = useState();
+  const [position , setPosition] = useState(null)
+  const [driver, setDriver] = useState(null)
+  useEffect(() => {
+    //fetch the coordinates and then store its value into the coords Hook.
+    if(position && driver){
+    getDuration(`${position.latitude},${position.longitude}`, `${driver.latitude},${driver.longitude}`)
+      .then(coords => setTime(coords))
+      .catch(err => console.log("Something went wrong"));}
+  }, [time, position,driver]);
+  useEffect(() => {
+    (async () => {
+      
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      if (location) {
+        setDriver({latitude: location.coords.latitude,
+          longitude: location.coords.longitude ,})
+      }
+      
+        
+    })();
+  }, []);
+  useEffect(() => {
+    (async () => {
+      
+      let locationT = await getPosition(address);
+      if (locationT) {
+        setPosition({latitude: locationT.lat,
+          longitude: locationT.lng })
+      }
+    })();
+  }, []);
+
     function formatDate(dateString) {
         const date = new Date(dateString);
         const currentDate = new Date();
@@ -101,9 +145,9 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
         <Text style={{fontWeight: 'bold', fontSize: 17}}>{price}</Text>
      </View>
      <View style={{flexDirection: 'row'}}>
-        {rate.map((rate,idx)=>{if(statuses.indexOf(status) !== idx){return <><Octicons key={idx} name={`${rate}`} size={24} color={ rate == 'dot-fill' ? "#BC6C25": 'rgba(0,0,0,0.5)'} />
-     <View key={rate}  style={{height : 2,width: '27.3%', alignSelf: 'center', backgroundColor: rate == 'dot-fill' ? "#BC6C25": 'rgba(0,0,0,0.5)'}}></View>
-   </>}else{return <><Fontisto name="radio-btn-active" size={24} color= "#BC6C25" /><View style={{height : 2,width: '27.3%', alignSelf: 'center', backgroundColor: "#BC6C25"}}></View></> }})}
+        {rate.map((rate,idx)=>{if(statuses.indexOf(status) !== idx){return <View style={{flex:1, alignItems: 'center',flexDirection:'row'}} key={idx}><Octicons name={`${rate}`} size={24} color={ rate == 'dot-fill' ? "#BC6C25": 'rgba(0,0,0,0.5)'} />
+     <View style={{height : 2, width: '90%', alignSelf: 'center', backgroundColor: rate == 'dot-fill' ? "#BC6C25": 'rgba(0,0,0,0.5)'}}></View>
+     </View>}else{return <><Fontisto key={5} name="radio-btn-active" size={24} color= "#BC6C25" /><View key={6} style={{height : 2,width: '27.3%', alignSelf: 'center', backgroundColor: "#BC6C25"}}></View></> }})}
      {lastStatus}
      </View>
      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -115,7 +159,8 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
      <View style={{height : 1,width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', alignSelf: 'center'}}></View>
     {status == 'Delivering' && <View style={{height: 45}}><FlexButton onPress={pressHandler} background={'#283618'} ><Text style={{fontWeight:'bold', fontSize: 16, color: 'white',textAlign: 'center'}}>Track Order</Text></FlexButton></View>}
      <Text style={{fontWeight: 900, fontSize: 13}}>{total} {`${total > 1 ? 'Items': 'Item'}`}</Text>
-     <ScrollView horizontal>{newList.map(({title, oldPrice,image, quantity}, idx)=><View key={idx} style={{marginRight: 3}}><Image style={styles.image} key={idx} source={image}/>{quantity > 1 && <View  style={{
+    
+     <ScrollView horizontal>{newList.map(({title, oldPrice,image, quantity}, idx)=><View key={idx} style={{marginRight: 3}}><Image style={styles.image}  source={image}/>{quantity > 1 && <View  style={{
                   height: '27%',
                   minWidth: '25%',
                   justifyContent: 'center',
@@ -130,7 +175,8 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
                   backgroundColor: 'white'
                 }}><Text style={{fontWeight: 900, fontSize: 10}} >{quantity}</Text></View>}</View>)}</ScrollView>
          <View style={{height : 1,width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', alignSelf: 'center'}}></View>
-         <View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton><Text style={{fontWeight: 900, fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View>
+         <View >{time &&<View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{fontWeight: 900, fontSize: 14}} >{`Driver is `}</Text><Text style={{fontWeight: 900, fontSize: 19, color: '#4F6B30'}}>{time}</Text><Text style={{fontWeight: 900, fontSize: 14}}> away</Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton><Text style={{fontWeight: 900, fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
+        
      </View>
      
     </View>
