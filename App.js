@@ -259,11 +259,11 @@ export default function App() {
               component={OnBoarding}
               options={{ headerShown: false }}
             /> */}
-            {/* <Stack.Screen
+            <Stack.Screen
               name="Authentication"
               component={Authentication}
               options={{ headerShown: false }}
-            /> */}
+            />
             <Stack.Screen
               name="HomeTabs"
               component={HomeTabs}
