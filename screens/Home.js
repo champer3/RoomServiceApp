@@ -33,8 +33,82 @@ import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
+import io from 'socket.io-client';
+
+const SERVER_URL = 'ws://10.0.0.173:5000';
 
 function Home() {
+
+  const [socket, setSocket] = useState(null);
+
+  useEffect(()=>{
+    const initializeSocket = async () => {
+      try {
+        const token = await retrieveTokenFromAsyncStorage();
+        if (token) {
+          const newSocket = io(SERVER_URL, {
+            auth: {
+              token,
+            },
+          });
+          setSocket(newSocket);
+          newSocket.on('connect', () => {
+            console.log('Socket connected');
+          });
+        }
+      } catch (error) {
+        console.error('Error initializing socket:', error);
+      }
+    };
+
+    initializeSocket();
+  }, [])
+
+
+  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1OGIyM2U2ODVlNzU4ZmM0YzFlMGU2ZSIsImlhdCI6MTcxMDQ0MzUyOCwiZXhwIjoxNzExMzA3NTI4fQ.HAym6ciuWr67c4ZqfVz-_x5xOU_YjVSI6zXZGTX0qts"
+  const [deliveringOrdersCount, setDeliveringOrdersCount] = useState(countDeliveringOrders(orders));
+
+
+  // const socket = io(SERVER_URL);
+
+  // useEffect(()=>{
+  //   // socket.on('update', (data) => {
+  //   //   console.log(data)
+  //   // });
+  //   connectSocket()
+  // },[])
+
+  useEffect(() =>{
+    if(socket){
+      socket.on('delivered', (data) => {
+        console.log("here")
+        setDeliveringOrdersCount(0)
+        console.log(data)
+      });
+
+      return () => {
+        socket.off('delivered'); // Remove 'message' event listener
+        // Remove other event listeners as needed
+      };
+    }
+
+  }, [socket])
+
+  const retrieveTokenFromAsyncStorage = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("authToken");
+      if (storedToken !== null) {
+        return storedToken;
+      } else {
+        console.log("Token not found in AsyncStorage.");
+      }
+    } catch (error) {
+      console.error("Error retrieving token:", error);
+    }
+  };
+
+
+
   const [barStyle, setBarStyle] = useState("light-content");
   function getGreeting() {
     var currentTime = new Date();
@@ -62,19 +136,7 @@ function Home() {
   // Example usage:
   let [foodStore, setFood] = useState({});
 
-  const retrieveTokenFromAsyncStorage = async () => {
-    try {
-      const storedToken = await AsyncStorage.getItem("authToken");
-      console.log(storedToken);
-      if (storedToken !== null) {
-        console.log("Retrieved token:", storedToken);
-      } else {
-        console.log("Token not found in AsyncStorage.");
-      }
-    } catch (error) {
-      console.error("Error retrieving token:", error);
-    }
-  };
+
   function orderHandler(){
     navigation.navigate('Order History')
   }
@@ -100,9 +162,12 @@ function Home() {
   //   // fetchData();
   // }, []);
   function countDeliveringOrders(orders) {
+    if (!orders){
+      return
+    }
     // Initialize a counter variable
     let count = 0;
-    
+
     // Iterate through the orders array
     for (let i = 0; i < orders.length; i++) {
       // Check if the status of the order is "Delivering"
@@ -111,11 +176,15 @@ function Home() {
         count++;
       }
     }
-    
+
     // Return the count of "Delivering" orders
     return count;
   }
-  const deliveringOrdersCount = countDeliveringOrders(orders);
+  // deliveringOrdersCount = countDeliveringOrders(orders);
+  useEffect(()=>{
+    setDeliveringOrdersCount(countDeliveringOrders(orders))
+  }, [orders])
+
   const data = useSelector((state) => state.profileData.profile);
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids);
@@ -190,7 +259,7 @@ function Home() {
     }
     setPlus([])
     setOption()
-    
+
     ref?.current?.scrollTo(0)
     setFoodDictionary(foodStore)
     dispatch(addToCart({id : {title: pro.title, ...{...pro, ...newItem, ['oldPrice'] : pro.oldPrice + price} }}))
@@ -213,13 +282,13 @@ function Home() {
     }
     setPlus([])
     setOption()
-    
+
     ref?.current?.scrollTo(0)
     setFoodDictionary(foodStore)
     dispatch(addToCart({id : {title: pro.title, ...{...pro, ...newItem, ['oldPrice'] : pro.oldPrice + price} }}))
     navigation.navigate('Checkout')
   }
-  
+
 //   useEffect(()=>{
 //     if (plus.length == 2){
 //       let price = 0
@@ -228,7 +297,7 @@ function Home() {
 //         }
 //       dispatch(addToCart({ id: {...pro, ['oldPrice']: pro['oldPrice']+price} }))
 //       dispatch(addOptions({id: {'title': pro.title, 'options': {'Sides' : plus}}}))
-        
+
 //         setPlus([])
 //         ref?.current?.scrollTo(0)
 //         setFoodDictionary(foodStore)
@@ -243,15 +312,15 @@ const timer = useRef()
     if (product.extras){
       setExtra(product.extras)
       setFoodDictionary(createFoodDictionary(product.extras))
-  
+
   }
   if (product.extras || product.options ){
-  
+
     ref?.current?.scrollTo(-570);}else{
     dispatch(addToCart({ id: product }));}
   }
   function handleScroll(event) {
-    setIsVisible(event.nativeEvent.contentOffset.y <= 0); 
+    setIsVisible(event.nativeEvent.contentOffset.y <= 0);
    }
   return (
     <SafeAreaProvider>
@@ -389,10 +458,10 @@ const timer = useRef()
               </View>}
             </SafeAreaView>
           </LinearGradient>
-          <ScrollView 
+          <ScrollView
           scrollEventThrottle={16}
           onScroll={(e)=>handleScroll(e)}
-          onTouchStart={()=>ref?.current?.scrollTo(0)} 
+          onTouchStart={()=>ref?.current?.scrollTo(0)}
            style={{ backgroundColor: "white" }}>
             <View style={[styles.horizontalCat, { marginTop: 2 }]}>
               {/* <View style={styles.catHead}>
@@ -676,7 +745,7 @@ const timer = useRef()
                 </Pressable>
               </View>
             </View>
-        
+
         </ScrollView>
         <BottomSheet ref={ref}>
         <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
@@ -725,7 +794,7 @@ const timer = useRef()
                                 <View style ={{width: width/3.8, height: '170%'}}>
                                     <FlexButton onPress = {plus.length == 2 ? handleBuy : ()=>{}} background={plus.length < 2 ? "rgba(0,0,0,0.5)" :  '#283618'}><Text style={{color: 'white', fontWeight: 900,fontSize: 13}}>Buy now</Text></FlexButton>
                                 </View>
-                                
+
                             </View>
                             <Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>{`Choose ${2}`}</Text>
                             <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)', width : width/5, alignItems : 'center'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View>
@@ -740,7 +809,7 @@ const timer = useRef()
                             </View>)}
 
                         </View>}
-                    {pro.instructions && <View 
+                    {pro.instructions && <View
         style ={{color: 'white', backgroundColor : 'white'}}><TextInput
         multiline
         placeholder="Special Instructions?"
