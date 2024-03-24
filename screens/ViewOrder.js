@@ -17,13 +17,11 @@ import {useSelector, useDispatch} from 'react-redux'
 import { addReview } from "../Data/Items";
 import {clearCart, completeOrder} from '../Data/cart'
 import OrderDescription from "../components/OrderDescription";
-import { useNavigation } from "@react-navigation/native";
 
 
 const { width, height } = Dimensions.get("window");
 function OrderDisplay(){
   const orders = useSelector((state) => state.cartItems.order)
-  const navigation = useNavigation()
     const [index, setIndex] = useState(0);
     const [rating, setrating] = useState(0);
     const data = useSelector((state) => state.profileData.profile)
@@ -39,14 +37,6 @@ function OrderDisplay(){
             rate.push('staro')
         }
     }
-    
-  function press(item, id, price) {
-    navigation.navigate("Order Receipt", {
-      total: price,
-      items: item,
-      id: id
-    });
-  }
     
     function formatDate(dateString) {
       const date = new Date(dateString);
@@ -100,6 +90,7 @@ function OrderDisplay(){
 
       return filteredList;
   }
+  console.log(orders)
     var newList;
     const ref = useRef(null);
     const onPress = useCallback(() => {
@@ -121,13 +112,6 @@ function OrderDisplay(){
       setForm((prev) => {return { ...prev, ['reviews']: {...prev.reviews, ['comment'] : value}}});
 
     }
-    const deliveredOrders = orders.filter(order => order.status === 'Delivered');
-    console.log("Delivered Orders:");
-    console.log(deliveredOrders);
-
-    const undeliveredOrders = orders.filter(order => order.status !== 'Delivered');
-    console.log("Undelivered Orders:");
-    console.log(undeliveredOrders);
     function handleFormSubmit(){
       dispatch(addReview({id: form}))
       updateReviews(form.title)
@@ -165,19 +149,18 @@ function OrderDisplay(){
     </View>
     <ScrollView >
     <View style={{flex: 1}} >
-    {/* <View style={styles.recommendedView}>
+    <View style={styles.recommendedView}>
         <Input icon={<Ionicons name="search-outline" size={24} color="#aaa" />} text={'Search orders'}/>
-    </View> */}
-    {index == 0 && undeliveredOrders.length == 0 && <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
-    {index == 1 && deliveredOrders.length == 0 &&  <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
+    </View>
+    {index == 0 && orders.length == 0 && <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
+    {index == 1 &&  <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
     {/* {index == 0 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
     </View>} */}
     <View style={styles.recommendedView}>
-    {index == 0 && undeliveredOrders.map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} /></View>)}
-    {index == 1 && deliveredOrders.map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} /></View>)}
+    {index == 0 && orders.map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} address={address} order={order} id={id} date={date} /></View>)}
        
     </View>
     </View>

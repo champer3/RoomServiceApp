@@ -7,6 +7,7 @@ import {
   Keyboard,
   Pressable,
   Alert,
+  Dimensions, KeyboardAvoidingView,
   StatusBar,
 } from "react-native";
 import Input from "../components/Inputs/Input";
@@ -16,7 +17,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Info from "../components/Info";
 import CodeInput from "../components/Inputs/CodeInput";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
@@ -26,7 +27,10 @@ function NumberLogin() {
   const dispatch = useDispatch();
   let authToken
   const [otp, setOtp] = useState("");
+  const [seconds, setSeconds] = useState(0);
+  const [isActive, setIsActive] = useState(false)
   const route = useRoute();
+  const [err, setErr] = useState(false) 
   const phoneNumber = route.params?.phoneNumber || "";
   console.log("number:", phoneNumber);
   function getOtp(data) {
@@ -52,13 +56,33 @@ function NumberLogin() {
       console.log(err.error);
     }
   };
+  useEffect(() => {
+    let intervalId;
+    if (isActive) {
+      intervalId = setInterval(() => {
+        setSeconds(prevSeconds => {
+          if (prevSeconds === 0) {
+            clearInterval(intervalId);
+            setIsActive(false);
+            return 0;
+          }
+          return prevSeconds - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isActive]);
 
   function handleScreenPress() {
     Keyboard.dismiss();
   }
   const navigation = useNavigation();
-  function resendCode() {
-    resendVerifyNumber();
+  function resendCode(){
+    setSeconds(60); // Set your desired countdown time here
+    setIsActive(true);
+    // Put your OTP resend logic here
+    console.log('Resending OTP...');
+    resendVerifyNumber()
   }
   async function pressHandler() {
     const verifyResponse = await verifyNumber(otp);
@@ -118,19 +142,17 @@ function NumberLogin() {
       console.error("Error saving token:", error);
     }
   };
-
+  console.log('otp',otp)
   return (
-    <TouchableWithoutFeedback onPress={handleScreenPress}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
+
+    <KeyboardAvoidingView  onTouchStart={handleScreenPress} onPress={handleScreenPress} behavior="height"  style={styles.container} >
+     
         <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.topView}>
             <View style={styles.welcomeView}>
               <Text style={styles.text}>Hello,</Text>
               <Text style={styles.text}>Welcome Back😍</Text>
             </View>
-          </View>
-          <View style={styles.middleView}>
             <View style={{ marginBottom: "5%" }}>
               <CodeInput getOtpData={getOtp} length={6} />
               <View
@@ -140,14 +162,12 @@ function NumberLogin() {
                   justifyContent: "space-between",
                 }}
               >
-                <Text onPress={resendCode} style={{ marginVertical: 2 }}>
-                  Resend Code
-                </Text>
-                <Text style={{ marginVertical: 2 }}>00:59</Text>
+                <Text onPress={!isActive ? resendCode: ()=>{}} style={{marginVertical: 2, color: isActive ? '#aaa' : 'black'}}>Resend Code</Text>
+          {isActive && <Text style={{marginVertical: 0}}>{`0${Math.floor(seconds/60)}:${seconds % 60 >= 10 ? seconds%60 : '0' + seconds%60}`}</Text>}
               </View>
             </View>
             <View style={styles.buttonContainer}>
-              <Button onPress={pressHandler}>
+              <Button onPress={otp.length == 6 ? pressHandler: ()=>{}} color={otp.length == 6 ? '' : '#aaa'}>
                 <Text style={{ fontSize: 16, color: "white" }}>Continue</Text>
                 <Image
                   style={styles.vector}
@@ -159,6 +179,7 @@ function NumberLogin() {
               <Info text="Enter the five-digit code that was sent to your registered phone number." />
             </View>
           </View>
+          
           <View style={styles.downView}>
             <View style={styles.threeContainer}>
               <View style={styles.line}></View>
@@ -197,40 +218,31 @@ function NumberLogin() {
               </Pressable>
             </View>
           </View>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
   );
 }
 
 export default NumberLogin;
+const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "center",
     marginHorizontal: "5%",
-    marginTop: "10%",
-    marginBottom: "5%",
-  },
-  topView: {
-    height: "16%",
-    marginBottom: "10%",
+    marginTop: height/35,
+    // marginTop: 200
   },
   welcomeView: {},
   middleView: {
     height: "40%",
     justifyContent: "flex-start",
   },
-  image: {
-    width: "100%",
-    resizeMode: "contain",
-  },
   buttonContainer: {
     width: "100%",
-    height: 65,
-    marginBottom: "5%",
+    height: 55,
+    marginBottom: 25,
+    alignSelf: 'flex-end'
   },
   vector: {
     width: "10%",
@@ -265,7 +277,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   downView: {
-    flex: 1,
+    marginTop: 22,
     justifyContent: "flex-end",
     // borderWidth: 2
   },

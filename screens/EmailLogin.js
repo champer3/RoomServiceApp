@@ -6,6 +6,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Pressable,
+  KeyboardAvoidingView,
+  Dimensions,
   Alert,
   StatusBar,
 } from "react-native";
@@ -14,13 +16,13 @@ import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Info from "../components/Info";
 
 function EmailLogin() {
   const dispatch = useDispatch();
@@ -30,6 +32,36 @@ function EmailLogin() {
     email,
     password,
   };
+  function validatePassword() {
+    // At least 8 characters
+    if (password.length < 8) {
+        return false;
+    }
+    
+    // Contains at least one uppercase letter
+    if (!/[A-Z]/.test(password)) {
+        return false;
+    }
+
+    // Contains at least one lowercase letter
+    if (!/[a-z]/.test(password)) {
+        return false;
+    }
+
+    // Contains at least one digit
+    if (!/\d/.test(password)) {
+        return false;
+    }
+
+    // Contains at least one special character
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+        return false;
+    }
+
+    return true;
+}
+
+  const [warning, setWarning] = useState();
   const navigation = useNavigation();
   function handleScreenPress() {
     Keyboard.dismiss();
@@ -88,10 +120,19 @@ function EmailLogin() {
       console.log(err.error);
     }
   };
+  function handleEmailChange( value) {
+      setEmail(value)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(value)) {
+        setWarning("Provide a valid email address");
+      } else {
+        setWarning();
+      }
+  }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
+         <KeyboardAvoidingView onPress={handleScreenPress} behavior="height" style={styles.container}>
         <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.welcomeView}>
             <Text style={styles.text}>Hello,</Text>
@@ -99,7 +140,7 @@ function EmailLogin() {
           </View>
           <View
             style={{
-              flex: 4,
+              marginBottom: 26,
               //   alignItems: "center",
               width: "100%",
               //   borderWidth: 2,
@@ -110,11 +151,16 @@ function EmailLogin() {
               type="email"
               text="Email"
               textInputConfig={{
-                onChangeText: (text) => setEmail(text),
+                onChangeText: (text) => handleEmailChange(text),
                 value: email,
               }}
               icon={<MaterialIcons name="email" size={24} color="#aaa" />}
             />
+             {warning && (
+              <Info
+                text={`${warning}                                            `}
+              />
+            )}
             <Input
               type="password"
               text="Password"
@@ -125,7 +171,8 @@ function EmailLogin() {
               secured={true}
               icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
             />
-
+           
+          
             <Text
               style={{
                 textAlign: "right",
@@ -138,7 +185,7 @@ function EmailLogin() {
             </Text>
 
             <View style={styles.buttonContainer}>
-              <Button onPress={pressHandler}>
+              <Button onPress={pressHandler} color={!(!warning && email) || !validatePassword() ? '#aaa' : '' }>
                 <Text style={{ fontSize: 16, color: "white" }}>Login </Text>
                 <Image
                   style={styles.vector}
@@ -177,7 +224,6 @@ function EmailLogin() {
               style={[
                 styles.buttonContainer,
                 {
-                  marginBottom: 16,
                 },
               ]}
             >
@@ -193,7 +239,6 @@ function EmailLogin() {
               style={[
                 styles.buttonContainer,
                 {
-                  marginBottom: 16,
                 },
               ]}
             >
@@ -219,23 +264,21 @@ function EmailLogin() {
               </Pressable>
             </View>
           </View>
-        </SafeAreaView>
-      </SafeAreaProvider>
+          </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 }
 
 export default EmailLogin;
 
-// const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "space-between",
     marginHorizontal: "5%",
-    marginVertical: "10%",
+    marginTop: height/35,
     // marginTop: 200
   },
   welcomeView: {
@@ -258,7 +301,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: "100%",
-    height: 65,
+    height: 55,
     marginBottom: 20,
   },
   vector: {

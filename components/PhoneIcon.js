@@ -11,7 +11,7 @@ function PhoneIcon(){
     </View>
     <View style = {{flexDirection: "row", alignItems:"center"}}>
     <Text>+1</Text>
-    <Ionicons name="chevron-down-outline" size={24} color="#aaa" />
+    {/* <Ionicons name="chevron-down-outline" size={24} color="#aaa" /> */}
     </View>
     </View>
     </>

@@ -1,16 +1,19 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Alert, Dimensions, KeyboardAvoidingView } from "react-native";
 import CodeInput from "../components/Inputs/CodeInput";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { RadioButton } from "react-native-paper";
 import Info from "../components/Info";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 function AddPin() {
   const [otp, setOtp] = useState([1,2,3,4,5,6])
   const route = useRoute()
+  const [seconds, setSeconds] = useState(0);
+  const [isActive, setIsActive] = useState(false)
   const phoneNumber = route.params?.phoneNumber || ""
   function getOtp(data){
     setOtp(data)
@@ -19,16 +22,40 @@ function AddPin() {
     Keyboard.dismiss()
   }
   function resendCode(){
+    setSeconds(60); // Set your desired countdown time here
+    setIsActive(true);
+    // Put your OTP resend logic here
+    console.log('Resending OTP...');
     resendVerifyNumber()
+  }
+  useEffect(() => {
+    let intervalId;
+    if (isActive) {
+      intervalId = setInterval(() => {
+        setSeconds(prevSeconds => {
+          if (prevSeconds === 0) {
+            clearInterval(intervalId);
+            setIsActive(false);
+            return 0;
+          }
+          return prevSeconds - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isActive]);
+
+  function nextHandler(){
+    navigation.navigate('AddNumber')
   }
   const navigation = useNavigation()
   async function pressHandler (){
-    const verifyResponse = await verifyNumber(otp)
-    if(verifyResponse === "approved"){
+    // const verifyResponse = await verifyNumber(otp)
+    // if(verifyResponse === "approved"){
       navigation.navigate('CreatePassword')
-    }else{
-      Alert.alert('Incorrect OTP', 'Please check your input and try again')
-    }
+    // }else{
+    //   Alert.alert('Incorrect OTP', 'Please check your input and try again')
+    // }
   }
   const verifyNumber = async(code) =>{
     try{
@@ -41,6 +68,7 @@ function AddPin() {
       console.log(err.error)
     }
   }
+
   const resendVerifyNumber = async() =>{
     try{
       console.log(phoneNumber)
@@ -52,8 +80,8 @@ function AddPin() {
     }
   }
   return (
-    <TouchableWithoutFeedback onPress={handleScreenPress}>
-    <View style={styles.container}>
+    <GestureRecognizer onTouchStart={handleScreenPress} onSwipeLeft={pressHandler} onSwipeRight={(nextHandler)}  style={{flex: 1}} >
+    <KeyboardAvoidingView onPress={handleScreenPress} behavior="height"  style={styles.container} >
       <View style={styles.welcomeView}>
         <Text style={styles.text}>Almost there,</Text>
         <Text style={styles.text}>Verify Your Number😉</Text>
@@ -63,16 +91,16 @@ function AddPin() {
             <View style={[styles.line, {backgroundColor: "#283618"}]}></View>
             <View style={styles.line}></View>
         </View>
-      </View>
-      <View style={{flex: 2}}>
+        <View style={{}}>
         <CodeInput getOtpData={getOtp}  length={6} />
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text onPress={resendCode} style={{marginVertical: 20}}>Resend Code</Text>
-          <Text style={{marginVertical: 20}}>00:59</Text>
+          <Text onPress={!isActive ? resendCode: ()=>{}} style={{marginVertical: 20, color: isActive ? '#aaa' : 'black'}}>Resend Code</Text>
+          {isActive && <Text style={{marginVertical: 20}}>{`0${Math.floor(seconds/60)}:${seconds % 60 >= 10 ? seconds%60 : '0' + seconds%60}`}</Text>}
         </View>
         <Info text="Enter the six-digit code that was sent to the mobile number you previously entered" />
       </View>
-      <View style={{flex: 2, justifyContent: "flex-end"}}>
+      </View>
+      <View style={{ justifyContent: 'flex-end', flex: 1 }}>
       <View style={styles.buttonContainer}>
         <Button onPress={pressHandler}>
           <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
@@ -83,32 +111,27 @@ function AddPin() {
         </Button>
       </View>
             </View>
-    </View>
-    </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+          </GestureRecognizer>
   );
 }
 
 export default AddPin;
-
+const { width, height } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "center",
-    // alignItems: "center",
     marginHorizontal: "5%",
-    marginVertical: 80,
+    marginTop: height/35,
+    // marginTop: 200
   },
   welcomeView: {
-    flex: 1,
-    marginBottom: 42,
+    // flex: 1,
+    // marginBottom: 42,
     // marginTop: -70,
   },
   description: {
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
   },
   image: {
     flex: 1,
@@ -117,8 +140,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: "100%",
-    height: 65,
-    marginBottom: -20,
+    height: 55,
+    marginBottom: 25,
+    alignSelf: 'flex-end'
   },
   vector: {
     width: "7%",
@@ -152,12 +176,11 @@ const styles = StyleSheet.create({
   },
   lineContainer: {
     flexDirection: "row",
-    marginTop: "5%",
+    marginVertical: height/35,
     justifyContent: "space-between",
-    height: "34%"
   },
   line: {
-    height: "5%",
+    height: 2,
     width: "20%",
     backgroundColor: "#D9D9D9",
   }

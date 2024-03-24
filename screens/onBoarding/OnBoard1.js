@@ -11,8 +11,11 @@ import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
 import { Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 const { width, height } = Dimensions.get("window");
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+ 
 
 function OnBoard1() {
   const navigation = useNavigation();
@@ -23,7 +26,8 @@ function OnBoard1() {
     navigation.navigate('Authentication')
   }
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView  style={styles.container}>
+      <GestureRecognizer onSwipeLeft={pressHandler} style={styles.container}>
       <StatusBar hidden={false} barStyle="dark-content" />
       <ImageBackground
         style={styles.backgroundImage}
@@ -56,7 +60,8 @@ function OnBoard1() {
         </View>
       </ImageBackground>
       <StatusBar style="dark" />
-    </View>
+      </GestureRecognizer>
+    </GestureHandlerRootView>
   );
 }
 
@@ -66,10 +71,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // margin: 24,
-    justifyContent: "flex-end",
+    // justifyContent: "flex-end",
   },
   first: {
-    height: height / 3,
+    height: height / 2.7,
     // width: width * 1.05,
     // marginLeft: -30,
     backgroundColor: "#283618",

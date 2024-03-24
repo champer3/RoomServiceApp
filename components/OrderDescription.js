@@ -15,7 +15,7 @@ import FlexButton from "./Buttons/FlexButton";
 import { getAddress, getPosition, searchAddress, getDuration } from "../util/location";
 
 
-function OrderDescription({address, date, id,order, price, status = 'Delivering' }) {
+function OrderDescription({address, date, id,order, price, status = 'Delivering', press }) {
     const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('Delivery Status', {address: address})
@@ -175,7 +175,7 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
                   backgroundColor: 'white'
                 }}><Text style={{fontWeight: 900, fontSize: 10}} >{quantity}</Text></View>}</View>)}</ScrollView>
          <View style={{height : 1,width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', alignSelf: 'center'}}></View>
-         <View >{time &&<View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{fontWeight: 900, fontSize: 14}} >{`Driver is `}</Text><Text style={{fontWeight: 900, fontSize: 19, color: '#4F6B30'}}>{time}</Text><Text style={{fontWeight: 900, fontSize: 14}}> away</Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton><Text style={{fontWeight: 900, fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
+         <View >{time && status == 'Delivering' && <View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{fontWeight: 900, fontSize: 14}} >{`Driver is `}</Text><Text style={{fontWeight: 900, fontSize: 19, color: '#4F6B30'}}>{time}</Text><Text style={{fontWeight: 900, fontSize: 14}}> away</Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton onPress={()=>press(order, id, price)}><Text style={{fontWeight: 900, fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
         
      </View>
      

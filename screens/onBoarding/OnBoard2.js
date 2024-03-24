@@ -9,6 +9,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 const { width, height } = Dimensions.get("window");
 
@@ -21,7 +22,7 @@ function OnBoard2() {
     navigation.navigate('Authentication')
   }
   return (
-    <View style={styles.container}>
+    <GestureRecognizer onSwipeLeft={pressHandler}  onSwipeRight={()=> navigation.navigate('OnBoard1')} style={styles.container}>
       <ImageBackground
         style={styles.backgroundImage}
         source={require("../../assets/onboard2.jpg")}
@@ -60,7 +61,7 @@ function OnBoard2() {
         </View>
       </ImageBackground>
       <StatusBar style="dark" />
-    </View>
+      </GestureRecognizer>
   );
 }
 
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   first: {
-    height: height / 3,
+    height: height / 2.8,
     // width: width ,
     // marginLeft: -30,
     backgroundColor: "#283618",

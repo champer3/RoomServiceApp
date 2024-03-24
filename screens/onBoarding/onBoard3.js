@@ -9,7 +9,7 @@ import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
-
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 const { width, height } = Dimensions.get("window");
 
 function OnBoard3() {
@@ -18,7 +18,7 @@ function OnBoard3() {
     navigation.navigate('Authentication')
   }
   return (
-    <View style={styles.container}>
+    <GestureRecognizer onSwipeLeft={pressHandler} onSwipeRight={()=> navigation.navigate('OnBoard2')} style={styles.container}>
       <ImageBackground
         style={styles.backgroundImage}
         source={require("../../assets/onboard3.jpg")}
@@ -35,7 +35,6 @@ function OnBoard3() {
             <View>
               <Text style={styles.topText}>Convenience Redefined</Text>
               <Text style={styles.downText}>
-                {""}
                 From pantry staples to delectable delights, we bring you
                 convenience without compromise. Sign up now and redefine the way
                 you shop.
@@ -57,7 +56,7 @@ function OnBoard3() {
         </View>
       </ImageBackground>
       <StatusBar style="light" />
-    </View>
+      </GestureRecognizer>
   );
 }
 
@@ -70,7 +69,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   first: {
-    height: height / 3,
+    height: height / 2.5,
     // width: width * 1.05,
     // marginLeft: -30,
     backgroundColor: "#283618",
@@ -118,12 +117,13 @@ const styles = StyleSheet.create({
   topText: {
     fontSize: 24,
     fontWeight: "600",
-    marginBottom: 8,
+    marginVertical: 12,
   },
   downText: {
     fontSize: 16,
     fontWeight: "300",
     opacity: 0.7,
     paddingRight: 20,
+    marginBottom: 15,
   },
 });

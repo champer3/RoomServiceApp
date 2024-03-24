@@ -8,6 +8,8 @@ import {
   Pressable,
   Alert,
   StatusBar,
+  KeyboardAvoidingView,
+  Dimensions
 } from "react-native";
 import Input from "../components/Inputs/Input";
 import { useNavigation } from "@react-navigation/native";
@@ -23,7 +25,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+const height = Dimensions.get('screen').height
 function NumberLogin() {
   function handleScreenPress() {
     Keyboard.dismiss();
@@ -34,15 +36,15 @@ function NumberLogin() {
   console.log(number);
   const navigation = useNavigation();
   async function pressHandler() {
-    const response = await verifyNumber();
-    if (response) {
+    // const response = await verifyNumber();
+    // if (response) {
       navigation.navigate("PinLogin", { phoneNumber });
-    } else {
-      Alert.alert(
-        "No account",
-        "There is no account attributed to this number. SignUp!"
-      );
-    }
+    // } else {
+    //   Alert.alert(
+    //     "No account",
+    //     "There is no account attributed to this number. SignUp!"
+    //   );
+    // }
   }
 
   const verifyNumber = async () => {
@@ -106,8 +108,7 @@ function NumberLogin() {
   getData();
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView behavior="height" style={styles.container}>
           <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.topView}>
             <View style={styles.welcomeView}>
@@ -128,7 +129,7 @@ function NumberLogin() {
               />
             </View>
             <View style={styles.buttonContainer}>
-              <Button onPress={pressHandler}>
+              <Button onPress={number.length == 14 ? pressHandler: ()=>{}} color={number.length == 14 ? '' : '#aaa'}>
                 <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
                 <Image
                   style={styles.vector}
@@ -159,7 +160,7 @@ function NumberLogin() {
               <Text>or continue with</Text>
               <View style={styles.line}></View>
             </View>
-            <View style={[styles.buttonContainer, { marginBottom: 24 }]}>
+            <View style={[styles.buttonContainer,]}>
               <BareButton borderRadius={24} color="#EEEEEE">
                 <Image
                   style={styles.facebook}
@@ -168,7 +169,7 @@ function NumberLogin() {
                 <Text> Continue with facebook</Text>
               </BareButton>
             </View>
-            <View style={[styles.buttonContainer, { marginBottom: 24 }]}>
+            <View style={[styles.buttonContainer, ]}>
               <BareButton borderRadius={24} color="#EEEEEE">
                 <Image
                   style={styles.facebook}
@@ -191,8 +192,7 @@ function NumberLogin() {
               </Pressable>
             </View>
           </View>
-        </SafeAreaView>
-      </SafeAreaProvider>
+        </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 }
@@ -205,35 +205,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     justifyContent: "center",
     marginHorizontal: "5%",
-    marginVertical: "20%",
+    marginTop: height/5,
   },
   topView: {
-    height: "20%",
+    height: height/8,
   },
   welcomeView: {},
   middleView: {
-    height: "40%",
   },
   image: {
-    width: "100%",
-    resizeMode: "contain",
   },
   buttonContainer: {
-    width: "100%",
     height: 65,
-    marginBottom: "5%",
+    marginBottom: 15,
   },
   vector: {
     width: "10%",
     resizeMode: "center",
   },
   facebook: {
-    width: "7%",
-    resizeMode: "contain",
-    marginRight: 3,
+    resizeMode: "center",
   },
   threeContainer: {
-    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -255,7 +248,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   downView: {
-    flex: 1,
     justifyContent: "flex-end",
   },
 });

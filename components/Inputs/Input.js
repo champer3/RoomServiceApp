@@ -41,7 +41,7 @@ const  Input = ({
   if (secured) {
     content = (
       <TextInput
-        style={[styles.input, {color: color}]}
+        style={[styles.input, {color: color,  height: 40, fontSize: 16}]}
         placeholder={text}
         autoComplete="address-line1"
         cursorColor={"rgba(0,0,0,0.5)"}

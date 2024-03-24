@@ -6,6 +6,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Pressable,
+  KeyboardAvoidingView,
+  Dimensions,
   Alert,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -20,6 +22,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 function EmailSignUp() {
   function handleScreenPress() {
@@ -36,6 +39,9 @@ function EmailSignUp() {
   const [form, setForm] = useState(data);
   function handleUpdate() {
     dispatch(updateProfile({ id: form }));
+  }
+  function pressHandler (){
+    handleSubmit()
   }
   function handleFormChange(field, value) {
     if (field == "number") {
@@ -67,33 +73,32 @@ function EmailSignUp() {
     }
     setForm((prev) => ({ ...prev, [field]: value }));
   }
-  async function handleSubmit() {
+  function handleSubmit() {
     if (!warning && form.email && form.firstName && form.secondName) {
       // console.log(form);
-      try {
-        const checkEmail = await axios.get(
-          `http://10.0.0.173:3000/api/v1/users/getEmail/${form.email}`
-        );
-        console.log(checkEmail)
-        if (checkEmail.data.data) {
-          Alert.alert(
-            "Email already exist",
-            "go ahead and login with your email address"
-          );
-        } else {
-          console.log("bdhbsjbdv");
+      // try {
+      //   const checkEmail = await axios.get(
+      //     `http://10.0.0.173:3000/api/v1/users/getEmail/${form.email}`
+      //   );
+      //   console.log(checkEmail)
+      //   if (checkEmail.data.data) {
+      //     Alert.alert(
+      //       "Email already exist",
+      //       "go ahead and login with your email address"
+      //     );
+      //   } else {
+      //     console.log("bdhbsjbdv");
           handleUpdate();
           navigation.navigate("AddNumber");
-        }
-      } catch (err) {
-        console.log(err);
-      }
+      //   }
+      // } catch (err) {
+      //   console.log(err);
+      // }
     }
   }
   return (
-    <TouchableWithoutFeedback onPress={handleScreenPress}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
+    <GestureRecognizer onTouchStart={handleScreenPress} onSwipeLeft={pressHandler}  style={{flex: 1}} >
+     <KeyboardAvoidingView onPress={handleScreenPress} behavior="height" style={styles.container}>
           <View style={styles.welcomeView}>
             <Text style={styles.text}>Hello,</Text>
             <Text style={styles.text}>Create An Account🤩</Text>
@@ -126,6 +131,12 @@ function EmailSignUp() {
                 onChangeText: handleFormChange.bind(this, "email"),
               }}
             />
+            
+            {warning && (
+              <Info
+                text={`${warning}                                            `}
+              />
+            )}
             <Input
               text={"First Name"}
               icon={<Ionicons name="person" size={24} color={"#aaa"} />}
@@ -144,11 +155,6 @@ function EmailSignUp() {
                 onChangeText: handleFormChange.bind(this, "secondName"),
               }}
             />
-            {warning && (
-              <Info
-                text={`${warning}                                            `}
-              />
-            )}
 
             {/* <Text
               style={{
@@ -162,7 +168,7 @@ function EmailSignUp() {
             </Text> */}
 
             <View style={styles.buttonContainer}>
-              <Button onPress={handleSubmit}>
+              <Button onPress={handleSubmit} color={!(!warning && form.email && form.firstName && form.secondName) ? '#aaa' : '' }  >
                 <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
                 <Image
                   style={styles.vector}
@@ -235,23 +241,21 @@ function EmailSignUp() {
               </Pressable>
             </View>
           </View>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+        </GestureRecognizer>
   );
 }
 
 export default EmailSignUp;
 
-// const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "space-between",
     marginHorizontal: "5%",
-    marginVertical: "6%",
+    marginTop: height/35,
     // marginTop: 200
   },
   welcomeView: {
@@ -259,12 +263,11 @@ const styles = StyleSheet.create({
     // borderColor: "black",
     // flex: 1,
     justifyContent: "flex-start",
-    height: "10%",
+    height: height/10,
     // marginBottom: 42,
     // marginTop: 40,
   },
   description: {
-    width: "100%",
     justifyContent: "center",
     alignItems: "center",
     // marginBottom: 10,
@@ -276,9 +279,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: "100%",
-    height: 65,
-    marginBottom: 10,
-    marginTop: 8,
+    height: 55,
+    marginBottom: 20,
+    marginTop: 18,
   },
   vector: {
     width: "10%",
