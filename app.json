@@ -15,7 +15,17 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.RS",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLTypes": [
+              "com.googleusercontent.apps.595612958492-gp5rso1fjrccbv1bst08ej45tssvhu4b"
+            ]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -27,6 +37,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "Meks"
+    "scheme": "Meks",
+    "extra": {
+      "eas": {
+        "projectId": "7e371e73-02b5-4101-9a7a-94cf04e6fdb3"
+      }
+    }
   }
 }
