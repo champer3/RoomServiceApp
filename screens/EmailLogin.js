@@ -10,6 +10,7 @@ import {
   Dimensions,
   Alert,
   StatusBar,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
@@ -66,7 +67,11 @@ function EmailLogin() {
   function handleScreenPress() {
     Keyboard.dismiss();
   }
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+
+  
   async function pressHandler() {
+    setIsLoading(true)
     const response = await createAccount();
     if (typeof response !== "undefined") {
       dispatch(
@@ -80,8 +85,11 @@ function EmailLogin() {
           },
         })
       );
-      navigation.replace("HomeTabs");
+      setTimeout(() => {
+        navigation.navigate('HomeTabs'); // Set loading status to false after some time (simulating app loading)
+      }, 1000)
     } else {
+      setIsLoading(false)
       Alert.alert("Invalid input", "check the email or password");
     }
   }
@@ -121,10 +129,10 @@ function EmailLogin() {
     }
   };
   function handleEmailChange( value) {
-      setEmail(value)
+      setEmail(value.trim())
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      if (!emailRegex.test(value)) {
+      if (!emailRegex.test(value.trim())) {
         setWarning("Provide a valid email address");
       } else {
         setWarning();
@@ -133,6 +141,10 @@ function EmailLogin() {
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
          <KeyboardAvoidingView onPress={handleScreenPress} behavior="height" style={styles.container}>
+         {isLoading ? (
+        // Render loading indicator while loading
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (<>
         <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.welcomeView}>
             <Text style={styles.text}>Hello,</Text>
@@ -165,7 +177,7 @@ function EmailLogin() {
               type="password"
               text="Password"
               textInputConfig={{
-                onChangeText: (text) => setPassword(text),
+                onChangeText: (text) => setPassword(text.trim()),
                 value: password,
               }}
               secured={true}
@@ -185,7 +197,7 @@ function EmailLogin() {
             </Text>
 
             <View style={styles.buttonContainer}>
-              <Button onPress={pressHandler} color={!(!warning && email) || !validatePassword() ? '#aaa' : '' }>
+              <Button onPress={!(!warning && email) || !validatePassword() ? ()=>{}: pressHandler} color={!(!warning && email) || !validatePassword() ? '#aaa' : '' }>
                 <Text style={{ fontSize: 16, color: "white" }}>Login </Text>
                 <Image
                   style={styles.vector}
@@ -263,7 +275,7 @@ function EmailLogin() {
                 </Text>
               </Pressable>
             </View>
-          </View>
+          </View></>)}
           </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );

@@ -68,11 +68,11 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
         if (date.toDateString() === currentDate.toDateString()) {
             const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
-        return `Ordered today at ${hours}:${minutes}`;        } 
+        return status == 'Delivered' ?  `Delivered today at ${hours}:${minutes}` : `Ordered today at ${hours}:${minutes}`;        } 
         else if (date.getDate() === currentDate.getDate() - 1) {
-            return 'Ordered yesterday';
+            return status == 'Delivered' ? 'Delivered yesterday' : 'Ordered yesterday';
         } else {
-            return `Ordered on ${month} ${day}`;
+            return status == 'Delivered' ? `Delivered on ${month} ${day}` : `Ordered on ${month} ${day}`;
         }
     }
     const statuses = ['Placed', 'Preparing', 'Delivering', 'Delivered']

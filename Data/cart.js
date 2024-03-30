@@ -76,7 +76,8 @@ const cart = createSlice({
         updateOrder: (state, action) => { const index = state.order.findIndex(item => item.id === action.payload.id.uid); // Find the object with the given id
         if (index !== -1) {
             const order = state.order[index] 
-            order.time = action.payload.id.time; // Add the delivery time to the found order object
+            const act = action.payload.id.act
+            order[act] = action.payload.id.perform; // Add the delivery time to the found order object
             console.log("Delivery time added successfully:", order);
         } }
     }

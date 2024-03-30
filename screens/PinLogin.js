@@ -9,6 +9,7 @@ import {
   Alert,
   Dimensions, KeyboardAvoidingView,
   StatusBar,
+  ActivityIndicator
 } from "react-native";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
@@ -36,7 +37,9 @@ function NumberLogin() {
   function getOtp(data) {
     setOtp(data);
   }
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
+  
   const loginData = async () => {
     try {
       const response = await axios.post(
@@ -85,7 +88,9 @@ function NumberLogin() {
     resendVerifyNumber()
   }
   async function pressHandler() {
+    setIsLoading(true)
     const verifyResponse = await verifyNumber(otp);
+    
     if (verifyResponse === "approved") {
       const loginInfo = await loginData();
       console.log("login data: ", loginInfo)
@@ -103,9 +108,15 @@ function NumberLogin() {
           },
         })
       );
-    navigation.replace("HomeTabs");
-    } else
-      Alert.alert("Incorrect OTP", "Please check your input and try again");
+    }
+    setTimeout(() => {
+      if (verifyResponse === "approved") {
+      navigation.replace("HomeTabs");
+      } else
+        setIsLoading(false)
+        Alert.alert("Incorrect OTP", "Please check your input and try again");
+    }, 1000)
+   
   }
   function signUpHandler() {
     navigation.navigate("StartScreen");
@@ -146,7 +157,10 @@ function NumberLogin() {
   return (
 
     <KeyboardAvoidingView  onTouchStart={handleScreenPress} onPress={handleScreenPress} behavior="height"  style={styles.container} >
-     
+       {isLoading ? (
+        // Render loading indicator while loading
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (<>
         <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.topView}>
             <View style={styles.welcomeView}>
@@ -217,7 +231,7 @@ function NumberLogin() {
                 </Text>
               </Pressable>
             </View>
-          </View>
+          </View></>)}
             </KeyboardAvoidingView>
   );
 }

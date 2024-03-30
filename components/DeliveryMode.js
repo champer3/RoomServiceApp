@@ -46,7 +46,6 @@ const styles = StyleSheet.create({
   },
   innerView: {
     overflow: 'hidden',
-    paddingRight: 10
   },
   text: {
     fontSize: 14,

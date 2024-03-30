@@ -26,7 +26,7 @@ import Input from "../components/Inputs/Input";
 const { width, height } = Dimensions.get("window");
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart, addOptions } from "../Data/cart";
+import { addToCart, removeFromCart, addOptions, updateOrder } from "../Data/cart";
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from "../components/Modals/BottomSheet";
 import { LinearGradient } from "expo-linear-gradient";
@@ -82,8 +82,26 @@ function Home() {
     if(socket){
       socket.on('delivered', (data) => {
         console.log("here")
-        setDeliveringOrdersCount(0)
-        console.log(data)
+        const deliveringOrders = orders.filter(order => order.status === "Delivering");
+
+    if (deliveringOrders.length === 0) {
+        return null; // Return null if there are no delivering orders
+    }
+
+    let earliestOrder = deliveringOrders[0];
+    let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+
+    deliveringOrders.forEach(order => {
+        const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+        if (timestamp < earliestTimestamp) {
+            earliestOrder = order;
+            earliestTimestamp = timestamp;
+        }
+    });
+      date = getTodaysDate()
+          dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+          dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+
       });
 
       return () => {
@@ -93,7 +111,7 @@ function Home() {
     }
 
   }, [socket])
-
+  
   const retrieveTokenFromAsyncStorage = async () => {
     try {
       const storedToken = await AsyncStorage.getItem("authToken");
@@ -123,7 +141,7 @@ function Home() {
     }
   }
   const orders = useSelector((state) => state.cartItems.order)
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const [option, setOption] = useState();
   const ref = useRef(null);
   function createFoodDictionary(foodArray) {
@@ -244,7 +262,6 @@ function Home() {
   function handleUpdate(){
     let price = 0;
     let newItem ={}
-    console.log(selected)
     if (plus && plus.length > 0){
     for (var i = 0; i < plus.length; i ++){
         price += findPrice(plus[i])
@@ -267,7 +284,6 @@ function Home() {
   function handleBuy(){
     let price = 0;
     let newItem ={}
-    console.log(selected)
     if (plus && plus.length > 0){
     for (var i = 0; i < plus.length; i ++){
         price += findPrice(plus[i])
@@ -304,6 +320,13 @@ function Home() {
 //     }
 // },[plus])
 const [blink, setBlink] = useState(true)
+function getTodaysDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return today.toString();
+}
 const timer = useRef()
 // useEffect(()=>{if (deliveringOrdersCount > 0){timer.current = setTimeout(()=>{setBlink((prev)=> !prev)},5)}})
   function handleAddToCart(product) {
@@ -314,19 +337,44 @@ const timer = useRef()
       setFoodDictionary(createFoodDictionary(product.extras))
 
   }
+
   if (product.extras || product.options ){
 
     ref?.current?.scrollTo(-570);}else{
-    dispatch(addToCart({ id: product }));}
+    dispatch(addToCart({ id: product }));
+    // const deliveringOrders = orders.filter(order => order.status === "Delivering");
+
+    // if (deliveringOrders.length === 0) {
+    //     return null; // Return null if there are no delivering orders
+    // }
+
+    // let earliestOrder = deliveringOrders[0];
+    // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+
+    // deliveringOrders.forEach(order => {
+    //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+    //     if (timestamp < earliestTimestamp) {
+    //         earliestOrder = order;
+    //         earliestTimestamp = timestamp;
+    //     }
+    // });
+    // console.log(earliestOrder.id)
+    // date = getTodaysDate()
+    // dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+    // dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+
+
+  }
   }
   function handleScroll(event) {
-    setIsVisible(event.nativeEvent.contentOffset.y <= 0);
+    console.log(event.nativeEvent.contentOffset.y)
+    setIsVisible(event.nativeEvent.contentOffset.y > 103);
    }
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.container}><LinearGradient
+        <View style={{}}><LinearGradient
             // colors={["#19171A", "#01418D", "#2873CC"]}
             // colors={["#19171A", "#2F5A8C", "#2873CC"]}
             colors={["#4F6B30", "#425928", "#354820", '#283618']}
@@ -337,11 +385,12 @@ const timer = useRef()
                 style={[styles.top,{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  alignItems: 'center',
                   paddingHorizontal: "5%",
                   paddingTop: "8%",
                 }]}
               >
-                {deliveringOrdersCount <= 0 && <View style={{ gap: 6 }}>
+                {deliveringOrdersCount <= 0 && <View style={{ gap: 6, justifyContent: 'center', alignItems: 'center' }}>
                   <Text
                     style={{
                       color: "white",
@@ -434,6 +483,7 @@ const timer = useRef()
                     Search RoomService
                   </Text>
                 </View>
+                
                 {/* <Input
             onInteract={()=> navigation.navigate('Search')}
             color={"white"}
@@ -441,7 +491,37 @@ const timer = useRef()
             text={"Search items"}
           ></Input> */}
               </Pressable>
-              {isVisible && <View style={{height: 100, marginBottom: 12}}>
+              <View style={{ marginTop: 0, paddingBottom: 1, height: height/30}}>
+              {isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
+        <View style={{ flexDirection: 'row',
+        gap: 34,paddingLeft: 20
+        }}>
+        {[
+                  { text: "Alcohol", image: require("../assets/Alcohol.png") },
+                  { text: "Frozen", image: require("../assets/frozen.png") },
+                  {
+                    text: "Ice Cream",
+                    image: require("../assets/icecream.png"),
+                  },
+                  { text: "Food", image: require("../assets/food.png") },
+                  { text: "Snacks", image: require("../assets/snack.png") },
+                ].map(({text, image},index) => <Pressable key={index}><Text style={{fontWeight: "bold", fontSize: 14, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
+        </View>
+    </ScrollView>}
+              </View>
+            </SafeAreaView>
+          </LinearGradient>
+          <ScrollView
+          scrollEventThrottle={16}
+          onScroll={(e)=>handleScroll(e)}
+          onTouchStart={()=>ref?.current?.scrollTo(0)}
+           style={{ backgroundColor: "white" }}>
+            {<LinearGradient
+            // colors={["#19171A", "#01418D", "#2873CC"]}
+            // colors={["#19171A", "#2F5A8C", "#2873CC"]}
+            colors={['#283618', '#283618']}
+            // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
+          ><View style={{ marginBottom: 5}}>
               <ItemCategory
                 items={[
                   { text: "Alcohol", image: require("../assets/Alcohol.png") },
@@ -454,15 +534,9 @@ const timer = useRef()
                   { text: "Snacks", image: require("../assets/snack.png") },
                 ]}
                 color="white"
+                show ={!isVisible}
               />
-              </View>}
-            </SafeAreaView>
-          </LinearGradient>
-          <ScrollView
-          scrollEventThrottle={16}
-          onScroll={(e)=>handleScroll(e)}
-          onTouchStart={()=>ref?.current?.scrollTo(0)}
-           style={{ backgroundColor: "white" }}>
+              </View></LinearGradient>}
             <View style={[styles.horizontalCat, { marginTop: 2 }]}>
               {/* <View style={styles.catHead}>
                 <Text style={styles.text}>Popular Categories</Text>
@@ -843,7 +917,7 @@ const styles = StyleSheet.create({
   search: {
     justifyContent: "space-between",
     paddingHorizontal: "3%",
-    paddingBottom: 20,
+    paddingBottom: 5,
   },
   input: {
     flexDirection: "row",

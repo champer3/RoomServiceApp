@@ -1,5 +1,5 @@
-import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
-
+import { Image, Pressable, SafeAreaView, StyleSheet, Text, View , ActivityIndicator} from "react-native";
+import React, { useState, useEffect } from 'react';
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { useNavigation } from "@react-navigation/native";
@@ -7,7 +7,11 @@ import { useNavigation } from "@react-navigation/native";
 function StartScreen() {
   const navigation = useNavigation()
   function pressHandler (){
-    navigation.navigate('HomeTabs')
+    setIsLoading(true)
+    setTimeout(() => {
+      navigation.navigate('HomeTabs'); // Set loading status to false after some time (simulating app loading)
+    }, 1000)
+    
   }
   function emailHandler (){
     navigation.navigate('EmailSignUp')
@@ -15,8 +19,15 @@ function StartScreen() {
   function signInHandler (){
     navigation.navigate('NumberLogin')
   }
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+
+  
   return (
     <SafeAreaView style={styles.container}>
+        {isLoading ? (
+        // Render loading indicator while loading
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (<>
       <Pressable onPress={pressHandler} style={{alignSelf: 'flex-end'}}><Text style={{color: "#333333", opacity: 0.7, fontSize: 16, fontWeight: "500", alignSelf: "flex-end"}}>Skip Registration</Text></Pressable>
       <View style={styles.imageContainer}>
         <Image
@@ -68,7 +79,7 @@ function StartScreen() {
         <Pressable onPress={signInHandler}>
         <Text style={{color: "#BC6C25", fontWeight: "700", opacity: 1}}> Sign In</Text>
         </Pressable>
-      </View>
+      </View></>)}
     </SafeAreaView>
   );
 }

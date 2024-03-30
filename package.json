@@ -43,6 +43,7 @@
     "expo-status-bar": "~1.6.0",
     "expo-web-browser": "~12.3.2",
     "framer-motion": "^10.16.12",
+    "is-path-in-cwd": "^4.0.0",
     "motify": "^1.1.1",
     "react": "18.2.0",
     "react-bootstrap": "^2.9.1",
@@ -63,6 +64,7 @@
     "react-native-svg": "13.9.0",
     "react-native-swipe-gestures": "^1.0.5",
     "react-native-vector-icons": "^10.0.2",
+    "react-native-web": "~0.19.6",
     "react-native-webview": "13.2.2",
     "react-redux": "^9.0.4",
     "socket.io-client": "^4.7.5"

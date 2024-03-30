@@ -65,13 +65,13 @@ function EmailSignUp() {
     if (field == "email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      if (!emailRegex.test(value)) {
+      if (!emailRegex.test(value.trim())) {
         setWarning("Provide a valid email address");
       } else {
         setWarning();
       }
     }
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value.trim() }));
   }
   function handleSubmit() {
     if (!warning && form.email && form.firstName && form.secondName) {
