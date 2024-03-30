@@ -174,7 +174,7 @@ function CheckoutScreen() {
     return today.toString();
   }
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const checkOut =  () => {
+  const checkOut = async () => {
     // const token = await retrieveTokenFromAsyncStorage();
     // console.log("This is the token I recieved: ", token);
     // const response = await axios.post(
@@ -201,10 +201,10 @@ function CheckoutScreen() {
     //   // }
     // });
 
-    // const { error } = await presentPaymentSheet();
-    // if (error) {
-    //   Alert.alert(`Error code: ${error.code}`, error.message);
-    // } else {
+    // // const { error } = await presentPaymentSheet();
+    // // if (error) {
+    // //   Alert.alert(`Error code: ${error.code}`, error.message);
+    // // } else {
       const row = [...cartItems];
       date = getTodaysDate();
 
@@ -240,8 +240,6 @@ function CheckoutScreen() {
       // Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");
     }
-
-    // console.log("async nigga pressed")
 
 
   function addressHandler() {

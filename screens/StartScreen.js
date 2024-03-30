@@ -3,9 +3,21 @@ import React, { useState, useEffect } from 'react';
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { useNavigation } from "@react-navigation/native";
+import * as WebBrowser from "expo-web-browser"
+import  * as Google from "expo-auth-session/providers/google"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useState } from "react";
 
+WebBrowser.maybeCompleteAuthSession()
 function StartScreen() {
   const navigation = useNavigation()
+  const [userInfo, setUserInfo] = useState()
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId: "595612958492-gp5rso1fjrccbv1bst08ej45tssvhu4b.apps.googleusercontent.com",
+    androidClientId : "595612958492-f7tobgirrcsqdr4uit589bui1va5rccv.apps.googleusercontent.com",
+    webClientId: "595612958492-40uj7aop85fgo64ldlhifs0cilj5cs3d.apps.googleusercontent.com"
+  })
   function pressHandler (){
     setIsLoading(true)
     setTimeout(() => {
@@ -66,7 +78,7 @@ function StartScreen() {
         </BareButton>
       </View>
       <View style={[styles.buttonContainer, {marginBottom: 24}]}>
-        <BareButton borderRadius={24} color="#EEEEEE">
+        <BareButton onPress={()=>{promptAsync(); console.log('pressed')}} borderRadius={24} color="#EEEEEE">
           <Image
             style={styles.facebook}
             source={require("../assets/google.png")}
