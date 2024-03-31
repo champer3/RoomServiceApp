@@ -6,7 +6,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Dimensions,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Button from "../components/Buttons/Button";
@@ -27,7 +28,9 @@ function CreatePassword() {
   const data = useSelector((state) => state.profileData.profile);
   const [form, setForm] = useState(data);
   const [show, setShow] = useState(true);
-  
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+
+ 
 
   const [checks, setChecks] = useState({'length': false, upper: false, lower: false, special: false, match: false, number : false})
   const [warning, setWarning] = useState();
@@ -49,14 +52,18 @@ function CreatePassword() {
   const navigation = useNavigation();
   async function pressHandler() {
     if ((checks.length && checks.lower && checks.upper && checks.match && checks.number && checks.special)){
+      setIsLoading(true)
     try {
       handleUpdate();
       console.log(profile);
       await createAccount();
       // Call the function to save the token
       await saveTokenToAsyncStorage();
-      navigation.navigate("HomeTabs");
+      setTimeout(() => {
+        navigation.navigate('HomeTabs'); // Set loading status to false after some time (simulating app loading)
+      }, 1000)
     } catch (err) {
+      setIsLoading(false)
       console.log(err);
     }}
   }
@@ -193,6 +200,10 @@ function CreatePassword() {
   return (
     <GestureRecognizer  onSwipeLeft={pressHandler}   style={{flex: 1}} >
     <KeyboardAvoidingView  behavior="height"  style={styles.container} >
+    {isLoading ? (
+        // Render loading indicator while loading
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (<>
           <View style={styles.welcomeView}>
             {!keyboardActive && <><Text style={styles.text}>Done,</Text>
             <Text style={styles.text}>Create A Password🤩</Text>
@@ -257,7 +268,7 @@ function CreatePassword() {
                 />
               </Button>
             </View>
-          </View>
+          </View></>)}
           </KeyboardAvoidingView>
           </GestureRecognizer>
   );

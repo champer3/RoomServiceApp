@@ -160,7 +160,7 @@ function OrderDisplay(){
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
     </View>} */}
     <View style={styles.recommendedView}>
-    {index == 0 && orders.map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} address={address} order={order} id={id} date={date} /></View>)}
+    {index == 0 && orders.map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={idx}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} address={address} order={order} id={id} date={date} /></View>)}
        
     </View>
     </View>

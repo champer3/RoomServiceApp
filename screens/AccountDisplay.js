@@ -104,7 +104,7 @@ function AccountDisplay() {
               onPress={addressHandler}
             />
           </View>
-          <View style={[styles.recommendedView, { flex: 1, paddingTop: "1%" }]}>
+          <View style={[styles.recommendedView, { flex: 1, paddingVertical: "10%" }]}>
             <BareButton color={"#B22334"} onPress={logoutHandler}>
               <Ionicons name="log-out-outline" size={30} color="#B22334" />
               <Text style={{ fontSize: 18, color: "#B22334" }}> Logout</Text>

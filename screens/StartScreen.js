@@ -6,7 +6,6 @@ import { useNavigation } from "@react-navigation/native";
 import * as WebBrowser from "expo-web-browser"
 import  * as Google from "expo-auth-session/providers/google"
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useState } from "react";
 
 WebBrowser.maybeCompleteAuthSession()
 function StartScreen() {
@@ -21,7 +20,9 @@ function StartScreen() {
   function pressHandler (){
     setIsLoading(true)
     setTimeout(() => {
-      navigation.navigate('HomeTabs'); // Set loading status to false after some time (simulating app loading)
+      navigation.navigate('HomeTabs'); 
+      setIsLoading(false)
+      // Set loading status to false after some time (simulating app loading)
     }, 1000)
     
   }

@@ -170,7 +170,7 @@ function PaymentsDisplay() {
     if (res[i]['card']['brand'] === "amex") {
       image = require(`../assets/amex.png`);
     } else if (res[i]['card']['brand'] === "visa") {
-      image = require(`../assets/Visa.png`);
+      image = require(`../assets/visa.png`);
     } else if (res[i]['card']['brand'] === "discover") {
       image = require(`../assets/discover.png`);
     } else if (res[i]['card']['brand'] === "mastercard") {
@@ -195,7 +195,7 @@ function PaymentsDisplay() {
     if (getCardType(form.number) === "Amex") {
       image = require(`../assets/amex.png`);
     } else if (getCardType(form.number) === "Visa") {
-      image = require(`../assets/Visa.png`);
+      image = require(`../assets/visa.png`);
     } else if (getCardType(form.number) === "Discover") {
       image = require(`../assets/discover.png`);
     } else if (getCardType(form.number) === "Mastercard") {

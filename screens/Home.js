@@ -34,6 +34,8 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
 import io from 'socket.io-client';
+import TransparentSheet from "../components/Modals/TransparentSheet.";
+import { current } from "@reduxjs/toolkit";
 
 const SERVER_URL = 'ws://10.0.0.173:5000';
 
@@ -144,6 +146,7 @@ function Home() {
   const [isVisible, setIsVisible] = useState(false);
   const [option, setOption] = useState();
   const ref = useRef(null);
+  const reg = useRef(null);
   function createFoodDictionary(foodArray) {
     let foodDictionary = {};
     for (let i = 0; i < foodArray.length; i++) {
@@ -200,6 +203,7 @@ function Home() {
   }
   // deliveringOrdersCount = countDeliveringOrders(orders);
   useEffect(()=>{
+    setBlink(true)
     setDeliveringOrdersCount(countDeliveringOrders(orders))
   }, [orders])
 
@@ -278,6 +282,8 @@ function Home() {
     setOption()
 
     ref?.current?.scrollTo(0)
+    setBlink(true)
+
     setFoodDictionary(foodStore)
     dispatch(addToCart({id : {title: pro.title, ...{...pro, ...newItem, ['oldPrice'] : pro.oldPrice + price} }}))
   }
@@ -300,6 +306,7 @@ function Home() {
     setOption()
 
     ref?.current?.scrollTo(0)
+    setBlink(true)
     setFoodDictionary(foodStore)
     dispatch(addToCart({id : {title: pro.title, ...{...pro, ...newItem, ['oldPrice'] : pro.oldPrice + price} }}))
     navigation.navigate('Checkout')
@@ -340,7 +347,9 @@ const timer = useRef()
 
   if (product.extras || product.options ){
 
-    ref?.current?.scrollTo(-570);}else{
+    ref?.current?.scrollTo(-570);
+    setBlink(false)
+    }else{
     dispatch(addToCart({ id: product }));
     // const deliveringOrders = orders.filter(order => order.status === "Delivering");
 
@@ -367,9 +376,9 @@ const timer = useRef()
   }
   }
   function handleScroll(event) {
-    console.log(event.nativeEvent.contentOffset.y)
     setIsVisible(event.nativeEvent.contentOffset.y > 103);
    }
+   reg?.current?.scrollTo(-1*height/5)
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
@@ -380,17 +389,17 @@ const timer = useRef()
             colors={["#4F6B30", "#425928", "#354820", '#283618']}
             // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
           >
-            <SafeAreaView onTouchStart={()=>ref?.current?.scrollTo(0)} style={styles.top}>
+            <SafeAreaView onTouchStart={()=>{ref?.current?.scrollTo(0); setBlink(true)}} style={styles.top}>
               <View
                 style={[styles.top,{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   alignItems: 'center',
                   paddingHorizontal: "5%",
-                  paddingTop: "8%",
+                  paddingTop: "3%",
                 }]}
               >
-                {deliveringOrdersCount <= 0 && <View style={{ gap: 6, justifyContent: 'center', alignItems: 'center' }}>
+                {<View style={{ gap: 6, justifyContent: 'center', }}>
                   <Text
                     style={{
                       color: "white",
@@ -411,17 +420,7 @@ const timer = useRef()
                   >{`${data.firstName} `}</Text>
                   {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
                 </View>}
-                {deliveringOrdersCount >= 1 && <View style={{padding: 15,paddingHorizontal: 25, backgroundColor: 'white', borderRadius: 16, gap: 10, borderBottomWidth: 5, borderBottomColor: '#283618',  }}>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <View style={{width: 33}} >
-                  {blink && <MaterialCommunityIcons name="checkbox-blank-circle" size={22} color="#4F6B30" />}
-                  </View>
-                  <View>
-                    <Text style={{ fontWeight: 900}}>{` ${deliveringOrdersCount} ${deliveringOrdersCount > 1 ? 'orders are' : "order is"} on the way`}</Text>
-                    </View>
-                  </View>
-                  <View style={{height: 40, width: 124}}><FlexButton onPress={orderHandler} color={'#283618'}  background={"#4F6B30"} ><Text style={{fontSize: 12, fontWeight: 900, color: 'white'}}>View Orders</Text></FlexButton></View>
-                </View>}
+                
                 <View style={[styles.cart, {width: 50, height: 40}]}>
                   <Pressable
                     onPress={cartHandler}
@@ -514,7 +513,7 @@ const timer = useRef()
           <ScrollView
           scrollEventThrottle={16}
           onScroll={(e)=>handleScroll(e)}
-          onTouchStart={()=>ref?.current?.scrollTo(0)}
+          onTouchStart={()=>{ref?.current?.scrollTo(0)}}
            style={{ backgroundColor: "white" }}>
             {<LinearGradient
             // colors={["#19171A", "#01418D", "#2873CC"]}
@@ -895,6 +894,19 @@ const timer = useRef()
       }</View>
         </ScrollView>
         </BottomSheet>
+       {blink && deliveringOrdersCount > 0 && <TransparentSheet ref={reg}>
+          <LinearGradient locations={[0.12, 0.2, 0.4, 0.1]} colors={["#4F6B30", "#425928", "#354820", '#283618']} style={{ borderTopLeftRadius: width*3,borderTopRightRadius: width*3, alignItems: 'center', justifyContent: 'start',paddingTop: height/12, height: height/2, width: width * 2, alignSelf: 'center'}}>{deliveringOrdersCount >= 1 && <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+            
+                  <Pressable onPress={()=>{setBlink(false)}} style={{width: width/5.9}} >
+                   <MaterialCommunityIcons name="close" size={35} color="white" />
+                  </Pressable>
+                  <View>
+                    <Text style={{ fontWeight: 900, color: 'white'}}>{`You have ${deliveringOrdersCount} ${deliveringOrdersCount > 1 ? 'orders' : "order"} being delivered sit tight!!`}</Text>
+                    <View style={{height: 40, width: 124, alignSelf: 'flex-end',}}><FlexButton onPress={orderHandler} color={'#283618'}  background={"white"} ><Text style={{fontSize: 12, fontWeight: 900, color: 'black'}}>View Orders</Text></FlexButton></View>
+                  </View>
+                   </View>}</LinearGradient>
+         
+        </TransparentSheet>}
       </View>
       </GestureHandlerRootView>
     </SafeAreaProvider>
