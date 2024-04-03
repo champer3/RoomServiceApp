@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Alert, Dimensions, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Alert, Dimensions, KeyboardAvoidingView, Pressable, ActivityIndicator } from "react-native";
 import CodeInput from "../components/Inputs/CodeInput";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
@@ -6,21 +6,81 @@ import { RadioButton } from "react-native-paper";
 import Info from "../components/Info";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { updateProfile } from "../Data/profile";
 import axios from "axios";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 function AddPin() {
   const [otp, setOtp] = useState([1,2,3,4,5,6])
   const route = useRoute()
+  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile);
+  const [form, setForm] = useState(data);
+
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false)
   const phoneNumber = route.params?.phoneNumber || ""
   function getOtp(data){
     setOtp(data)
   }
+  const [keyboardActive, setKeyboardActive] = useState(false);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardActive(true);
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardActive(false);
+      }
+    );
+
+    // Clean up event listeners
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
   function handleScreenPress() {
     Keyboard.dismiss()
   }
+  const profile = useSelector((state) => state.profileData.profile);
+  const phoneNumberString = phoneNumber.replace(/[^0-9]/g, '');
+  const newphoneNumber = "+1" + phoneNumberString
+  const postData = {
+    firstName: form.firstName,
+    lastName: form.secondName,
+    phoneNumber,
+    email: form.email,
+  };
+  const createAccount = async () => {
+    try {
+      const response = await axios.post(
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/signup`,
+        JSON.stringify(postData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      authToken = response.data.token;
+
+      console.log(response.data);
+      console.log("got here");
+    } catch (err) {
+      console.log(err.error);
+    }
+  };
   function resendCode(){
     setSeconds(60); // Set your desired countdown time here
     setIsActive(true);
@@ -28,6 +88,11 @@ function AddPin() {
     console.log('Resending OTP...');
     resendVerifyNumber()
   }
+  
+  function handleUpdate() {
+    dispatch(updateProfile({ id: form }));
+  }
+  let authToken = '123';
   useEffect(() => {
     let intervalId;
     if (isActive) {
@@ -44,23 +109,40 @@ function AddPin() {
     }
     return () => clearInterval(intervalId);
   }, [isActive]);
-
+  const saveTokenToAsyncStorage = async () => {
+    try {
+      await AsyncStorage.setItem("authToken", authToken);
+      console.log("Token saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
+  };
   function nextHandler(){
     navigation.navigate('AddNumber')
   }
   const navigation = useNavigation()
   async function pressHandler (){
-    // const verifyResponse = await verifyNumber(otp)
-    // if(verifyResponse === "approved"){
-      navigation.navigate('CreatePassword')
-    // }else{
-    //   Alert.alert('Incorrect OTP', 'Please check your input and try again')
-    // }
+    setIsLoading(true)
+    const verifyResponse = 'approved'
+    if(verifyResponse === "approved"){
+      handleUpdate();
+      await createAccount();
+      // Call the function to save the token
+      await saveTokenToAsyncStorage();
+      setTimeout(() => {
+        navigation.replace('Loader'); 
+        
+        // Set loading status to false after some time (simulating app loading)
+      }, 300)
+    }else{
+      setTimeout(()=>{ setIsLoading(false)}, 300)
+      Alert.alert('Incorrect OTP', 'Please check your input and try again')
+    }
   }
   const verifyNumber = async(code) =>{
     try{
       const response = await axios.get(
-        `http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/verifyPhone/${phoneNumber}/${code}`
       );
       console.log(response.data.verification)
       return response.data.verification;
@@ -72,7 +154,7 @@ function AddPin() {
   const resendVerifyNumber = async() =>{
     try{
       console.log(phoneNumber)
-      const response = await axios.get(`http://10.0.0.173:3000/getCode/${phoneNumber}`);
+      const response = await axios.get(`https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/getCode/${phoneNumber}`);
       // console.log("got here")
       console.log(response.data)
     } catch(err){
@@ -80,8 +162,12 @@ function AddPin() {
     }
   }
   return (
-    <GestureRecognizer onTouchStart={handleScreenPress} onSwipeLeft={pressHandler} onSwipeRight={(nextHandler)}  style={{flex: 1}} >
-    <KeyboardAvoidingView onPress={handleScreenPress} behavior="height"  style={styles.container} >
+    <KeyboardAvoidingView  style={{flex: 1}} >
+    {isLoading ? (
+        <View style={{flex: 1, justifyContent: 'center'}}>
+          <ActivityIndicator size="large" color="#0000ff" />
+         </View> 
+      ) : <Pressable onPress={handleScreenPress} style={styles.container} >
       <View style={styles.welcomeView}>
         <Text style={styles.text}>Almost there,</Text>
         <Text style={styles.text}>Verify Your Number😉</Text>
@@ -89,7 +175,6 @@ function AddPin() {
             <View style={styles.line}></View>
             <View style={styles.line} ></View>
             <View style={[styles.line, {backgroundColor: "#283618"}]}></View>
-            <View style={styles.line}></View>
         </View>
         <View style={{}}>
         <CodeInput getOtpData={getOtp}  length={6} />
@@ -97,7 +182,7 @@ function AddPin() {
           <Text onPress={!isActive ? resendCode: ()=>{}} style={{marginVertical: 20, color: isActive ? '#aaa' : 'black'}}>Resend Code</Text>
           {isActive && <Text style={{marginVertical: 20}}>{`0${Math.floor(seconds/60)}:${seconds % 60 >= 10 ? seconds%60 : '0' + seconds%60}`}</Text>}
         </View>
-        <Info text="Enter the six-digit code that was sent to the mobile number you previously entered" />
+        {!keyboardActive && <Info text="Enter the six-digit code that was sent to the mobile number you previously entered" />}
       </View>
       </View>
       <View style={{ justifyContent: 'flex-end', flex: 1 }}>
@@ -111,8 +196,8 @@ function AddPin() {
         </Button>
       </View>
             </View>
-            </KeyboardAvoidingView>
-          </GestureRecognizer>
+            </Pressable>}
+          </KeyboardAvoidingView>
   );
 }
 
@@ -134,9 +219,9 @@ const styles = StyleSheet.create({
   description: {
   },
   image: {
-    flex: 1,
-    width: "100%",
-    resizeMode: "contain",
+    height: height / 2,
+    alignSelf: "center",
+    resizeMode: 'contain'
   },
   buttonContainer: {
     width: "100%",
@@ -170,7 +255,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#333333",
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "500",
     letterSpacing: 2,
   },
@@ -181,7 +266,7 @@ const styles = StyleSheet.create({
   },
   line: {
     height: 2,
-    width: "20%",
+    width: "30%",
     backgroundColor: "#D9D9D9",
   }
 });

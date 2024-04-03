@@ -43,7 +43,7 @@ function NumberLogin() {
   const loginData = async () => {
     try {
       const response = await axios.post(
-        `http://10.0.0.173:3000/api/v1/users/loginWithNumber/`,
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/loginWithNumber/`,
         JSON.stringify({ phoneNumber }),
         {
           headers: {
@@ -91,7 +91,7 @@ function NumberLogin() {
     setIsLoading(true)
     const verifyResponse = await verifyNumber(otp);
     
-    if (verifyResponse === "approved") {
+    if (verifyResponse === "success") {
       const loginInfo = await loginData();
       console.log("login data: ", loginInfo)
       await saveTokenToAsyncStorage()
@@ -110,11 +110,11 @@ function NumberLogin() {
       );
     }
     setTimeout(() => {
-      if (verifyResponse === "approved") {
+      if (verifyResponse === "success") {
       navigation.replace("HomeTabs");
-      } else
+      } else{
         setIsLoading(false)
-        Alert.alert("Incorrect OTP", "Please check your input and try again");
+        Alert.alert("Incorrect OTP", "Please check your input and try again");}
     }, 1000)
    
   }
@@ -124,10 +124,10 @@ function NumberLogin() {
   const verifyNumber = async (code) => {
     try {
       const response = await axios.get(
-        `http://10.0.0.173:3000/verifyPhone/${phoneNumber}/${code}`
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/verifyPhone/${phoneNumber}/${code}`
       );
-      console.log(response.data.verification);
-      return response.data.verification;
+      console.log(response.data.status);
+      return response.data.status;
     } catch (err) {
       console.log(err.error);
     }
@@ -136,7 +136,7 @@ function NumberLogin() {
     try {
       console.log(phoneNumber);
       const response = await axios.get(
-        `http://10.0.0.173:3000/getCode/${phoneNumber}`
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/getCode/${phoneNumber}`
       );
       // console.log("got here")
       console.log(response.data);

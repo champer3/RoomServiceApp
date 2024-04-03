@@ -4,22 +4,35 @@ import {
   Dimensions,
   ImageBackground,
   Text,
+  ActivityIndicator
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+import { useState } from "react";
 const { width, height } = Dimensions.get("window");
 
 function OnBoard3() {
   const navigation = useNavigation()
   function pressHandler (){
-    navigation.navigate('Authentication')
+    setIsLoading(true)
+    setTimeout(() => {
+      navigation.replace('Authentication')
+      setTimeout(()=>{setIsLoading(false)}, 200)
+      // Set loading status to false after some time (simulating app loading)
+    }, 400)
   }
+  const [isLoading, setIsLoading] = useState(false);
+
   return (
-    <GestureRecognizer onSwipeLeft={pressHandler} onSwipeRight={()=> navigation.navigate('OnBoard2')} style={styles.container}>
-      <ImageBackground
+    <GestureRecognizer onSwipeLeft={pressHandler}  onSwipeRight={()=> navigation.navigate('OnBoard2')} style={styles.container}>
+     {false ? (
+        // Render loading indicator while loading
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
+      ) : ( <ImageBackground
         style={styles.backgroundImage}
         source={require("../../assets/onboard3.jpg")}
       >
@@ -54,7 +67,7 @@ function OnBoard3() {
             </View>
           </View>
         </View>
-      </ImageBackground>
+      </ImageBackground>)}
       <StatusBar style="light" />
       </GestureRecognizer>
   );
@@ -69,7 +82,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   first: {
-    height: height / 2.5,
+    height: height / 3.2,
     // width: width * 1.05,
     // marginLeft: -30,
     backgroundColor: "#283618",
@@ -84,7 +97,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopEndRadius: 30,
     borderTopStartRadius: 30,
-    paddingVertical: "10%",
+    paddingVertical: height/25,
     paddingHorizontal: "5%",
     justifyContent: "space-around",
   },
@@ -115,13 +128,13 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   topText: {
-    fontSize: 24,
+    fontSize: height/45,
     fontWeight: "600",
     marginVertical: 12,
   },
   downText: {
-    fontSize: 16,
-    fontWeight: "300",
+    fontSize:  height/58,
+    fontWeight: "400",
     opacity: 0.7,
     paddingRight: 20,
     marginBottom: 15,

@@ -36,25 +36,26 @@ function NumberLogin() {
   console.log(number);
   const navigation = useNavigation();
   async function pressHandler() {
-    // const response = await verifyNumber();
-    // if (response) {
+    console.log(phoneNumber)
+    const response = await verifyNumber();
+    if (response) {
       navigation.navigate("PinLogin", { phoneNumber });
-    // } else {
-    //   Alert.alert(
-    //     "No account",
-    //     "There is no account attributed to this number. SignUp!"
-    //   );
-    // }
+    } else {
+      Alert.alert(
+        "No account",
+        "There is no account attributed to this number. SignUp!"
+      );
+    }
   }
 
   const verifyNumber = async () => {
     try {
       const checkNumber = await axios.get(
-        `http://10.0.0.173:3000/api/v1/users/getNumber/${phoneNumber}`
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getNumber/${phoneNumber}`
       );
       if (checkNumber.data.data) {
         const response = await axios.get(
-          `http://10.0.0.173:3000/getCode/${phoneNumber}`
+          `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/getCode/${phoneNumber}`
         );
         console.log("hdhdhh", response.data);
       }
@@ -70,6 +71,7 @@ function NumberLogin() {
   function signUpHandler() {
     navigation.navigate("StartScreen");
   }
+  navigation.canGoBack(false)
   const formatPhoneNumber = (input) => {
     // Remove non-numeric characters from input
     const cleanedInput = input.replace(/\D/g, "");
@@ -110,6 +112,7 @@ function NumberLogin() {
     <TouchableWithoutFeedback onPress={handleScreenPress}>
         <KeyboardAvoidingView behavior="height" style={styles.container}>
           <StatusBar hidden={false} barStyle="dark-content" />
+          {/* <View style={{alignSelf: 'flex-start'}}><Image style={styles.image} source={require('../assets/Logo.png')}/></View> */}
           <View style={styles.topView}>
             <View style={styles.welcomeView}>
               <Text style={styles.text}>Hello,</Text>
@@ -155,7 +158,7 @@ function NumberLogin() {
             </View>
           </View>
           <View style={styles.downView}>
-            <View style={styles.threeContainer}>
+            {/* <View style={styles.threeContainer}>
               <View style={styles.line}></View>
               <Text>or continue with</Text>
               <View style={styles.line}></View>
@@ -177,7 +180,7 @@ function NumberLogin() {
                 />
                 <Text> Continue with Google</Text>
               </BareButton>
-            </View>
+            </View> */}
             <View style={styles.textContainer}>
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 New to RoomService?
@@ -203,9 +206,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "center",
     marginHorizontal: "5%",
-    marginTop: height/5,
+    marginTop: height/7,
   },
   topView: {
     height: height/8,
@@ -217,7 +219,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     height: 65,
-    marginBottom: 15,
+    marginVertical: 15,
   },
   vector: {
     width: "10%",
@@ -240,6 +242,11 @@ const styles = StyleSheet.create({
   textContainer: {
     flexDirection: "row",
     justifyContent: "center",
+  },
+  image: {
+    height: height / 3,
+    alignSelf: "center",
+    resizeMode: 'contain'
   },
   text: {
     color: "#333333",

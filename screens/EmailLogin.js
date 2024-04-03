@@ -82,6 +82,8 @@ function EmailLogin() {
             phoneNumber: response.phoneNumber,
             email: response.email,
             password: response.password,
+            payments: [],
+            address: []
           },
         })
       );
@@ -112,7 +114,7 @@ function EmailLogin() {
   const createAccount = async () => {
     try {
       const response = await axios.post(
-        `http://10.0.0.173:3000/api/v1/users/login`,
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/login`,
         JSON.stringify(postData),
         {
           headers: {

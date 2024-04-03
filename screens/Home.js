@@ -37,82 +37,92 @@ import io from 'socket.io-client';
 import TransparentSheet from "../components/Modals/TransparentSheet.";
 import { current } from "@reduxjs/toolkit";
 
-const SERVER_URL = 'ws://10.0.0.173:5000';
+// const SERVER_URL = 'ws://192.168.179.1:5000';
+const SERVER_URL = 'http://10.0.0.81:5000';
 
 function Home() {
 
-  const [socket, setSocket] = useState(null);
+  // const [socket, setSocket] = useState(null);
 
-  useEffect(()=>{
-    const initializeSocket = async () => {
-      try {
-        const token = await retrieveTokenFromAsyncStorage();
-        if (token) {
-          const newSocket = io(SERVER_URL, {
-            auth: {
-              token,
-            },
-          });
-          setSocket(newSocket);
-          newSocket.on('connect', () => {
-            console.log('Socket connected');
-          });
-        }
-      } catch (error) {
-        console.error('Error initializing socket:', error);
-      }
-    };
+  // useEffect(()=>{
+  //   const initializeSocket = async () => {
+  //     try {
+  //       const token = await retrieveTokenFromAsyncStorage();
+  //       console.log(token)
+  //       if (token) {
+  //         const newSocket = io(SERVER_URL, {
+  //           auth: {
+  //             token,
+  //           },
+  //         });
+  //         setSocket(newSocket);
+  //         newSocket.on('connect', () => {
+  //           console.log('Socket connected');
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error('Error initializing socket:', error);
+  //     }
+  //   };
 
-    initializeSocket();
-  }, [])
+  //   initializeSocket();
+  // }, [])
 
 
   // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1OGIyM2U2ODVlNzU4ZmM0YzFlMGU2ZSIsImlhdCI6MTcxMDQ0MzUyOCwiZXhwIjoxNzExMzA3NTI4fQ.HAym6ciuWr67c4ZqfVz-_x5xOU_YjVSI6zXZGTX0qts"
   const [deliveringOrdersCount, setDeliveringOrdersCount] = useState(countDeliveringOrders(orders));
 
 
-  // const socket = io(SERVER_URL);
+  
+  useEffect(()=>{
+    const socket = io(SERVER_URL);
 
-  // useEffect(()=>{
-  //   // socket.on('update', (data) => {
-  //   //   console.log(data)
-  //   // });
-  //   connectSocket()
-  // },[])
+    socket.on('connect', () => {
+      console.log('Connected to server');
+  });
 
-  useEffect(() =>{
-    if(socket){
-      socket.on('delivered', (data) => {
-        console.log("here")
-        const deliveringOrders = orders.filter(order => order.status === "Delivering");
+  socket.on('message', (data) => {
+    console.log('Received message:', data);
+    // Handle incoming messages from the server
+});
 
-    if (deliveringOrders.length === 0) {
-        return null; // Return null if there are no delivering orders
-    }
+    
+    // connectSocket()
+  },[])
 
-    let earliestOrder = deliveringOrders[0];
-    let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+  // useEffect(() =>{
+  //   if(socket){
+  //     socket.on('delivered', (data) => {
+  //       console.log("here")
+  //       const deliveringOrders = orders.filter(order => order.status === "Delivering");
 
-    deliveringOrders.forEach(order => {
-        const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
-        if (timestamp < earliestTimestamp) {
-            earliestOrder = order;
-            earliestTimestamp = timestamp;
-        }
-    });
-      date = getTodaysDate()
-          dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
-          dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+  //   if (deliveringOrders.length === 0) {
+  //       return null; // Return null if there are no delivering orders
+  //   }
 
-      });
+  //   let earliestOrder = deliveringOrders[0];
+  //   let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
 
-      return () => {
-        socket.off('delivered'); // Remove 'message' event listener
-        // Remove other event listeners as needed
-      };
-    }
+  //   deliveringOrders.forEach(order => {
+  //       const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+  //       if (timestamp < earliestTimestamp) {
+  //           earliestOrder = order;
+  //           earliestTimestamp = timestamp;
+  //       }
+  //   });
+  //     date = getTodaysDate()
+  //         dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+  //         dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
 
-  }, [socket])
+  //     });
+
+  //     return () => {
+  //       socket.off('delivered'); // Remove 'message' event listener
+  //       // Remove other event listeners as needed
+  //     };
+  //   }
+
+  // }, [socket])
   
   const retrieveTokenFromAsyncStorage = async () => {
     try {
@@ -378,7 +388,7 @@ const timer = useRef()
   function handleScroll(event) {
     setIsVisible(event.nativeEvent.contentOffset.y > 103);
    }
-   reg?.current?.scrollTo(-1*height/5)
+   reg?.current?.scrollTo(-1*height/4.7)
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
@@ -513,6 +523,7 @@ const timer = useRef()
           <ScrollView
           scrollEventThrottle={16}
           onScroll={(e)=>handleScroll(e)}
+          bounces = {false}
           onTouchStart={()=>{ref?.current?.scrollTo(0)}}
            style={{ backgroundColor: "white" }}>
             {<LinearGradient
@@ -627,29 +638,14 @@ const timer = useRef()
 
             <View style={[styles.recommendedView, { alignItems: "center" }]}>
               <Deal
-                text={"Best Grocery Deals!"}
+                text={"Surf and Turf Fusion"}
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {
-                    title: "Woodstock Organic Frozen Broccoli Florets 10oz",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/cr3.png"),
-                    category: "frozen",
-                  },
-                  {
-                    title: "Woodstock Frozen Organic Mixed Berries 10oz",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/cr2.png"),
-                  },
-                  {
-                    title: "Sambazon Original Blend Smoothie Superfruit Pack",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/cr1.png"),
-                  },
+                  {title: 'Cajun Catfish', oldPrice: 30.00, image : require('../assets/catfish.png'), reviews : [], category: 'food', related : ["catfish", "dinner", "recipe", "fried", "blackened", "grilled", "fillets", "sauce", "cornmeal", "baked", "southern", "seasoning", "cajun", "pond", "aquaculture", "fishing", "farm-raised", "restaurant", 'fish'] , nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true, description : 'Golden-fried Cajun Catfish, a culinary delight that takes your taste buds on a flavorful journey. Crispy on the outside, tender and flaky on the inside, each bite bursts with a symphony of Cajun spices, delivering a perfect balance of heat and zest. Served alongside a medley of delectable sides, this dish promises a feast for the senses. Whether paired with buttery cornbread, creamy coleslaw, or tangy tartar sauce, every element harmonizes to create a mouthwatering experience.'},
+                  {title: 'Dirty Rice', oldPrice: 6, image : require('../assets/rice.png'), reviews : [], category: 'food',related: ["Rice", "Cajun", "Side dish", "Sausage", "Vegetables", "Spices", "Spicy", "Flavorful", "Pork", "Chicken liver", "Giblets", "Southern", "Louisiana", "Comfort food", "Pairings: fried chicken", "grilled fish"], description: 'Savory Cajun-style rice dish packed with flavorful sausage, vegetables, and spices. The "dirty" comes from the bits of cooked pork or chicken liver and giblets traditionally used, adding a rich depth of flavor. Enjoy this flavorful side dish alongside fried chicken, grilled fish, or anything else that needs a spicy kick.'},
+        
+                 
                 ]}
                 color="#039F03"
               />
@@ -661,6 +657,20 @@ const timer = useRef()
                 onPress={handleAddToCart}
               />
             </View>
+            <Deal
+                text={"Best Grocery Deals"}
+                onPress={dealHandler}
+                onAdd={handleAddToCart}
+                item={[
+                  {title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz',newPrice: 4.99, oldPrice: 1.99, image : require('../assets/snacks1.png'), reviews : [], category: 'snacks'},
+                  {title: 'Kit Kat Candy Bar King Size 3oz',newPrice: 3.69, oldPrice: 1.99, image : require('../assets/snacks3.png'), reviews : [], category: 'snacks'},
+                  {title: 'Tiger Eye Iced Coconut Latte 8.5oz',newPrice: 3.79, oldPrice: 1.99, image : require('../assets/drink4.png'), reviews : [], category: 'drink'},
+                  {title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49',newPrice: 4.99, oldPrice: 1.99, image : require('../assets/snacks6.png'), reviews : [], category: 'snacks'},
+                  {title: 'White Claw Seltzer Flavor No. 3 Variety 12pk 12oz Can 5.0% ABV $22.99',newPrice: 7.99, oldPrice: 1.99, image : require('../assets/alcohol1.png'), reviews : [], category: 'alcohol'},          
+                  
+                ]}
+                color="#00CED1"
+              />
             <View style={styles.recommendedView}>
               <Text style={styles.text}>Alcohol</Text>
               <ProductHorizontal
@@ -670,42 +680,30 @@ const timer = useRef()
             </View>
             <View style={[styles.recommendedView, { alignItems: "center" }]}>
               <Deal
-                text={"Health Deals"}
+                text={"Gourmet Takes on Comfort Food"}
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {
-                    title: "Theraflu Green Tea & Honey Lemon Multi-",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/h1.png"),
-                  },
-                  {
-                    title: "Stix Early Pregnancy Test 2ct",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/h2.png"),
-                  },
-                  {
-                    title: "Equaline Cotton Swabs 375ct",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/h3.png"),
-                  },
-                  {
-                    title: "Q-Tips Cotton Swabs 170ct",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/h4.png"),
-                  },
-                  {
-                    title: "Equaline Cotton Swabs 375ct",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/h3.png"),
-                  },
+                  {title: 'Stuffed Salmon', oldPrice: 45, image : require('../assets/stuffed_salmon.png'), related: ["Salmon", "Seafood", "Stuffed", "Healthy", "Flavorful", "Protein", "Lunch", "Dinner", "Entrees", "Special occasion", "Crabmeat", "Shrimp", "Vegetables", "Herbs", "Spices"],description: "Salmon fillet generously filled with a flavorful blend of herbs, spices, and your choice of ingredients like crabmeat, shrimp, or vegetables. Baked to perfection, this dish is both decadent and healthy.",reviews : [], category: 'food', nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
+        
+                  {title: 'Smoked Gouda Mac & Cheese', oldPrice: 6.00, image : require('../assets/mac.png'), reviews : [], category: 'food',related: ["side dish", "mac and cheese", "pasta", "cheese", "smoked Gouda", "creamy", "comfort food", "casserole", "baked", "cheesy", "vegetarian option", "lunch", "dinner", "kid-friendly", "crowd-pleaser"], description: "Creamy and decadent mac and cheese made with smoked Gouda cheese for a rich and flavorful twist. A cheesy comfort food favorite."},
+        
                 ]}
                 color="#00CED1"
+              />
+            </View>
+            <View style={[styles.recommendedView, { alignItems: "center" }]}>
+              <Deal
+                text={"Decadent Twists"}
+                onPress={dealHandler}
+                onAdd={handleAddToCart}
+                item={[
+                  {title: 'Oysters', oldPrice: 18, image : require('../assets/oyster.png'), reviews : [], category: 'food', nutrient: 'protein',related: ["appetizer", "seafood", "oysters", "raw", "on the half shell", "mignonette sauce", "cocktail sauce", "horseradish", "lemon wedges", "tabasco sauce", "protein", "aphrodisiac", "luxury", "gourmet", "special occasion", "date night", "seafood platter"],description: "Fresh and flavorful oysters, served on the half shell with your choice of toppings like mignonette sauce, cocktail sauce, or horseradish. A seafood appetizer that's both elegant and delicious.", extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
+        
+                  {title: 'Grilled Chicken', oldPrice: 30.00, image : require('../assets/chicken.png'), reviews : [], category: 'food', nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true, description: 'Succulent and juicy grilled chicken breasts, seasoned to perfection and cooked over an open flame. Enjoy the smoky flavor and tender texture, perfect for a satisfying and healthy meal.', related: ["grilled", "chicken", "breasts", "healthy", "protein", "barbecue", "poultry", "marinade", "grilled vegetables", "salad", "sandwich", "entree", "main course", "summer cookout"]},
+        
+                ]}
+                color="#F1CEDD"
               />
             </View>
 
@@ -716,43 +714,18 @@ const timer = useRef()
                 onPress={handleAddToCart}
               />
             </View>
-            <View style={[styles.recommendedView, { alignItems: "center" }]}>
+            <View style={[{ alignItems: "center" }]}>
               <Deal
                 text={"Pantry Deals"}
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {
-                    title: "Post Fruity Pebbles Cereal 11oz",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/p1.png"),
-                  },
-                  {
-                    title:
-                      "Stix Early Pregnancy TGeneral Mills Cinnamon Toast Crunch Cereal 12ozest 2ct",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/p2.png"),
-                  },
-                  {
-                    title: "Post Marshmallow Fruity Pebbles Cereal 11oz $5.69",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/p3.png"),
-                  },
-                  {
-                    title: "Post Cocoa Pebbles Cereal 11oz",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/p4.png"),
-                  },
-                  {
-                    title: "Post Honey Bunches of Oats Honey Roasted 12oz",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/p5.png"),
-                  },
+                  {title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', oldPrice: 3.69, image : require('../assets/snacks1.png'), reviews : [], category: 'snacks'},
+                  {title: 'Hostess Donettes Chocolate Mini Donuts Bag 10.75oz', oldPrice: 3.69, image : require('../assets/snacks2.png'), reviews : [], category: 'snacks'},
+                  {title: 'Kit Kat Candy Bar King Size 3oz', oldPrice: 3.69, image : require('../assets/snacks3.png'), reviews : [], category: 'snacks'},
+                  {title: 'Basically, Sour Rainbow Bites 5oz', oldPrice: 3.69, image : require('../assets/snacks4.png'), reviews : [], category: 'snacks'},
+                  {title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', oldPrice: 3.69, image : require('../assets/snacks6.png'), reviews : [], category: 'snacks'},
+        
                 ]}
                 color="#D2B48C"
               />
@@ -764,44 +737,34 @@ const timer = useRef()
                 onPress={handleAddToCart}
               />
             </View>
-            <View style={styles.recommendedView}>
+            <View style={{}}>
               <Deal
-                text={"Yummy Ice Creams!"}
+                text={'Lighter Options'}
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {
-                    title: "Ben & Jerry's Churray for Churros Ice Cream Pint",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/i1.png"),
-                  },
-                  {
-                    title: "Milk Bar Gingerbread Latte Pint 14oz",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/i2.png"),
-                  },
-                  {
-                    title: "Milk Bar Candy Cane Cookies & Cream Pint 14oz$7.99",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/i3.png"),
-                  },
-                  {
-                    title: "Jeni's, Boozy Eggnog Ice Cream Pint 16oz",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/i4.png"),
-                  },
-                  {
-                    title: "Jeni's, White Chocolate Peppermint Ice Cream Pi",
-                    oldPrice: 4.99,
-                    newPrice: "10.00",
-                    image: require("../assets/i5.png"),
-                  },
+                  {title: 'Grits', oldPrice: 6.00, image : require('../assets/grits.png'), reviews : [], category: 'food',description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"]},
+                  {title: 'Collard Greens', oldPrice: 6.00, image : require('../assets/greens.png'), reviews : [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"]},
+        
+                  {title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"],description : "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image : require('../assets/shrimp.png'), reviews : [], category: 'food'},
+        
                 ]}
                 color="#98FB98"
+              />
+            </View>
+            <View style={{marginTop: 40}}>
+              <Deal
+                text={'Unexpected Pairings'}
+                onPress={dealHandler}
+                onAdd={handleAddToCart}
+                item={[
+                  {title: 'Grits', oldPrice: 6.00, image : require('../assets/grits.png'), reviews : [], category: 'food',description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"]},
+                  {title: 'Collard Greens', oldPrice: 6.00, image : require('../assets/greens.png'), reviews : [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"]},
+        
+                  {title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"],description : "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image : require('../assets/shrimp.png'), reviews : [], category: 'food'},
+        
+                ]}
+                color="#98AB98"
               />
             </View>
             <View style={[styles.recommendedView, { alignItems: "center" }]}>
@@ -895,16 +858,16 @@ const timer = useRef()
         </ScrollView>
         </BottomSheet>
        {blink && deliveringOrdersCount > 0 && <TransparentSheet ref={reg}>
-          <LinearGradient locations={[0.12, 0.2, 0.4, 0.1]} colors={["#4F6B30", "#425928", "#354820", '#283618']} style={{ borderTopLeftRadius: width*3,borderTopRightRadius: width*3, alignItems: 'center', justifyContent: 'start',paddingTop: height/12, height: height/2, width: width * 2, alignSelf: 'center'}}>{deliveringOrdersCount >= 1 && <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+          <LinearGradient  locations={[0.2, 0.7, 0.9, 0.6]} colors={["#4F6B30", "#425928", "#354820", '#283618']} style={{ borderTopLeftRadius: width*3,borderTopRightRadius: width*3, alignItems: 'center', justifyContent: 'start',paddingTop: height/13, height: height, width: width * 2, alignSelf: 'center'}}>{deliveringOrdersCount >= 1 && <Pressable onPress={orderHandler} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
             
                   <Pressable onPress={()=>{setBlink(false)}} style={{width: width/5.9}} >
                    <MaterialCommunityIcons name="close" size={35} color="white" />
                   </Pressable>
                   <View>
-                    <Text style={{ fontWeight: 900, color: 'white'}}>{`You have ${deliveringOrdersCount} ${deliveringOrdersCount > 1 ? 'orders' : "order"} being delivered sit tight!!`}</Text>
-                    <View style={{height: 40, width: 124, alignSelf: 'flex-end',}}><FlexButton onPress={orderHandler} color={'#283618'}  background={"white"} ><Text style={{fontSize: 12, fontWeight: 900, color: 'black'}}>View Orders</Text></FlexButton></View>
+                    <Text style={{ fontWeight: 900,fontSize: 16, color: 'white', textAlign: 'center'}}>{`You have ${deliveringOrdersCount} ${deliveringOrdersCount > 1 ? 'orders' : "order"} being delivered \nsit tight!!`}</Text>
+                    {/* <View style={{height: 40, width: 124, alignSelf: 'flex-end',}}><FlexButton onPress={} color={'white'}  background={"white"} ><Text style={{fontSize: 12, fontWeight: 900, color: 'black'}}>View Orders</Text></FlexButton></View> */}
                   </View>
-                   </View>}</LinearGradient>
+                   </Pressable>}</LinearGradient>
          
         </TransparentSheet>}
       </View>

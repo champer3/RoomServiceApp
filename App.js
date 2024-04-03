@@ -42,6 +42,7 @@ import AddAddressScreen from "./screens/AddAddressScreen";
 import { store } from "./Data/Store";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import Delivery from "./screens/Delivery";
+import LoaderScreen from "./screens/LoaderScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -69,10 +70,17 @@ function OnBoarding() {
 }
 
 function Authentication() {
+
   return (
     <Stack.Navigator
       screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}
     >
+      
+      <Stack.Screen
+        name="StartScreen"
+        component={StartScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="NumberLogin"
         component={NumberLogin}
@@ -87,11 +95,6 @@ function Authentication() {
         name="EmailLogin"
         component={EmailLogin}
         options={{ headerShadowVisible: false, title: "" }}
-      />
-      <Stack.Screen
-        name="StartScreen"
-        component={StartScreen}
-        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="EmailSignUp"
@@ -254,11 +257,11 @@ export default function App() {
         <NavigationContainer>
           <StatusBar style="light" />
           <Stack.Navigator>
-            <Stack.Screen
+            {/* <Stack.Screen
               name="OnBoarding"
               component={OnBoarding}
               options={{ headerShown: false }}
-            />
+            /> */}
             <Stack.Screen
               name="Authentication"
               component={Authentication}
@@ -347,6 +350,11 @@ export default function App() {
               name="Delivery Status"
               component={Delivery}
               options={{ headerShadowVisible: false, title: "Status" }}
+            />
+            <Stack.Screen
+              name="Loader"
+              component={LoaderScreen}
+              options={{ headerShown: false }}
             />
           </Stack.Navigator>
         </NavigationContainer>

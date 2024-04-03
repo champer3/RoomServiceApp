@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Dimensions,
   Alert,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
@@ -28,6 +29,9 @@ function EmailSignUp() {
   function handleScreenPress() {
     Keyboard.dismiss();
   }
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+
+  
   const navigation = useNavigation();
   function signInHandler() {
     navigation.navigate("NumberLogin");
@@ -73,32 +77,44 @@ function EmailSignUp() {
     }
     setForm((prev) => ({ ...prev, [field]: value.trim() }));
   }
-  function handleSubmit() {
+  async function handleSubmit() {
+    handleScreenPress()
     if (!warning && form.email && form.firstName && form.secondName) {
       // console.log(form);
-      // try {
-      //   const checkEmail = await axios.get(
-      //     `http://10.0.0.173:3000/api/v1/users/getEmail/${form.email}`
-      //   );
-      //   console.log(checkEmail)
-      //   if (checkEmail.data.data) {
-      //     Alert.alert(
-      //       "Email already exist",
-      //       "go ahead and login with your email address"
-      //     );
-      //   } else {
-      //     console.log("bdhbsjbdv");
-          handleUpdate();
-          navigation.navigate("AddNumber");
-      //   }
-      // } catch (err) {
-      //   console.log(err);
-      // }
+      try {
+        const checkEmail = await axios.get(
+          `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getEmail/${form.email}`
+        );
+        setIsLoading(true)
+        setTimeout(() => {
+          if ( checkEmail.data.data.user.length > 0) {
+            Alert.alert(
+              "Email already exist",
+              "Go ahead and login with your email address"
+            );
+          } else {
+            console.log("bdhbsjbdv");
+            handleUpdate();
+            navigation.navigate("AddNumber");
+          }
+          setTimeout(()=>{ setIsLoading(false)}, 200)
+          // Set loading status to false after some time (simulating app loading)
+        }, 1000)
+       
+      } catch (err) {
+        console.log(err);
+      }
     }
   }
+  console.log(form)
   return (
-    <GestureRecognizer onTouchStart={handleScreenPress} onSwipeLeft={pressHandler}  style={{flex: 1}} >
-     <KeyboardAvoidingView onPress={handleScreenPress} behavior="height" style={styles.container}>
+    <KeyboardAvoidingView onPress={handleScreenPress}    style={{flex: 1}} >
+      {isLoading ? (
+        // Render loading indicator while loading
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
+      ) : (
+     <Pressable onPress={handleScreenPress}  style={styles.container}>
           <View style={styles.welcomeView}>
             <Text style={styles.text}>Hello,</Text>
             <Text style={styles.text}>Create An Account🤩</Text>
@@ -107,7 +123,6 @@ function EmailSignUp() {
                 style={[styles.line, { backgroundColor: "#283618" }]}
               ></View>
               <View style={[styles.line]}></View>
-              <View style={styles.line}></View>
               <View style={styles.line}></View>
             </View>
           </View>
@@ -199,11 +214,11 @@ function EmailSignUp() {
             }}
           >
             <View style={styles.threeContainer}>
-              <View style={styles.line}></View>
-              <Text>or continue with</Text>
-              <View style={styles.line}></View>
+              <View style={{height: 2,
+    backgroundColor: "#EEEEEE",
+    width: "90%",}}></View>
             </View>
-            <View
+            {/* <View
               style={[
                 styles.buttonContainer,
                 {
@@ -227,7 +242,7 @@ function EmailSignUp() {
                 />
                 <Text> Continue with Google</Text>
               </BareButton>
-            </View>
+            </View> */}
             <View style={styles.textContainer}>
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 Already have an account?
@@ -241,8 +256,8 @@ function EmailSignUp() {
               </Pressable>
             </View>
           </View>
+        </Pressable>)}
         </KeyboardAvoidingView>
-        </GestureRecognizer>
   );
 }
 
@@ -295,9 +310,9 @@ const styles = StyleSheet.create({
   threeContainer: {
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    justifyContent: "center",
+    alignSelf: "center",
+    marginVertical: 26
   },
   line: {
     height: 2,
@@ -315,14 +330,10 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   lineContainer: {
+    width: "100%",
     flexDirection: "row",
-    marginTop: "5%",
     justifyContent: "space-between",
-    height: "34%",
-  },
-  line: {
-    height: 2,
-    width: "20%",
-    backgroundColor: "#D9D9D9",
+    alignSelf: "center",
+    marginVertical: 26
   },
 });

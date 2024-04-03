@@ -30,7 +30,6 @@ import axios from "axios";
 const retrieveTokenFromAsyncStorage = async () => {
   try {
     const storedToken = await AsyncStorage.getItem("authToken");
-    console.log(storedToken);
     if (storedToken !== null) {
       console.log("Retrieved token:", storedToken);
       return storedToken
@@ -108,13 +107,14 @@ function PaymentsDisplay() {
     setScrollHeight(-650);
   });
   const methods = ["Debit Card", "Credit Card"];
-  // const token = retrieveTokenFromAsyncStorage()
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YmQ2ZDgyZTVmYzlhMDJlYTM3YzAzMyIsImlhdCI6MTcwNjkxMzE1NywiZXhwIjoxNzA3Nzc3MTU3fQ.TwpnSDIBnTJPAB1BUjPkz8PPiDztuySl4JcqTHgruxU"
+  const token = retrieveTokenFromAsyncStorage()
+  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YmQ2ZDgyZTVmYzlhMDJlYTM3YzAzMyIsImlhdCI6MTcwNjkxMzE1NywiZXhwIjoxNzA3Nzc3MTU3fQ.TwpnSDIBnTJPAB1BUjPkz8PPiDztuySl4JcqTHgruxU"
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const fetchPaymentSheet = async () => {
+    const token = await retrieveTokenFromAsyncStorage()
     const response = await axios.post(
-      "http://10.0.0.173:3000/api/v1/payments/payment-sheet",
-      null,
+      "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-sheet",
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -123,7 +123,6 @@ function PaymentsDisplay() {
       }
     );
     console.log("got here");
-    // console.log(response.data);
     const initPayment = await initPaymentSheet({
       merchantDisplayName: "RoomService",
       setupIntentClientSecret: response.data.setupIntent,
@@ -140,7 +139,7 @@ function PaymentsDisplay() {
       Alert.alert(`Error code: ${error.code}`, error.message);
     } else {
       const paymentMethods = await axios.post(
-        "http://10.0.0.173:3000/api/v1/payments/payment-methods",
+        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-methods",
         null,
         {
           headers: {
@@ -151,7 +150,6 @@ function PaymentsDisplay() {
       );
       handleUpdate(paymentMethods.data.paymentMethods)
 
-      Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");
     }
   };

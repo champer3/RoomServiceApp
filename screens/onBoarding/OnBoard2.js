@@ -4,26 +4,43 @@ import {
   Dimensions,
   ImageBackground,
   Text,
+  ActivityIndicator
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+import { useState } from "react";
 
 const { width, height } = Dimensions.get("window");
 
 function OnBoard2() {
   const navigation = useNavigation()
+  const [isLoading, setIsLoading] = useState(false);
   function pressHandler (){
-    navigation.navigate('OnBoard3')
+    setIsLoading(true)
+    setTimeout(() => {
+      navigation.navigate('OnBoard3')
+      setTimeout(()=>{setIsLoading(false)}, 200)
+      // Set loading status to false after some time (simulating app loading)
+    }, 400)
   }
   function skipHandler (){
-    navigation.navigate('Authentication')
+    setIsLoading(true)
+    setTimeout(() => {
+      navigation.navigate('Authentication')
+      setTimeout(()=>{setIsLoading(false)}, 200)
+      // Set loading status to false after some time (simulating app loading)
+    }, 400)
   }
   return (
     <GestureRecognizer onSwipeLeft={pressHandler}  onSwipeRight={()=> navigation.navigate('OnBoard1')} style={styles.container}>
-      <ImageBackground
+      {false ? (
+        // Render loading indicator while loading
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
+      ) : (<ImageBackground
         style={styles.backgroundImage}
         source={require("../../assets/onboard2.jpg")}
       >
@@ -59,13 +76,14 @@ function OnBoard2() {
             </View>
           </View>
         </View>
-      </ImageBackground>
+      </ImageBackground>)}
       <StatusBar style="dark" />
       </GestureRecognizer>
   );
 }
 
 export default OnBoard2;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -74,22 +92,22 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   first: {
-    height: height / 2.8,
-    // width: width ,
+    height: height / 3.2,
+    // width: width * 1.05,
     // marginLeft: -30,
     backgroundColor: "#283618",
-    borderTopEndRadius: 25,
-    borderTopStartRadius: 25,
+    borderTopEndRadius: 30,
+    borderTopStartRadius: 30,
     justifyContent: "flex-end",
     opacity: 1,
     // transform: [{ skewY: '-10deg' }]
   },
   inner: {
-    height: "98%",
+    height: "97%",
     backgroundColor: "white",
     borderTopEndRadius: 30,
     borderTopStartRadius: 30,
-    paddingVertical: "10%",
+    paddingVertical: height/25,
     paddingHorizontal: "5%",
     justifyContent: "space-around",
   },
@@ -120,14 +138,15 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   topText: {
-    fontSize: 24,
+    fontSize: height/45,
     fontWeight: "600",
-    marginBottom: 8,
+    marginVertical: 12,
   },
   downText: {
-    fontSize: 16,
-    fontWeight: "300",
+    fontSize:  height/58,
+    fontWeight: "400",
     opacity: 0.7,
     paddingRight: 20,
+    marginBottom: 15,
   },
 });

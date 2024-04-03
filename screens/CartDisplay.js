@@ -270,7 +270,6 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
         {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
         {cartItems.length > 0 && <><View style={{marginHorizontal: '10%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
             {newList.map(({title, oldPrice,image, quantity}, idx)=>  <ProductAction onTap={()=>{ref2?.current?.scrollTo(-570); handleSelect(newList[idx].title)}} key={idx} title={title} price={cost[title]} image={image} quantity={quantity} action={<Pressable onPress={()=>handleDeleteFromCart(newList[idx])} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={45} color="#B22334" /></Pressable>}><IncrementDecrementBtn minValue={quantity} onIncrease={()=>{handleAddToCart(newList[idx].title)}} onDecrease ={()=>{handleRemoveFromCart(newList[idx])}}/></ProductAction>)}
-
         </View>
         <View  style={{paddingHorizontal: '5%', paddingVertical: '10%'}}>
             <Text style={{

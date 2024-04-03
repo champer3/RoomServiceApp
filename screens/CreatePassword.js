@@ -130,7 +130,7 @@ function CreatePassword() {
   const createAccount = async () => {
     try {
       const response = await axios.post(
-        `http://10.0.0.173:3000/api/v1/users/signup`,
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/signup`,
         JSON.stringify(postData),
         {
           headers: {

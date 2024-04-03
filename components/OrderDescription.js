@@ -147,7 +147,7 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
      <View style={{flexDirection: 'row'}}>
         {rater.map(({rate,id},idx)=>{if(statuses.indexOf(status) !== id){console.log(id);return <View style={{flex:1, alignItems: 'center',flexDirection:'row'}} key={id}><Octicons name={`${rate}`} size={24} color={ rate == 'dot-fill' ? "#BC6C25": 'rgba(0,0,0,0.5)'} />
      <View style={{height : 2, width: '90%', alignSelf: 'center', backgroundColor: rate == 'dot-fill' ? "#BC6C25": 'rgba(0,0,0,0.5)'}}></View>
-     </View>}else{return <><Fontisto key={id} name="radio-btn-active" size={24} color= "#BC6C25" /><View key={6} style={{height : 2,width: '27.3%', alignSelf: 'center', backgroundColor: "#BC6C25"}}></View></> }})}
+     </View>}else{return <View  key={id} style={{flexDirection: 'row', width: '27.3%'}}><Fontisto name="radio-btn-active" size={24} color= "#BC6C25" /><View key={6} style={{height : 2, width: '72%', alignSelf: 'center', backgroundColor: "#BC6C25"}}></View></View>}})}
      {lastStatus}
      </View>
      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -160,7 +160,7 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
     {status == 'Delivering' && <View style={{height: 45}}><FlexButton onPress={pressHandler} background={'#283618'} ><Text style={{fontWeight:'bold', fontSize: 16, color: 'white',textAlign: 'center'}}>Track Order</Text></FlexButton></View>}
      <Text style={{fontWeight: 900, fontSize: 13}}>{total} {`${total > 1 ? 'Items': 'Item'}`}</Text>
     
-     <ScrollView horizontal>{newList.map(({title, oldPrice,image, quantity}, idx)=><View key={title} style={{marginRight: 3}}><Image style={styles.image}  source={image}/>{quantity > 1 && <View  style={{
+     <ScrollView horizontal>{newList.map(({title, oldPrice,image, quantity}, idx)=><View key={title} style={{marginRight: 3}} ><Image style={styles.image}  source={image}/>{quantity > 1 && <View  style={{
                   height: '27%',
                   minWidth: '25%',
                   justifyContent: 'center',

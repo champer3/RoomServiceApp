@@ -28,13 +28,13 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     // marginHorizontal: 10,
-    height: "50%",
+    height: height/2,
     // height: 200,
     width: width / 3.6,
 
   },
   pressed: {
-    width: "86%",
+    // width: "86%",
     // height: "90%"
   },
   imageContainer: {
@@ -44,9 +44,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
-    height: height/10.6,
-    width: width/5.8
+    height: height/13,
+    width: width/6.2,
   },
-  image: { width: "70%", height: "70%", resizeMode: 'contain'  },
-  text: { fontWeight: "bold", fontSize: 14, textAlign: "center" },
+  image: { width: width/5.8, height: height/ 18, resizeMode: 'contain'  },
+  text: { fontWeight: "bold", fontSize: 13, textAlign: "center" },
 });

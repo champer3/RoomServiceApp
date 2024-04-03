@@ -46,15 +46,15 @@ function AddNumber() {
   // const phoneNumberString = form.number;
   const phoneNumber = "+1" + phoneNumberString;
   const verifyNumber = async () => {
+    console.log(phoneNumber)
     try {
       const response = await axios.get(
-        `http://10.0.0.173:3000/getCode/${phoneNumber}`
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/getCode/${phoneNumber}`
       );
-      console.log("got here");
+      console.log(response);
     } catch (err) {
       console.log(err.error);
     }
-    // console.log(response.data)
   };
   function handleFormChange(field, value) {
     if (field == "number") {
@@ -82,34 +82,34 @@ function AddNumber() {
   }
   async function handleSubmit() {
     if (form && form.number && form.number.length == 14) {
-      // try {
-      //   console.log(phoneNumber)
-      //   const checkNumber = await axios.get(
-      //     `http://10.0.0.173:3000/api/v1/users/getNumber/${phoneNumber}`
-      //   );
-      //   console.log(checkNumber.data.data)
-      //   if (checkNumber.data.data) {
-      //     Alert.alert(
-      //       "Phone Number already exist",
-      //       "go ahead and login with your Phone Number"
-      //     );
-      //   } else {
+      try {
+        console.log(phoneNumber)
+        const checkNumber = await axios.get(
+          `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getNumber/${phoneNumber}`
+        );
+        console.log(checkNumber)
+        if (checkNumber.data.data) {
+          Alert.alert(
+            "Phone Number already exist",
+            "Go ahead and login with your Phone Number"
+          );
+        } else {
           console.log("bdhbsjbdv");
           handleUpdate();
-          // verifyNumber();
+          verifyNumber();
           navigation.navigate("AddPin", { phoneNumber });
-      //   }
-      // } catch (err) {
-      //   console.log(err);
-      // }
+        }
+      } catch (err) {
+        console.log(err);
+      }
     } else {
       setWarning("Provide a valid number");
     }
   }
   const [active, setActive] = useState(false);
   return (
-    <GestureRecognizer onTouchStart={handleScreenPress} onSwipeRight={pressHandler} onSwipeLeft={(nextHandler)}  style={{flex: 1}} >
-       <KeyboardAvoidingView onPress={handleScreenPress} behavior="height"  style={styles.container} >
+    <KeyboardAvoidingView   style={{flex: 1}} >
+       <Pressable onPress={handleScreenPress} style={styles.container} >
           <View style={styles.welcomeView}>
             <Text style={styles.text}>Awesome,</Text>
             <Text style={styles.text}>Add Your Number😉</Text>
@@ -118,7 +118,6 @@ function AddNumber() {
               <View
                 style={[styles.line, { backgroundColor: "#283618" }]}
               ></View>
-              <View style={styles.line}></View>
               <View style={styles.line}></View>
             </View>
             <View style={{ }}>
@@ -139,7 +138,7 @@ function AddNumber() {
               />
             )}
 
-            {!warning && (
+            {/* {!warning && (
               <>
                 <View
                   style={{
@@ -163,7 +162,7 @@ function AddNumber() {
                 </View>
                 <Info text="By selecting this option, you are agreeing to receive promotional discounts, exclusive offers, and marketing promotions via Short Message Service (SMS) to the mobile number provided. " />
               </>
-            )}
+            )} */}
           </View>
           </View>
           
@@ -178,8 +177,8 @@ function AddNumber() {
               </Button>
             </View>
           </View>
+          </Pressable>
           </KeyboardAvoidingView>
-          </GestureRecognizer>
   );
 }
 
@@ -229,7 +228,7 @@ const styles = StyleSheet.create({
   },
   line: {
     height: 2,
-    width: "20%",
+    width: "30%",
     backgroundColor: "#D9D9D9",
   },
 });

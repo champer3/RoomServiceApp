@@ -1,4 +1,4 @@
-import { Image, Pressable, SafeAreaView, StyleSheet, Text, View , ActivityIndicator} from "react-native";
+import { Image, Pressable, SafeAreaView, StyleSheet, Text, View , ActivityIndicator, Dimensions} from "react-native";
 import React, { useState, useEffect } from 'react';
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
@@ -7,7 +7,7 @@ import * as WebBrowser from "expo-web-browser"
 import  * as Google from "expo-auth-session/providers/google"
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-WebBrowser.maybeCompleteAuthSession()
+const { width, height } = Dimensions.get("window");
 function StartScreen() {
   const navigation = useNavigation()
   const [userInfo, setUserInfo] = useState()
@@ -18,12 +18,7 @@ function StartScreen() {
     webClientId: "595612958492-40uj7aop85fgo64ldlhifs0cilj5cs3d.apps.googleusercontent.com"
   })
   function pressHandler (){
-    setIsLoading(true)
-    setTimeout(() => {
-      navigation.navigate('HomeTabs'); 
-      setIsLoading(false)
-      // Set loading status to false after some time (simulating app loading)
-    }, 1000)
+      navigation.replace('Loader'); 
     
   }
   function emailHandler (){
@@ -39,9 +34,10 @@ function StartScreen() {
     <SafeAreaView style={styles.container}>
         {isLoading ? (
         // Render loading indicator while loading
-        <ActivityIndicator size="large" color="#0000ff" />
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
       ) : (<>
-      <Pressable onPress={pressHandler} style={{alignSelf: 'flex-end'}}><Text style={{color: "#333333", opacity: 0.7, fontSize: 16, fontWeight: "500", alignSelf: "flex-end"}}>Skip Registration</Text></Pressable>
+      <Pressable onPress={pressHandler} style={{alignSelf: 'flex-end', marginBottom: height/ 9}}><Text style={{color: "#333333", opacity: 0.7, fontSize: height/50, fontWeight: "500", alignSelf: "flex-end"}}>Skip</Text></Pressable>
       <View style={styles.imageContainer}>
         <Image
           style={styles.image}
@@ -66,10 +62,8 @@ function StartScreen() {
       </View>
       <View style={styles.threeContainer}>
         <View style={styles.line}></View>
-        <Text>or continue with</Text>
-        <View style={styles.line}></View>
       </View>
-      <View style={[styles.buttonContainer, {marginBottom: 8}]}>
+      {/* <View style={[styles.buttonContainer, {marginBottom: 8}]}>
         <BareButton borderRadius={24} color="#EEEEEE">
           <Image
             style={styles.facebook}
@@ -86,13 +80,15 @@ function StartScreen() {
           />
           <Text> Continue with Google</Text>
         </BareButton>
-      </View>
+      </View> */}
       <View style={styles.textContainer}>
         <Text style={{color: "#333333", opacity: 0.5}}>Already have an account?</Text>
         <Pressable onPress={signInHandler}>
         <Text style={{color: "#BC6C25", fontWeight: "700", opacity: 1}}> Sign In</Text>
         </Pressable>
-      </View></>)}
+      </View>
+      <View><Image style={styles.image} source={require('../assets/Logo.png')}/></View>
+      </>)}
     </SafeAreaView>
   );
 }
@@ -103,11 +99,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "center",
+    // justifyContent: "center",
     alignItems: "center",
     marginHorizontal: "5%",
     paddingTop: 45,
-    marginTop: -50
+    marginTop: height/ 25,
   },
   imageContainer: {
     width: "100%",
@@ -122,9 +118,9 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   image: {
-    flex: 1,
-    width: "100%",
-    resizeMode: "contain",
+    height: height / 4,
+    alignSelf: "center",
+    resizeMode: 'contain'
   },
   buttonContainer: {
     width: "100%",
@@ -143,14 +139,14 @@ const styles = StyleSheet.create({
   threeContainer: {
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
     marginVertical: 26
   },
   line: {
     height: 2,
     backgroundColor: "#EEEEEE",
-    width: "30%",
+    width: "90%",
   },
   textContainer: {
     flexDirection: "row",
