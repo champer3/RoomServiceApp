@@ -137,6 +137,7 @@ function CheckoutScreen() {
       const token = await retrieveTokenFromAsyncStorage();
       const createOrder = await axios.post(
         "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/orders",
+        // "http://10.0.0.173:3000/api/v1/orders",
         {
           totalPrice: getTotalSum(),
           paymentStatus: true,
@@ -236,7 +237,6 @@ function CheckoutScreen() {
       //     },
       //   }
       // );
-      console.log('Moving')
       tryCreateOrder();
       // Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");

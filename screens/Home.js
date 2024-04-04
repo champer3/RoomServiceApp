@@ -37,8 +37,9 @@ import io from 'socket.io-client';
 import TransparentSheet from "../components/Modals/TransparentSheet.";
 import { current } from "@reduxjs/toolkit";
 
-// const SERVER_URL = 'ws://192.168.179.1:5000';
-const SERVER_URL = 'http://10.0.0.81:5000';
+// const SERVER_URL = 'ws://192.168.179.1:3000';
+// const SERVER_URL = 'http://10.0.0.173:3000';
+const SERVER_URL = 'https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/';
 
 const FadeOutView = (props) => {
   const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 1
@@ -93,88 +94,100 @@ const FadeInView = (props) => {
 
 function Home() {
 
-  // const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState(null);
 
-  // useEffect(()=>{
-  //   const initializeSocket = async () => {
-  //     try {
-  //       const token = await retrieveTokenFromAsyncStorage();
-  //       console.log(token)
-  //       if (token) {
-  //         const newSocket = io(SERVER_URL, {
-  //           auth: {
-  //             token,
-  //           },
-  //         });
-  //         setSocket(newSocket);
-  //         newSocket.on('connect', () => {
-  //           console.log('Socket connected');
-  //         });
-  //       }
-  //     } catch (error) {
-  //       console.error('Error initializing socket:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const initializeSocket = async () => {
+      try {
+        const token = await retrieveTokenFromAsyncStorage();
+        // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MGRiYWY2NmVjYWE0MWUyODQwYjZlNiIsImlhdCI6MTcxMjE3NTg2MiwiZXhwIjoxNzEzMDM5ODYyfQ.C8dASXQn_jHO0tBGd7-wnFWOfpWwwTSED-xqcpc7oVU"
+        console.log(token)
+        const newSocket = io(SERVER_URL, {
+          query: { token }
+        });
+        setSocket(newSocket);
 
-  //   initializeSocket();
-  // }, [])
+        newSocket.on('connect', () => {
+          console.log('Connected to server');
+        });
+        // console.log(token)
+        // if (token) {
+        //   const newSocket = io(SERVER_URL, {
+        //     auth: {
+        //       token,
+        //     },
+        //   });
+        //   // setSocket(newSocket);
+        //   newSocket.on('connect', () => {
+        //     console.log('Connected to server');
+        //   });
+        // }
+      } catch (error) {
+        console.error('Error initializing socket:', error);
+      }
+    };
+
+    initializeSocket();
+  }, [])
 
 
   // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1OGIyM2U2ODVlNzU4ZmM0YzFlMGU2ZSIsImlhdCI6MTcxMDQ0MzUyOCwiZXhwIjoxNzExMzA3NTI4fQ.HAym6ciuWr67c4ZqfVz-_x5xOU_YjVSI6zXZGTX0qts"
   const [deliveringOrdersCount, setDeliveringOrdersCount] = useState(countDeliveringOrders(orders));
 
 
-  
-  useEffect(()=>{
-    const socket = io(SERVER_URL);
 
-    socket.on('connect', () => {
-      console.log('Connected to server');
-  });
+  // useEffect(()=>{
+  //   const socket = io(SERVER_URL);
 
-  socket.on('message', (data) => {
-    console.log('Received message:', data);
-    // Handle incoming messages from the server
-});
+  //   socket.on('connect', () => {
+  //     console.log('Connected to server');
+  // });
 
-    
-    // connectSocket()
-  },[])
+  // socket.on('message', (data) => {
+  //   console.log('Received message:', data);
+  // Handle incoming messages from the server
+  // });
 
-  // useEffect(() =>{
-  //   if(socket){
-  //     socket.on('delivered', (data) => {
-  //       console.log("here")
-  //       const deliveringOrders = orders.filter(order => order.status === "Delivering");
 
-  //   if (deliveringOrders.length === 0) {
-  //       return null; // Return null if there are no delivering orders
-  //   }
+  // connectSocket()
+  // },[])
 
-  //   let earliestOrder = deliveringOrders[0];
-  //   let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+  useEffect(() =>{
+    if(socket){
+      socket.on('delivered', (data) => {
+        console.log("here6556477")
+        const deliveringOrders = orders.filter(order => order.status === "Delivering");
 
-  //   deliveringOrders.forEach(order => {
-  //       const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
-  //       if (timestamp < earliestTimestamp) {
-  //           earliestOrder = order;
-  //           earliestTimestamp = timestamp;
-  //       }
-  //   });
-  //     date = getTodaysDate()
-  //         dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
-  //         dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+    if (deliveringOrders.length === 0) {
+        return null; // Return null if there are no delivering orders
+    }
 
-  //     });
+    let earliestOrder = deliveringOrders[0];
+    let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
 
-  //     return () => {
-  //       socket.off('delivered'); // Remove 'message' event listener
-  //       // Remove other event listeners as needed
-  //     };
-  //   }
+    deliveringOrders.forEach(order => {
+        const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+        if (timestamp < earliestTimestamp) {
+            earliestOrder = order;
+            earliestTimestamp = timestamp;
+        }
+    });
+    console.log("orders",deliveringOrders)
+    console.log("order",orders)
+      date = getTodaysDate()
+          dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+          dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
 
-  // }, [socket])
-  
+      });
+
+      return () => {
+        socket.off('delivered'); // Remove 'message' event listener
+        // Remove other event listeners as needed
+      };
+    }
+
+  })
+
   const retrieveTokenFromAsyncStorage = async () => {
     try {
       const storedToken = await AsyncStorage.getItem("authToken");
@@ -219,7 +232,7 @@ function Home() {
   let [foodStore, setFood] = useState({});
 
 
-  function orderHandler(){
+  function orderHandler() {
     navigation.navigate('Order History')
   }
   const [datas, setDatas] = useState(null);
@@ -244,7 +257,7 @@ function Home() {
   //   // fetchData();
   // }, []);
   function countDeliveringOrders(orders) {
-    if (!orders){
+    if (!orders) {
       return
     }
     // Initialize a counter variable
@@ -263,7 +276,7 @@ function Home() {
     return count;
   }
   // deliveringOrdersCount = countDeliveringOrders(orders);
-  useEffect(()=>{
+  useEffect(() => {
     setBlink(true)
     setDeliveringOrdersCount(countDeliveringOrders(orders))
   }, [orders])
@@ -287,17 +300,17 @@ function Home() {
   });
   const [selected, setSelected] = useState([])
   function toggleNumberInArray(number) {
-    setSelected((prev)=> {
-        const array = [...prev]
-        const index = array.indexOf(number);
-    if (index === -1) {
+    setSelected((prev) => {
+      const array = [...prev]
+      const index = array.indexOf(number);
+      if (index === -1) {
         // Number is not in the array, so add it
         array.push(number);
-    } else {
+      } else {
         // Number is already in the array, so remove it
         array.splice(index, 1);
-    }
-    return array
+      }
+      return array
     })
   }
   var greeting = getGreeting();
@@ -324,20 +337,20 @@ function Home() {
     }
     return "Item not found in the menu";
   }
-  function handleUpdate(){
+  function handleUpdate() {
     let price = 0;
-    let newItem ={}
-    if (plus && plus.length > 0){
-    for (var i = 0; i < plus.length; i ++){
+    let newItem = {}
+    if (plus && plus.length > 0) {
+      for (var i = 0; i < plus.length; i++) {
         price += findPrice(plus[i])
       }
-      newItem = {...newItem, ...{ 'Sides' : plus}}
+      newItem = { ...newItem, ...{ 'Sides': plus } }
     }
-    if (option != undefined){
-      newItem = {...newItem, ... {'Picked' : pro.options[option]}}
+    if (option != undefined) {
+      newItem = { ...newItem, ... { 'Picked': pro.options[option] } }
     }
-    if (selected && selected.length > 0){
-      newItem = {...newItem, ... {'Flavour' : selected}}
+    if (selected && selected.length > 0) {
+      newItem = { ...newItem, ... { 'Flavour': selected } }
     }
     setPlus([])
     setOption()
@@ -346,22 +359,22 @@ function Home() {
     setBlink(true)
 
     setFoodDictionary(foodStore)
-    dispatch(addToCart({id : {title: pro.title, ...{...pro, ...newItem, ['oldPrice'] : pro.oldPrice + price} }}))
+    dispatch(addToCart({ id: { title: pro.title, ...{ ...pro, ...newItem, ['oldPrice']: pro.oldPrice + price } } }))
   }
-  function handleBuy(){
+  function handleBuy() {
     let price = 0;
-    let newItem ={}
-    if (plus && plus.length > 0){
-    for (var i = 0; i < plus.length; i ++){
+    let newItem = {}
+    if (plus && plus.length > 0) {
+      for (var i = 0; i < plus.length; i++) {
         price += findPrice(plus[i])
       }
-      newItem = {...newItem, ...{ 'Sides' : plus}}
+      newItem = { ...newItem, ...{ 'Sides': plus } }
     }
-    if (option != undefined){
-      newItem = {...newItem, ... {'Picked' : pro.options[option]}}
+    if (option != undefined) {
+      newItem = { ...newItem, ... { 'Picked': pro.options[option] } }
     }
-    if (selected && selected.length > 0){
-      newItem = {...newItem, ... {'Flavour' : selected}}
+    if (selected && selected.length > 0) {
+      newItem = { ...newItem, ... { 'Flavour': selected } }
     }
     setPlus([])
     setOption()
@@ -369,189 +382,189 @@ function Home() {
     ref?.current?.scrollTo(0)
     setBlink(true)
     setFoodDictionary(foodStore)
-    dispatch(addToCart({id : {title: pro.title, ...{...pro, ...newItem, ['oldPrice'] : pro.oldPrice + price} }}))
+    dispatch(addToCart({ id: { title: pro.title, ...{ ...pro, ...newItem, ['oldPrice']: pro.oldPrice + price } } }))
     navigation.navigate('Checkout')
   }
 
-//   useEffect(()=>{
-//     if (plus.length == 2){
-//       let price = 0
-//       for (var i = 0; i < plus.length; i ++){
-//           price += findPrice(plus[i])
-//         }
-//       dispatch(addToCart({ id: {...pro, ['oldPrice']: pro['oldPrice']+price} }))
-//       dispatch(addOptions({id: {'title': pro.title, 'options': {'Sides' : plus}}}))
+  //   useEffect(()=>{
+  //     if (plus.length == 2){
+  //       let price = 0
+  //       for (var i = 0; i < plus.length; i ++){
+  //           price += findPrice(plus[i])
+  //         }
+  //       dispatch(addToCart({ id: {...pro, ['oldPrice']: pro['oldPrice']+price} }))
+  //       dispatch(addOptions({id: {'title': pro.title, 'options': {'Sides' : plus}}}))
 
-//         setPlus([])
-//         ref?.current?.scrollTo(0)
-//         setFoodDictionary(foodStore)
-//     }
-// },[plus])
-const [blink, setBlink] = useState(true)
-function getTodaysDate() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return today.toString();
-}
-const timer = useRef()
-// useEffect(()=>{if (deliveringOrdersCount > 0){timer.current = setTimeout(()=>{setBlink((prev)=> !prev)},5)}})
+  //         setPlus([])
+  //         ref?.current?.scrollTo(0)
+  //         setFoodDictionary(foodStore)
+  //     }
+  // },[plus])
+  const [blink, setBlink] = useState(true)
+  function getTodaysDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return today.toString();
+  }
+  const timer = useRef()
+  // useEffect(()=>{if (deliveringOrdersCount > 0){timer.current = setTimeout(()=>{setBlink((prev)=> !prev)},5)}})
   function handleAddToCart(product) {
     setPro(product)
     setPlus([])
-    if (product.extras){
+    if (product.extras) {
       setExtra(product.extras)
       setFoodDictionary(createFoodDictionary(product.extras))
 
-  }
+    }
 
-  if (product.extras || product.options ){
+    if (product.extras || product.options) {
 
-    ref?.current?.scrollTo(-570);
-    setBlink(false)
-    }else{
-    dispatch(addToCart({ id: product }));
-    // const deliveringOrders = orders.filter(order => order.status === "Delivering");
+      ref?.current?.scrollTo(-570);
+      setBlink(false)
+    } else {
+      dispatch(addToCart({ id: product }));
+      // const deliveringOrders = orders.filter(order => order.status === "Delivering");
 
-    // if (deliveringOrders.length === 0) {
-    //     return null; // Return null if there are no delivering orders
-    // }
+      // if (deliveringOrders.length === 0) {
+      //     return null; // Return null if there are no delivering orders
+      // }
 
-    // let earliestOrder = deliveringOrders[0];
-    // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+      // let earliestOrder = deliveringOrders[0];
+      // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
 
-    // deliveringOrders.forEach(order => {
-    //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
-    //     if (timestamp < earliestTimestamp) {
-    //         earliestOrder = order;
-    //         earliestTimestamp = timestamp;
-    //     }
-    // });
-    // console.log(earliestOrder.id)
-    // date = getTodaysDate()
-    // dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
-    // dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+      // deliveringOrders.forEach(order => {
+      //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+      //     if (timestamp < earliestTimestamp) {
+      //         earliestOrder = order;
+      //         earliestTimestamp = timestamp;
+      //     }
+      // });
+      // console.log(earliestOrder.id)
+      // date = getTodaysDate()
+      // dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+      // dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
 
 
-  }
+    }
   }
   function handleScroll(event) {
     setIsVisible(event.nativeEvent.contentOffset.y > 103);
-   }
-   reg?.current?.scrollTo(-1*height/4.7)
+  }
+  reg?.current?.scrollTo(-1 * height / 4.7)
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={{}}><LinearGradient
-            // colors={["#19171A", "#01418D", "#2873CC"]}
-            // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-            colors={["#4F6B30", "#425928", "#354820", '#283618']}
-            // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
-          >
-            <SafeAreaView onTouchStart={()=>{ref?.current?.scrollTo(0); setBlink(true)}} style={styles.top}>
-              <View
-                style={[styles.top,{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: 'center',
-                  paddingHorizontal: "5%",
-                  paddingTop: "3%",
-                }]}
-              >
-                {<View style={{ gap: 6, justifyContent: 'center', }}>
-                  <Text
-                    style={{
-                      color: "white",
-                      fontSize: 16,
-                      letterSpacing: 0.4,
-                      fontWeight: 900,
-                    }}
-                  >
-                    {greeting}
-                  </Text>
-                  <Text
-                    style={{
-                      color: "white",
-                      fontSize: 16,
-                      fontWeight: 800,
-                      letterSpacing: 1,
-                    }}
-                  >{`${data.firstName} `}</Text>
-                  {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
-                </View>}
-                
-                <View style={[styles.cart, {width: 50, height: 40}]}>
-                  <Pressable
-                    onPress={cartHandler}
-                  >
-                    <View>
-                      <Feather name="shopping-cart" size={20} color="white" />
-                    </View>
-
-                    {cartItems.length > 0 && (
-                      <View
-                        style={{
-                          height: "85%",
-                          minWidth: "35%",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          position: "absolute",
-                          zIndex: 2,
-                          top: -10,
-                          rigth:  -90,
-                          borderRadius: 100,
-                          backgroundColor: "#425928",
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: "white",
-                            fontSize: 12,
-                            fontWeight: 900,
-                          }}
-                        >
-                          {cartItems.length}
-                        </Text>
-                      </View>
-                    )}
-                  </Pressable>
-                </View>
-              </View>
-              <Pressable
-                style={[styles.search, { marginTop: 10 }]}
-                onPress={() => navigation.navigate("Search")}
-              >
-                <View
+          // colors={["#19171A", "#01418D", "#2873CC"]}
+          // colors={["#19171A", "#2F5A8C", "#2873CC"]}
+          colors={["#4F6B30", "#425928", "#354820", '#283618']}
+        // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
+        >
+          <SafeAreaView onTouchStart={() => { ref?.current?.scrollTo(0); setBlink(true) }} style={styles.top}>
+            <View
+              style={[styles.top, {
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: 'center',
+                paddingHorizontal: "5%",
+                paddingTop: "3%",
+              }]}
+            >
+              {<View style={{ gap: 6, justifyContent: 'center', }}>
+                <Text
                   style={{
-                    flexDirection: "row",
-                    gap: 10,
-                    borderColor: "white",
-                    borderWidth: 1,
-                    borderRadius: 20,
-                    backgroundColor: "white",
-                    alignItems: "center",
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
+                    color: "white",
+                    fontSize: 16,
+                    letterSpacing: 0.4,
+                    fontWeight: 900,
                   }}
                 >
-                  <EvilIcons name="search" size={24} color="black" />
-                  <Text
-                    style={{ color: "black", fontSize: 16, fontWeight: 500 }}
-                  >
-                    Search RoomService
-                  </Text>
-                </View>
-                
-                {/* <Input
+                  {greeting}
+                </Text>
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 16,
+                    fontWeight: 800,
+                    letterSpacing: 1,
+                  }}
+                >{`${data.firstName} `}</Text>
+                {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
+              </View>}
+
+              <View style={[styles.cart, { width: 50, height: 40 }]}>
+                <Pressable
+                  onPress={cartHandler}
+                >
+                  <View>
+                    <Feather name="shopping-cart" size={20} color="white" />
+                  </View>
+
+                  {cartItems.length > 0 && (
+                    <View
+                      style={{
+                        height: "85%",
+                        minWidth: "35%",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        position: "absolute",
+                        zIndex: 2,
+                        top: -10,
+                        rigth: -90,
+                        borderRadius: 100,
+                        backgroundColor: "#425928",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "white",
+                          fontSize: 12,
+                          fontWeight: 900,
+                        }}
+                      >
+                        {cartItems.length}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+            <Pressable
+              style={[styles.search, { marginTop: 10 }]}
+              onPress={() => navigation.navigate("Search")}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 10,
+                  borderColor: "white",
+                  borderWidth: 1,
+                  borderRadius: 20,
+                  backgroundColor: "white",
+                  alignItems: "center",
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                }}
+              >
+                <EvilIcons name="search" size={24} color="black" />
+                <Text
+                  style={{ color: "black", fontSize: 16, fontWeight: 500 }}
+                >
+                  Search RoomService
+                </Text>
+              </View>
+
+              {/* <Input
             onInteract={()=> navigation.navigate('Search')}
             color={"white"}
             icon={<EvilIcons name="search" size={24} color="white" />}
             text={"Search items"}
           ></Input> */}
-              </Pressable>
-              <View style={{ marginTop: 0, paddingBottom: 1, height: height/30}}>
+            </Pressable>
+            <View style={{ marginTop: 0, paddingBottom: 1, height: height / 30 }}>
               {isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
           <FadeInView style={{  flexDirection: 'row',
         gap: 35,paddingLeft: 17 }}>
@@ -586,31 +599,31 @@ const timer = useRef()
             </SafeAreaView>
           </LinearGradient>
           <ScrollView
-          scrollEventThrottle={16}
-          onScroll={(e)=>handleScroll(e)}
-          bounces = {false}
-          onTouchStart={()=>{ref?.current?.scrollTo(0)}}
-           style={{ backgroundColor: "white" }}>
+            scrollEventThrottle={16}
+            onScroll={(e) => handleScroll(e)}
+            bounces={false}
+            onTouchStart={() => { ref?.current?.scrollTo(0) }}
+            style={{ backgroundColor: "white" }}>
             {<LinearGradient
-            // colors={["#19171A", "#01418D", "#2873CC"]}
-            // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-            colors={['#283618', '#283618']}
+              // colors={["#19171A", "#01418D", "#2873CC"]}
+              // colors={["#19171A", "#2F5A8C", "#2873CC"]}
+              colors={['#283618', '#283618']}
             // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
-          ><View style={{ marginBottom: 5}}>
-              <ItemCategory
-                items={[
-                  { text: "Alcohol", image: require("../assets/Alcohol.png") },
-                  { text: "Frozen", image: require("../assets/frozen.png") },
-                  {
-                    text: "Ice Cream",
-                    image: require("../assets/icecream.png"),
-                  },
-                  { text: "Food", image: require("../assets/food.png") },
-                  { text: "Snacks", image: require("../assets/snack.png") },
-                ]}
-                color="white"
-                show ={!isVisible}
-              />
+            ><View style={{ marginBottom: 5 }}>
+                <ItemCategory
+                  items={[
+                    { text: "Alcohol", image: require("../assets/Alcohol.png") },
+                    { text: "Frozen", image: require("../assets/frozen.png") },
+                    {
+                      text: "Ice Cream",
+                      image: require("../assets/icecream.png"),
+                    },
+                    { text: "Food", image: require("../assets/food.png") },
+                    { text: "Snacks", image: require("../assets/snack.png") },
+                  ]}
+                  color="white"
+                  show={!isVisible}
+                />
               </View></LinearGradient>}
             <View style={[styles.horizontalCat,]}>
               {/* <View style={styles.catHead}>
@@ -707,10 +720,10 @@ const timer = useRef()
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {title: 'Cajun Catfish', oldPrice: 30.00, image : require('../assets/catfish.png'), reviews : [], category: 'food', related : ["catfish", "dinner", "recipe", "fried", "blackened", "grilled", "fillets", "sauce", "cornmeal", "baked", "southern", "seasoning", "cajun", "pond", "aquaculture", "fishing", "farm-raised", "restaurant", 'fish'] , nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true, description : 'Golden-fried Cajun Catfish, a culinary delight that takes your taste buds on a flavorful journey. Crispy on the outside, tender and flaky on the inside, each bite bursts with a symphony of Cajun spices, delivering a perfect balance of heat and zest. Served alongside a medley of delectable sides, this dish promises a feast for the senses. Whether paired with buttery cornbread, creamy coleslaw, or tangy tartar sauce, every element harmonizes to create a mouthwatering experience.'},
-                  {title: 'Dirty Rice', oldPrice: 6, image : require('../assets/rice.png'), reviews : [], category: 'food',related: ["Rice", "Cajun", "Side dish", "Sausage", "Vegetables", "Spices", "Spicy", "Flavorful", "Pork", "Chicken liver", "Giblets", "Southern", "Louisiana", "Comfort food", "Pairings: fried chicken", "grilled fish"], description: 'Savory Cajun-style rice dish packed with flavorful sausage, vegetables, and spices. The "dirty" comes from the bits of cooked pork or chicken liver and giblets traditionally used, adding a rich depth of flavor. Enjoy this flavorful side dish alongside fried chicken, grilled fish, or anything else that needs a spicy kick.'},
-        
-                 
+                  { title: 'Cajun Catfish', oldPrice: 30.00, image: require('../assets/catfish.png'), reviews: [], category: 'food', related: ["catfish", "dinner", "recipe", "fried", "blackened", "grilled", "fillets", "sauce", "cornmeal", "baked", "southern", "seasoning", "cajun", "pond", "aquaculture", "fishing", "farm-raised", "restaurant", 'fish'], nutrient: 'protein', extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, description: 'Golden-fried Cajun Catfish, a culinary delight that takes your taste buds on a flavorful journey. Crispy on the outside, tender and flaky on the inside, each bite bursts with a symphony of Cajun spices, delivering a perfect balance of heat and zest. Served alongside a medley of delectable sides, this dish promises a feast for the senses. Whether paired with buttery cornbread, creamy coleslaw, or tangy tartar sauce, every element harmonizes to create a mouthwatering experience.' },
+                  { title: 'Dirty Rice', oldPrice: 6, image: require('../assets/rice.png'), reviews: [], category: 'food', related: ["Rice", "Cajun", "Side dish", "Sausage", "Vegetables", "Spices", "Spicy", "Flavorful", "Pork", "Chicken liver", "Giblets", "Southern", "Louisiana", "Comfort food", "Pairings: fried chicken", "grilled fish"], description: 'Savory Cajun-style rice dish packed with flavorful sausage, vegetables, and spices. The "dirty" comes from the bits of cooked pork or chicken liver and giblets traditionally used, adding a rich depth of flavor. Enjoy this flavorful side dish alongside fried chicken, grilled fish, or anything else that needs a spicy kick.' },
+
+
                 ]}
                 color="#039F03"
               />
@@ -723,19 +736,19 @@ const timer = useRef()
               />
             </View>
             <Deal
-                text={"Best Grocery Deals"}
-                onPress={dealHandler}
-                onAdd={handleAddToCart}
-                item={[
-                  {title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz',newPrice: 4.99, oldPrice: 1.99, image : require('../assets/snacks1.png'), reviews : [], category: 'snacks'},
-                  {title: 'Kit Kat Candy Bar King Size 3oz',newPrice: 3.69, oldPrice: 1.99, image : require('../assets/snacks3.png'), reviews : [], category: 'snacks'},
-                  {title: 'Tiger Eye Iced Coconut Latte 8.5oz',newPrice: 3.79, oldPrice: 1.99, image : require('../assets/drink4.png'), reviews : [], category: 'drink'},
-                  {title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49',newPrice: 4.99, oldPrice: 1.99, image : require('../assets/snacks6.png'), reviews : [], category: 'snacks'},
-                  {title: 'White Claw Seltzer Flavor No. 3 Variety 12pk 12oz Can 5.0% ABV $22.99',newPrice: 7.99, oldPrice: 1.99, image : require('../assets/alcohol1.png'), reviews : [], category: 'alcohol'},          
-                  
-                ]}
-                color="#00CED1"
-              />
+              text={"Best Grocery Deals"}
+              onPress={dealHandler}
+              onAdd={handleAddToCart}
+              item={[
+                { title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', newPrice: 4.99, oldPrice: 1.99, image: require('../assets/snacks1.png'), reviews: [], category: 'snacks' },
+                { title: 'Kit Kat Candy Bar King Size 3oz', newPrice: 3.69, oldPrice: 1.99, image: require('../assets/snacks3.png'), reviews: [], category: 'snacks' },
+                { title: 'Tiger Eye Iced Coconut Latte 8.5oz', newPrice: 3.79, oldPrice: 1.99, image: require('../assets/drink4.png'), reviews: [], category: 'drink' },
+                { title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', newPrice: 4.99, oldPrice: 1.99, image: require('../assets/snacks6.png'), reviews: [], category: 'snacks' },
+                { title: 'White Claw Seltzer Flavor No. 3 Variety 12pk 12oz Can 5.0% ABV $22.99', newPrice: 7.99, oldPrice: 1.99, image: require('../assets/alcohol1.png'), reviews: [], category: 'alcohol' },
+
+              ]}
+              color="#00CED1"
+            />
             <View style={styles.recommendedView}>
               <Text style={styles.text}>Alcohol</Text>
               <ProductHorizontal
@@ -749,10 +762,10 @@ const timer = useRef()
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {title: 'Stuffed Salmon', oldPrice: 45, image : require('../assets/stuffed_salmon.png'), related: ["Salmon", "Seafood", "Stuffed", "Healthy", "Flavorful", "Protein", "Lunch", "Dinner", "Entrees", "Special occasion", "Crabmeat", "Shrimp", "Vegetables", "Herbs", "Spices"],description: "Salmon fillet generously filled with a flavorful blend of herbs, spices, and your choice of ingredients like crabmeat, shrimp, or vegetables. Baked to perfection, this dish is both decadent and healthy.",reviews : [], category: 'food', nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        
-                  {title: 'Smoked Gouda Mac & Cheese', oldPrice: 6.00, image : require('../assets/mac.png'), reviews : [], category: 'food',related: ["side dish", "mac and cheese", "pasta", "cheese", "smoked Gouda", "creamy", "comfort food", "casserole", "baked", "cheesy", "vegetarian option", "lunch", "dinner", "kid-friendly", "crowd-pleaser"], description: "Creamy and decadent mac and cheese made with smoked Gouda cheese for a rich and flavorful twist. A cheesy comfort food favorite."},
-        
+                  { title: 'Stuffed Salmon', oldPrice: 45, image: require('../assets/stuffed_salmon.png'), related: ["Salmon", "Seafood", "Stuffed", "Healthy", "Flavorful", "Protein", "Lunch", "Dinner", "Entrees", "Special occasion", "Crabmeat", "Shrimp", "Vegetables", "Herbs", "Spices"], description: "Salmon fillet generously filled with a flavorful blend of herbs, spices, and your choice of ingredients like crabmeat, shrimp, or vegetables. Baked to perfection, this dish is both decadent and healthy.", reviews: [], category: 'food', nutrient: 'protein', extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, },
+
+                  { title: 'Smoked Gouda Mac & Cheese', oldPrice: 6.00, image: require('../assets/mac.png'), reviews: [], category: 'food', related: ["side dish", "mac and cheese", "pasta", "cheese", "smoked Gouda", "creamy", "comfort food", "casserole", "baked", "cheesy", "vegetarian option", "lunch", "dinner", "kid-friendly", "crowd-pleaser"], description: "Creamy and decadent mac and cheese made with smoked Gouda cheese for a rich and flavorful twist. A cheesy comfort food favorite." },
+
                 ]}
                 color="#00CED1"
               />
@@ -763,10 +776,10 @@ const timer = useRef()
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {title: 'Oysters', oldPrice: 18, image : require('../assets/oyster.png'), reviews : [], category: 'food', nutrient: 'protein',related: ["appetizer", "seafood", "oysters", "raw", "on the half shell", "mignonette sauce", "cocktail sauce", "horseradish", "lemon wedges", "tabasco sauce", "protein", "aphrodisiac", "luxury", "gourmet", "special occasion", "date night", "seafood platter"],description: "Fresh and flavorful oysters, served on the half shell with your choice of toppings like mignonette sauce, cocktail sauce, or horseradish. A seafood appetizer that's both elegant and delicious.", extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        
-                  {title: 'Grilled Chicken', oldPrice: 30.00, image : require('../assets/chicken.png'), reviews : [], category: 'food', nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true, description: 'Succulent and juicy grilled chicken breasts, seasoned to perfection and cooked over an open flame. Enjoy the smoky flavor and tender texture, perfect for a satisfying and healthy meal.', related: ["grilled", "chicken", "breasts", "healthy", "protein", "barbecue", "poultry", "marinade", "grilled vegetables", "salad", "sandwich", "entree", "main course", "summer cookout"]},
-        
+                  { title: 'Oysters', oldPrice: 18, image: require('../assets/oyster.png'), reviews: [], category: 'food', nutrient: 'protein', related: ["appetizer", "seafood", "oysters", "raw", "on the half shell", "mignonette sauce", "cocktail sauce", "horseradish", "lemon wedges", "tabasco sauce", "protein", "aphrodisiac", "luxury", "gourmet", "special occasion", "date night", "seafood platter"], description: "Fresh and flavorful oysters, served on the half shell with your choice of toppings like mignonette sauce, cocktail sauce, or horseradish. A seafood appetizer that's both elegant and delicious.", extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, },
+
+                  { title: 'Grilled Chicken', oldPrice: 30.00, image: require('../assets/chicken.png'), reviews: [], category: 'food', nutrient: 'protein', extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, description: 'Succulent and juicy grilled chicken breasts, seasoned to perfection and cooked over an open flame. Enjoy the smoky flavor and tender texture, perfect for a satisfying and healthy meal.', related: ["grilled", "chicken", "breasts", "healthy", "protein", "barbecue", "poultry", "marinade", "grilled vegetables", "salad", "sandwich", "entree", "main course", "summer cookout"] },
+
                 ]}
                 color="#F1CEDD"
               />
@@ -785,12 +798,12 @@ const timer = useRef()
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', oldPrice: 3.69, image : require('../assets/snacks1.png'), reviews : [], category: 'snacks'},
-                  {title: 'Hostess Donettes Chocolate Mini Donuts Bag 10.75oz', oldPrice: 3.69, image : require('../assets/snacks2.png'), reviews : [], category: 'snacks'},
-                  {title: 'Kit Kat Candy Bar King Size 3oz', oldPrice: 3.69, image : require('../assets/snacks3.png'), reviews : [], category: 'snacks'},
-                  {title: 'Basically, Sour Rainbow Bites 5oz', oldPrice: 3.69, image : require('../assets/snacks4.png'), reviews : [], category: 'snacks'},
-                  {title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', oldPrice: 3.69, image : require('../assets/snacks6.png'), reviews : [], category: 'snacks'},
-        
+                  { title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', oldPrice: 3.69, image: require('../assets/snacks1.png'), reviews: [], category: 'snacks' },
+                  { title: 'Hostess Donettes Chocolate Mini Donuts Bag 10.75oz', oldPrice: 3.69, image: require('../assets/snacks2.png'), reviews: [], category: 'snacks' },
+                  { title: 'Kit Kat Candy Bar King Size 3oz', oldPrice: 3.69, image: require('../assets/snacks3.png'), reviews: [], category: 'snacks' },
+                  { title: 'Basically, Sour Rainbow Bites 5oz', oldPrice: 3.69, image: require('../assets/snacks4.png'), reviews: [], category: 'snacks' },
+                  { title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', oldPrice: 3.69, image: require('../assets/snacks6.png'), reviews: [], category: 'snacks' },
+
                 ]}
                 color="#D2B48C"
               />
@@ -808,26 +821,26 @@ const timer = useRef()
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {title: 'Grits', oldPrice: 6.00, image : require('../assets/grits.png'), reviews : [], category: 'food',description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"]},
-                  {title: 'Collard Greens', oldPrice: 6.00, image : require('../assets/greens.png'), reviews : [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"]},
-        
-                  {title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"],description : "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image : require('../assets/shrimp.png'), reviews : [], category: 'food'},
-        
+                  { title: 'Grits', oldPrice: 6.00, image: require('../assets/grits.png'), reviews: [], category: 'food', description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"] },
+                  { title: 'Collard Greens', oldPrice: 6.00, image: require('../assets/greens.png'), reviews: [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"] },
+
+                  { title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"], description: "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image: require('../assets/shrimp.png'), reviews: [], category: 'food' },
+
                 ]}
                 color="#98FB98"
               />
             </View>
-            <View style={{marginTop: 40}}>
+            <View style={{ marginTop: 40 }}>
               <Deal
                 text={'Unexpected Pairings'}
                 onPress={dealHandler}
                 onAdd={handleAddToCart}
                 item={[
-                  {title: 'Grits', oldPrice: 6.00, image : require('../assets/grits.png'), reviews : [], category: 'food',description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"]},
-                  {title: 'Collard Greens', oldPrice: 6.00, image : require('../assets/greens.png'), reviews : [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"]},
-        
-                  {title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"],description : "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image : require('../assets/shrimp.png'), reviews : [], category: 'food'},
-        
+                  { title: 'Grits', oldPrice: 6.00, image: require('../assets/grits.png'), reviews: [], category: 'food', description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"] },
+                  { title: 'Collard Greens', oldPrice: 6.00, image: require('../assets/greens.png'), reviews: [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"] },
+
+                  { title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"], description: "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image: require('../assets/shrimp.png'), reviews: [], category: 'food' },
+
                 ]}
                 color="#98AB98"
               />
@@ -847,95 +860,95 @@ const timer = useRef()
               </View>
             </View>
 
-        </ScrollView>
-        <BottomSheet ref={ref}>
-        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
-          <View style={{ marginBottom: 400}}>
-        {pro.addOn && <View style={{gap: 25, paddingTop: 30, marginBottom: 50}}>
-                            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Choose Exotic Flavor'}</Text>
-                                {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
-                            </View>
-                            <Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>{`Choose up to ${2}`}</Text>
-                            {pro.extras.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15}}>
-                                <View>
-                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
-                                </View>
-                                <Pressable onPress={()=>toggleNumberInArray(idx)}>
-                                <MaterialCommunityIcons name={`${selected.indexOf(idx) === - 1 ? "checkbox-blank-outline" : "checkbox-marked"  }`} size={24} color={`${selected.length < 2 || selected.indexOf(idx) !== - 1 ?  'black': 'rgba(0,0,0,0.05)' }`} />
-                                </Pressable>
-                            </View>)}
-
-                        </View>}
-              {pro.options &&<View><View style={{flexDirection: 'row', justifyContent: 'space-between',  borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 15, alignItems: 'center'}}>
-                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Choose One'}</Text>
-                                {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
-                                <View style ={{width: width/3.7, height: '170%'}}>
-                                    <FlexButton onPress = {option >= 0 ? handleUpdate : ()=>{}} background={option == undefined  ? "rgba(0,0,0,0.5)" :  '#283618'}><Text style={{color: 'white', fontWeight: 900,fontSize: 13}}>Add</Text></FlexButton>
-                                </View>
-                                <View style ={{width: width/3.7, height: '170%'}}>
-                                    <FlexButton onPress = {option >= 0 ? handleBuy : ()=>{}} background={option == undefined  ? "rgba(0,0,0,0.5)" :  '#283618'}><Text style={{color: 'white', fontWeight: 900,fontSize: 13}}>Buy now</Text></FlexButton>
-                                </View>
-                            </View>
-                            <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)', width : width/5, alignItems : 'center'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View>
-              {pro.options.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 13,}}>
-                                <View>
-                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
-                                </View>
-                                <Pressable onPress={()=> {setOption(idx)}}>
-                                <Ionicons name={`${idx == option ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="black" />
-                                </Pressable>
-                            </View>)}</View>}
-              {pro.nutrient && pro.nutrient == 'protein' && <View style={{gap: 25, paddingTop: 30}}>
-                            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                                <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{'Pick Your Sides'}</Text>
-                                <View style ={{width: width/4.7, height: '170%'}}>
-                                    <FlexButton onPress = {plus.length == 2 ? handleUpdate : ()=>{}} background={plus.length < 2 ? "rgba(0,0,0,0.5)" :  '#283618'}><Text style={{color: 'white', fontWeight: 900,fontSize: 13}}>Add</Text></FlexButton>
-                                </View>
-                                <View style ={{width: width/3.8, height: '170%'}}>
-                                    <FlexButton onPress = {plus.length == 2 ? handleBuy : ()=>{}} background={plus.length < 2 ? "rgba(0,0,0,0.5)" :  '#283618'}><Text style={{color: 'white', fontWeight: 900,fontSize: 13}}>Buy now</Text></FlexButton>
-                                </View>
-
-                            </View>
-                            <Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>{`Choose ${2}`}</Text>
-                            <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)', width : width/5, alignItems : 'center'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View>
-                            {pro.extras.map((item, idx)=><View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth : 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15}}>
-                                <View>
-                                    <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item[0]}</Text>
-                                    <Text>{item[1] ? `+ $${item[1]}` : ''}</Text>
-                                </View>
-                                {(plus.length < 2 || (plus.length && plus.indexOf(item[0]) !== -1)) && <View>
-                                  <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={()=>{if (plus.length < 2){setFoodDictionary((prev)=>{return {...prev, [item[0]] : foodDictionary[item[0]]+1}});setPlus((prev)=> {const arr = [...prev]; arr.push(item[0]); return arr})}}}  onDecrease={()=>{if (plus.length > 0){setFoodDictionary((prev)=>{return {...prev, [item[0]] : (foodDictionary[item[0]] ?foodDictionary[item[0]] : 1) -1}});setPlus((prev)=>{const arr = [...prev]; const index = prev.indexOf(item[0]); if (index != -1){arr.splice(index, 1)}; return arr}) }}}/>
-                                </View>}
-                            </View>)}
-
-                        </View>}
-                    {pro.instructions && <View
-        style ={{color: 'white', backgroundColor : 'white'}}><TextInput
-        multiline
-        placeholder="Special Instructions?"
-        cursorColor={'#aaa'}
-        numberOfLines={6}
-        clearButtonMode="always"
-        style={{paddingHorizontal: 10}}
-      /></View>
-      }</View>
-        </ScrollView>
-        </BottomSheet>
-       {blink && deliveringOrdersCount > 0 && <TransparentSheet ref={reg}>
-          <LinearGradient  locations={[0.2, 0.7, 0.9, 0.6]} colors={["#4F6B30", "#425928", "#354820", '#283618']} style={{ borderTopLeftRadius: width*3,borderTopRightRadius: width*3, alignItems: 'center', justifyContent: 'start',paddingTop: height/13, height: height, width: width * 2, alignSelf: 'center'}}>{deliveringOrdersCount >= 1 && <Pressable onPress={orderHandler} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-            
-                  <Pressable onPress={()=>{setBlink(false)}} style={{width: width/5.9}} >
-                   <MaterialCommunityIcons name="close" size={35} color="white" />
-                  </Pressable>
-                  <View>
-                    <Text style={{ fontWeight: 900,fontSize: 16, color: 'white', textAlign: 'center'}}>{`You have ${deliveringOrdersCount} ${deliveringOrdersCount > 1 ? 'orders' : "order"} being delivered \nsit tight!!`}</Text>
-                    {/* <View style={{height: 40, width: 124, alignSelf: 'flex-end',}}><FlexButton onPress={} color={'white'}  background={"white"} ><Text style={{fontSize: 12, fontWeight: 900, color: 'black'}}>View Orders</Text></FlexButton></View> */}
+          </ScrollView>
+          <BottomSheet ref={ref}>
+            <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
+              <View style={{ marginBottom: 400 }}>
+                {pro.addOn && <View style={{ gap: 25, paddingTop: 30, marginBottom: 50 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Choose Exotic Flavor'}</Text>
+                    {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
                   </View>
-                   </Pressable>}</LinearGradient>
-         
-        </TransparentSheet>}
-      </View>
+                  <Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>{`Choose up to ${2}`}</Text>
+                  {pro.extras.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15 }}>
+                    <View>
+                      <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item}</Text>
+                    </View>
+                    <Pressable onPress={() => toggleNumberInArray(idx)}>
+                      <MaterialCommunityIcons name={`${selected.indexOf(idx) === - 1 ? "checkbox-blank-outline" : "checkbox-marked"}`} size={24} color={`${selected.length < 2 || selected.indexOf(idx) !== - 1 ? 'black' : 'rgba(0,0,0,0.05)'}`} />
+                    </Pressable>
+                  </View>)}
+
+                </View>}
+                {pro.options && <View><View style={{ flexDirection: 'row', justifyContent: 'space-between', borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 15, alignItems: 'center' }}>
+                  <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Choose One'}</Text>
+                  {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
+                  <View style={{ width: width / 3.7, height: '170%' }}>
+                    <FlexButton onPress={option >= 0 ? handleUpdate : () => { }} background={option == undefined ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Add</Text></FlexButton>
+                  </View>
+                  <View style={{ width: width / 3.7, height: '170%' }}>
+                    <FlexButton onPress={option >= 0 ? handleBuy : () => { }} background={option == undefined ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Buy now</Text></FlexButton>
+                  </View>
+                </View>
+                  <View style={{ padding: 6, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.1)', width: width / 5, alignItems: 'center' }}><Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>Required</Text></View>
+                  {pro.options.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 13, }}>
+                    <View>
+                      <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item}</Text>
+                    </View>
+                    <Pressable onPress={() => { setOption(idx) }}>
+                      <Ionicons name={`${idx == option ? "md-radio-button-on" : "md-radio-button-off"}`} size={24} color="black" />
+                    </Pressable>
+                  </View>)}</View>}
+                {pro.nutrient && pro.nutrient == 'protein' && <View style={{ gap: 25, paddingTop: 30 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Pick Your Sides'}</Text>
+                    <View style={{ width: width / 4.7, height: '170%' }}>
+                      <FlexButton onPress={plus.length == 2 ? handleUpdate : () => { }} background={plus.length < 2 ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Add</Text></FlexButton>
+                    </View>
+                    <View style={{ width: width / 3.8, height: '170%' }}>
+                      <FlexButton onPress={plus.length == 2 ? handleBuy : () => { }} background={plus.length < 2 ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Buy now</Text></FlexButton>
+                    </View>
+
+                  </View>
+                  <Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>{`Choose ${2}`}</Text>
+                  <View style={{ padding: 6, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.1)', width: width / 5, alignItems: 'center' }}><Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>Required</Text></View>
+                  {pro.extras.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15 }}>
+                    <View>
+                      <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item[0]}</Text>
+                      <Text>{item[1] ? `+ $${item[1]}` : ''}</Text>
+                    </View>
+                    {(plus.length < 2 || (plus.length && plus.indexOf(item[0]) !== -1)) && <View>
+                      <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={() => { if (plus.length < 2) { setFoodDictionary((prev) => { return { ...prev, [item[0]]: foodDictionary[item[0]] + 1 } }); setPlus((prev) => { const arr = [...prev]; arr.push(item[0]); return arr }) } }} onDecrease={() => { if (plus.length > 0) { setFoodDictionary((prev) => { return { ...prev, [item[0]]: (foodDictionary[item[0]] ? foodDictionary[item[0]] : 1) - 1 } }); setPlus((prev) => { const arr = [...prev]; const index = prev.indexOf(item[0]); if (index != -1) { arr.splice(index, 1) }; return arr }) } }} />
+                    </View>}
+                  </View>)}
+
+                </View>}
+                {pro.instructions && <View
+                  style={{ color: 'white', backgroundColor: 'white' }}><TextInput
+                    multiline
+                    placeholder="Special Instructions?"
+                    cursorColor={'#aaa'}
+                    numberOfLines={6}
+                    clearButtonMode="always"
+                    style={{ paddingHorizontal: 10 }}
+                  /></View>
+                }</View>
+            </ScrollView>
+          </BottomSheet>
+          {blink && deliveringOrdersCount > 0 && <TransparentSheet ref={reg}>
+            <LinearGradient locations={[0.2, 0.7, 0.9, 0.6]} colors={["#4F6B30", "#425928", "#354820", '#283618']} style={{ borderTopLeftRadius: width * 3, borderTopRightRadius: width * 3, alignItems: 'center', justifyContent: 'start', paddingTop: height / 13, height: height, width: width * 2, alignSelf: 'center' }}>{deliveringOrdersCount >= 1 && <Pressable onPress={orderHandler} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+
+              <Pressable onPress={() => { setBlink(false) }} style={{ width: width / 5.9 }} >
+                <MaterialCommunityIcons name="close" size={35} color="white" />
+              </Pressable>
+              <View>
+                <Text style={{ fontWeight: 900, fontSize: 16, color: 'white', textAlign: 'center' }}>{`You have ${deliveringOrdersCount} ${deliveringOrdersCount > 1 ? 'orders' : "order"} being delivered \nsit tight!!`}</Text>
+                {/* <View style={{height: 40, width: 124, alignSelf: 'flex-end',}}><FlexButton onPress={} color={'white'}  background={"white"} ><Text style={{fontSize: 12, fontWeight: 900, color: 'black'}}>View Orders</Text></FlexButton></View> */}
+              </View>
+            </Pressable>}</LinearGradient>
+
+          </TransparentSheet>}
+        </View>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
