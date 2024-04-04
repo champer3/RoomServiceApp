@@ -40,6 +40,57 @@ import { current } from "@reduxjs/toolkit";
 // const SERVER_URL = 'ws://192.168.179.1:5000';
 const SERVER_URL = 'http://10.0.0.81:5000';
 
+const FadeOutView = (props) => {
+  const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 1
+
+  useEffect(() => {
+    Animated.timing(
+      fadeAnim,
+      {
+        toValue: 0,
+        duration: 0,
+        useNativeDriver: true, // Add this line to improve performance
+      }
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={{
+        ...props.style,
+        opacity: fadeAnim, // Bind opacity to animated value
+      }}
+    >
+      {props.children}
+    </Animated.View>
+  );
+};
+const FadeInView = (props) => {
+  const [fadeAnim] = useState(new Animated.Value(0)); // Initial value for opacity: 0
+
+  useEffect(() => {
+    Animated.timing(
+      fadeAnim,
+      {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true, // Add this line to improve performance
+      }
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={{
+        ...props.style,
+        opacity: fadeAnim, // Bind opacity to animated value
+      }}
+    >
+      {props.children}
+    </Animated.View>
+  );
+};
+
 function Home() {
 
   // const [socket, setSocket] = useState(null);
@@ -502,9 +553,8 @@ const timer = useRef()
               </Pressable>
               <View style={{ marginTop: 0, paddingBottom: 1, height: height/30}}>
               {isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
-        <View style={{ flexDirection: 'row',
-        gap: 34,paddingLeft: 20
-        }}>
+          <FadeInView style={{  flexDirection: 'row',
+        gap: 35,paddingLeft: 17 }}>
         {[
                   { text: "Alcohol", image: require("../assets/Alcohol.png") },
                   { text: "Frozen", image: require("../assets/frozen.png") },
@@ -514,8 +564,23 @@ const timer = useRef()
                   },
                   { text: "Food", image: require("../assets/food.png") },
                   { text: "Snacks", image: require("../assets/snack.png") },
-                ].map(({text, image},index) => <Pressable key={index}><Text style={{fontWeight: "bold", fontSize: 14, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
-        </View>
+                ].map(({text, image},index) => <Pressable key={index}><Text style={{fontWeight: "bold", fontSize: 13, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
+      </FadeInView>
+    </ScrollView>}
+              {!isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
+          <FadeOutView style={{  flexDirection: 'row',
+        gap: 35,paddingLeft: 17 }}>
+        {[
+                  { text: "Alcohol", image: require("../assets/Alcohol.png") },
+                  { text: "Frozen", image: require("../assets/frozen.png") },
+                  {
+                    text: "Ice Cream",
+                    image: require("../assets/icecream.png"),
+                  },
+                  { text: "Food", image: require("../assets/food.png") },
+                  { text: "Snacks", image: require("../assets/snack.png") },
+                ].map(({text, image},index) => <Pressable key={index}><Text style={{fontWeight: "bold", fontSize: 13, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
+      </FadeOutView>
     </ScrollView>}
               </View>
             </SafeAreaView>
@@ -547,7 +612,7 @@ const timer = useRef()
                 show ={!isVisible}
               />
               </View></LinearGradient>}
-            <View style={[styles.horizontalCat, { marginTop: 2 }]}>
+            <View style={[styles.horizontalCat,]}>
               {/* <View style={styles.catHead}>
                 <Text style={styles.text}>Popular Categories</Text>
                 <Pressable onPress={chooseHandler}>
@@ -580,9 +645,9 @@ const timer = useRef()
               />
             </Pressable>
           </ScrollView> */}
-              <ScrollView horizontal={true} style={{ height: 200}}>
+              <ScrollView horizontal={true} style={{}}>
                 <View
-                  style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15, justifyContent: "center", alignItems: "center" }}
+                  style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15}}
                 >
                   <Pressable onPress={dealHandler}>
                     <View style={styles.imageContainer}>
@@ -596,7 +661,7 @@ const timer = useRef()
                     <View style={styles.imageContainer}>
                       <Image
                         style={styles.image}
-                        source={require("../assets/deal2.png")}
+                        source={require("../assets/deal3.png")}
                       />
                     </View>
                   </Pressable>
@@ -604,7 +669,7 @@ const timer = useRef()
                     <View style={styles.imageContainer}>
                       <Image
                         style={styles.image}
-                        source={require("../assets/deal3.png")}
+                        source={require("../assets/deal2.png")}
                       />
                     </View>
                   </Pressable>
@@ -915,15 +980,13 @@ const styles = StyleSheet.create({
     // borderWidth: 1
   },
   image: {
-    resizeMode: "contain",
-    height: height / 2,
-    width: "100%",
+    height: height/6,
+    resizeMode: 'center',
+    width: width-20,
   },
   imageContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: height / 3,
-    width: width / 1.5,
+    marginTop: 20,
+    width: width-20,
   },
   deals: {
     marginVertical: 16,

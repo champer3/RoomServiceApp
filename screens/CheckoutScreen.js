@@ -226,16 +226,17 @@ function CheckoutScreen() {
       dispatch(clearCart({ id: cartItems }));
       setVisible(true);
       console.log("ARE WE HERE????");
-      const paymentMethods = await axios.post(
-        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-methods",
-        null,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json", // adjust the content type based on your API requirements
-          },
-        }
-      );
+      // const paymentMethods = await axios.post(
+      //   "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-methods",
+      //   null,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //       "Content-Type": "application/json", // adjust the content type based on your API requirements
+      //     },
+      //   }
+      // );
+      console.log('Moving')
       tryCreateOrder();
       // Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");
