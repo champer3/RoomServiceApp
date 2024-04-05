@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Category from "./screens/category/Category";
 import CategorySearch from "./screens/category/CategorySearch";
+import registerNNPushToken from 'native-notify';
 import Home from "./screens/Home";
 import { Octicons } from "@expo/vector-icons";
 import ProductDisplay from "./screens/ProductDisplay";

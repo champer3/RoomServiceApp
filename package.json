@@ -50,6 +50,7 @@
     "framer-motion": "^10.16.12",
     "is-path-in-cwd": "^4.0.0",
     "motify": "^1.1.1",
+    "native-notify": "^4.0.0",
     "react": "18.2.0",
     "react-bootstrap": "^2.9.1",
     "react-dom": "18.2.0",
@@ -75,7 +76,10 @@
     "react-redux": "^9.0.4",
     "session": "^0.1.0",
     "socket.io-client": "^4.7.5",
-    "webpack-config": "^7.5.0"
+    "webpack-config": "^7.5.0",
+    "expo-device": "~5.4.0",
+    "expo-notifications": "~0.20.1",
+    "expo-constants": "~14.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
