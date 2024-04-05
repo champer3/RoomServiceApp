@@ -10,6 +10,7 @@ import {
   Button,
   Animated
 } from "react-native";
+
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -36,10 +37,13 @@ import FlexButton from "../components/Buttons/FlexButton";
 import io from 'socket.io-client';
 import TransparentSheet from "../components/Modals/TransparentSheet.";
 import { current } from "@reduxjs/toolkit";
+import Config from 'react-native-config';
 
 // const SERVER_URL = 'ws://192.168.179.1:3000';
 // const SERVER_URL = 'http://10.0.0.173:3000';
-const SERVER_URL = 'https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/';
+const SERVER_URL="https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
+
+
 
 const FadeOutView = (props) => {
   const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 1
@@ -95,6 +99,8 @@ const FadeInView = (props) => {
 function Home() {
 
   const [socket, setSocket] = useState(null);
+  const address = useSelector((state) => state.profileData.profile)
+  console.log(address)
 
   useEffect(() => {
     const initializeSocket = async () => {
@@ -609,7 +615,7 @@ function Home() {
               // colors={["#19171A", "#2F5A8C", "#2873CC"]}
               colors={['#283618', '#283618']}
             // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
-            ><View style={{ marginBottom: 5 }}>
+            ><View style={{marginBottom: 5  }}>
                 <ItemCategory
                   items={[
                     { text: "Alcohol", image: require("../assets/Alcohol.png") },
@@ -662,7 +668,7 @@ function Home() {
                 <View
                   style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15}}
                 >
-                  <Pressable onPress={dealHandler}>
+                  <Pressable >
                     <View style={styles.imageContainer}>
                       <Image
                         style={styles.image}
@@ -670,7 +676,7 @@ function Home() {
                       />
                     </View>
                   </Pressable>
-                  <Pressable onPress={dealHandler}>
+                  <Pressable>
                     <View style={styles.imageContainer}>
                       <Image
                         style={styles.image}
@@ -678,7 +684,7 @@ function Home() {
                       />
                     </View>
                   </Pressable>
-                  <Pressable onPress={dealHandler}>
+                  <Pressable>
                     <View style={styles.imageContainer}>
                       <Image
                         style={styles.image}
@@ -686,7 +692,7 @@ function Home() {
                       />
                     </View>
                   </Pressable>
-                  <Pressable onPress={dealHandler}>
+                  <Pressable >
                     <View style={styles.imageContainer}>
                       <Image
                         style={styles.image}
@@ -694,7 +700,7 @@ function Home() {
                       />
                     </View>
                   </Pressable>
-                  <Pressable onPress={dealHandler}>
+                  <Pressable>
                     <View style={styles.imageContainer}>
                       <Image
                         style={styles.image}
@@ -706,7 +712,7 @@ function Home() {
               </ScrollView>
             </View>
 
-            <View style={styles.recommendedView}>
+            <View style={[styles.recommendedView, {marginTop: 3,}]}>
               <Text style={styles.text}>Recommended Foods</Text>
               <ProductHorizontal
                 items={categoryObject["food"].slice(0, 6)}
@@ -998,7 +1004,7 @@ const styles = StyleSheet.create({
     width: width-20,
   },
   imageContainer: {
-    marginTop: 20,
+    marginTop: 0,
     width: width-20,
   },
   deals: {

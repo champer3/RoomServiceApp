@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 function AddPin() {
-  const [otp, setOtp] = useState([1,2,3,4,5,6])
+  const [otp, setOtp] = useState('')
   const route = useRoute()
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -61,6 +61,7 @@ function AddPin() {
     lastName: form.secondName,
     phoneNumber,
     email: form.email,
+    address: []
   };
   const createAccount = async () => {
     try {
@@ -117,18 +118,40 @@ function AddPin() {
       console.error("Error saving token:", error);
     }
   };
+  const saveProfileToAsyncStorage = async () => {
+    try {
+      await AsyncStorage.setItem("profile", JSON.stringify(postData));
+      console.log("Profile saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
+  };
   function nextHandler(){
     navigation.navigate('AddNumber')
   }
   const navigation = useNavigation()
   async function pressHandler (){
     setIsLoading(true)
-    const verifyResponse = 'approved'
+    let verifyResponse = ""
+    try {verifyResponse = await verifyNumber()}
+    catch (error) {console.error("Error:", error);}
     if(verifyResponse === "approved"){
       handleUpdate();
-      await createAccount();
+      try{
+      await createAccount();} catch(error) {
+        console.error("Error:", error);
+      }
+      try{
+        await saveTokenToAsyncStorage();} catch(error) {
+        console.error("Error:", error);
+      }
+      try{
+        await saveProfileToAsyncStorage();} catch(error) {
+        console.error("Error:", error);
+      }
       // Call the function to save the token
-      await saveTokenToAsyncStorage();
+      
+     
       setTimeout(() => {
         navigation.replace('Loader'); 
         
@@ -185,9 +208,8 @@ function AddPin() {
         {!keyboardActive && <Info text="Enter the six-digit code that was sent to the mobile number you previously entered" />}
       </View>
       </View>
-      <View style={{ justifyContent: 'flex-end', flex: 1 }}>
       <View style={styles.buttonContainer}>
-        <Button onPress={pressHandler}>
+        <Button onPress={otp.length == 6 ? pressHandler: ()=>{}} color={otp.length == 6 ? '' : '#aaa'}>
           <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
           <Image
             style={styles.vector}
@@ -195,7 +217,6 @@ function AddPin() {
             />
         </Button>
       </View>
-            </View>
             </Pressable>}
           </KeyboardAvoidingView>
   );
@@ -227,6 +248,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 55,
     marginBottom: 25,
+    marginTop: 38,
     alignSelf: 'flex-end'
   },
   vector: {

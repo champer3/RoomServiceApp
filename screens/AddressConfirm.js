@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView } from "react-native";
+import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView, ActivityIndicator } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,10 +18,12 @@ import { Fontisto } from '@expo/vector-icons';
 import Address from "../components/Address";
 import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
 function AddressConfirm() {
   const data = useSelector((state) => state.profileData.profile)
+  const orders = useSelector((state) => state.cartItems.order)
   const address = [...data.address]
   const dispatch = useDispatch();
   const navigation = useNavigation()
@@ -34,7 +36,10 @@ function AddressConfirm() {
   function onPress(){
     navigation.navigate('Address')
   }
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+
   function makeDefault(id){
+    setIsLoading(true)
     const newData = { ...data, ['address'] : [{...data.address[id], ['id']: 0}] };
     var j = 1
     for (let i = 0; i < data.address.length; i++) {
@@ -46,11 +51,29 @@ function AddressConfirm() {
       
     }
     dispatch(updateProfile({id : newData}))
-    navigation.goBack()
+    setTimeout(async ()=>{
+      try{
+        await AsyncStorage.removeItem('essential')
+      } catch(error){
+        console.error('Error deleting item:', error);
+      }
+      try {
+        await AsyncStorage.setItem("essential", JSON.stringify({address: newData.address, orders:  orders}));
+        console.log("Essential saved successfully.");
+      } catch (error) {
+        console.error("Error saving token:", error);
+      }
+      setIsLoading(false)
+      navigation.goBack()}, 500)
+    
   }
   return (
     <View style={{flex: 1}}>
-        <View >
+        {isLoading ? (
+        // Render loading indicator while loading
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
+      ) : (<><View >
         
         <ScrollView >
         
@@ -73,7 +96,7 @@ function AddressConfirm() {
             
                 
     
-        </View>
+        </View></>)}
 
     </View>
   );

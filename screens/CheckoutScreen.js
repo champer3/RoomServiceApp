@@ -6,9 +6,10 @@ import {
   Alert,
   Dimensions,
   TextInput,
+  ActivityIndicator
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FlexButton from "../components/Buttons/FlexButton";
 import ProductAction from "../components/Product/ProductAction";
@@ -43,6 +44,7 @@ const { width, height } = Dimensions.get("window");
 
 function CheckoutScreen() {
   const [visible, setVisible] = useState(false);
+  
   const orders = useSelector((state) => state.cartItems.order);
   console.log(orders);
   const mode = [
@@ -125,12 +127,13 @@ function CheckoutScreen() {
       if (storedToken !== null) {
         return storedToken;
       } else {
-        console.log("Token not found in AsyncStorage.");
+        navigation.navigate('Account')
       }
     } catch (error) {
       console.error("Error retrieving token:", error);
     }
   };
+  useEffect(()=>{retrieveTokenFromAsyncStorage()}, [])
   const tryCreateOrder = async () => {
     try {
       console.log("DID WE TRY TO CREATE AN ORDERRRR?????")
@@ -175,8 +178,10 @@ function CheckoutScreen() {
     return today.toString();
   }
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+
   const checkOut = async () => {
-    const token = await retrieveTokenFromAsyncStorage();
+    try {const token = await retrieveTokenFromAsyncStorage();
     console.log("This is the token I recieved: ", token);
     const response = await axios.post(
       "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/checkout-session",
@@ -189,9 +194,7 @@ function CheckoutScreen() {
           // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
         },
       }
-    );
-    console.log("got here");
-    console.log(response.data);
+    ); 
     const initPayment = await initPaymentSheet({
       merchantDisplayName: "RoomService",
       paymentIntentClientSecret: response.data.clientSecret,
@@ -200,12 +203,14 @@ function CheckoutScreen() {
       // defaultBillingDetails: {
       //   name: 'Jane Doe',
       // }
-    });
-
+    });} catch(error) {console.error("Error saving token:", error);}
+    setIsLoading(true)
     const { error } = await presentPaymentSheet();
+    
     if (error) {
-      Alert.alert(`Error code: ${error.code}`, error.message);
+      setIsLoading(false)
     } else {
+      
       const row = [...cartItems];
       date = getTodaysDate();
 
@@ -225,7 +230,10 @@ function CheckoutScreen() {
         })
       );
       dispatch(clearCart({ id: cartItems }));
-      setVisible(true);
+   
+        setVisible(true);
+        setIsLoading(false)
+      
       console.log("ARE WE HERE????");
       // const paymentMethods = await axios.post(
       //   "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-methods",
@@ -397,7 +405,11 @@ function CheckoutScreen() {
   const newList = addQuantityToObjects(cartItems);
   return (
     <GestureHandlerRootView style={{ flex: 1, paddingTop: 20 }}>
-      <ScrollView
+       {isLoading ? (
+        // Render loading indicator while loading
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
+      ) : (<><ScrollView
         onTouchStart={() => ref2?.current?.scrollTo(0)}
         style={{ marginBottom: "19%" }}
       >
@@ -953,7 +965,7 @@ function CheckoutScreen() {
         >
           <OrderSuccess onPress={press} onMove={move} />
         </Pressable>
-      )}
+      )}</>)}
     </GestureHandlerRootView>
   );
 }

@@ -55,7 +55,7 @@ const FadeInView = (props) => {
   );
 };
 
-function Item({ text, image , onPress, color, show}) {
+function Item({ text, image , onPress, color, show = true}) {
 
 const navigation = useNavigation()
   function pressHandler (){

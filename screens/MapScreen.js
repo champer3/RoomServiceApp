@@ -3,7 +3,8 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
   Button,
   Keyboard,
   KeyboardAvoidingView,
-  Pressable} from "react-native";
+  Pressable,
+  ActivityIndicator} from "react-native";
 import MapView from "react-native-maps";
 import * as Location from 'expo-location';
 import { Marker } from "react-native-maps";
@@ -23,11 +24,13 @@ import { useRoute } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
+import AsyncStorage from "@react-native-async-storage/async-storage";
   
 
 export default function MapScreen() {
     const [location, setLocation] = useState(null);
     const route = useRoute()
+    const orders = useSelector((state) => state.cartItems.order)
     const navigation = useNavigation()
     const dispatch = useDispatch();
     const [results, setResults] = useState()
@@ -84,7 +87,10 @@ export default function MapScreen() {
     setPosition({latitude: lat, longitude: lng})
     handleLocation(lat,lng)
   }
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+
   async function validateAddress(){
+    setIsLoading(true)
     let locationT = await getPosition(form.address);
     if (locationT.lat){
       setPosition({latitude: locationT.lat, longitude: locationT.lng})
@@ -104,12 +110,26 @@ export default function MapScreen() {
       }
       // Return the new data object
       dispatch(updateProfile({id : newData}))
+      let newAddress = newData
       if (active){
         setActive(false)
-        makeDefault(form.id)
+        newAddress = makeDefault(form.id)
       }
-    
-        navigation.navigate('Address')
+
+    setTimeout(async ()=>{
+      try{
+        await AsyncStorage.removeItem('essential')
+      } catch(error){
+        console.error('Error deleting item:', error);
+      }
+      try {
+        await AsyncStorage.setItem("essential", JSON.stringify({address: newAddress.address, orders:  orders}));
+        console.log("Essential saved successfully.");
+      } catch (error) {
+        console.error("Error saving token:", error);
+      }
+      setIsLoading(false)
+      navigation.navigate('Address')}, 500)
   }
     else{
       return false
@@ -153,6 +173,7 @@ export default function MapScreen() {
       
     }
     dispatch(updateProfile({id : newData}))
+    return newData
   }
   function deleteAndUpdate() {
     // Delete the object at the specified index
@@ -198,7 +219,7 @@ export default function MapScreen() {
   //   }
 
   
-  let text = <Text>Waiting.............</Text>
+  let text = <ActivityIndicator size="large" color="#0000ff" />
   SplashScreen.preventAutoHideAsync();
   if (errorMsg) {
     text = errorMsg;
@@ -229,7 +250,11 @@ export default function MapScreen() {
   return (
     <View
     style={{flex: 1}}>
-      <View style={{flex: 1}}>
+       {isLoading ? (
+        // Render loading indicator while loading
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
+      ) : (<><View style={{flex: 1}}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         
       <View style={styles.container}>
@@ -265,7 +290,7 @@ export default function MapScreen() {
         </BottomSheet>
       </View>
     </GestureHandlerRootView>
-    </View>
+    </View></>)}
         </View>
         
   );
@@ -275,13 +300,12 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#111',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
   },
   map: {
     ...StyleSheet.absoluteFillObject,
-    color: 'black',
     flex: 1,
   },
   button: {

@@ -5,7 +5,8 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
     KeyboardAvoidingView,
     Pressable,
     FlatList,
-    ScrollView} from "react-native";
+    ScrollView,
+    ActivityIndicator} from "react-native";
   import MapView from "react-native-maps";
   import * as Location from 'expo-location';
   import { Marker } from "react-native-maps";
@@ -22,6 +23,7 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
   import FlexButton from "../components/Buttons/FlexButton";
   import { Entypo } from '@expo/vector-icons';
   import { useNavigation } from "@react-navigation/native";
+  import AsyncStorage from "@react-native-async-storage/async-storage";
   
 import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
@@ -29,6 +31,7 @@ import { updateProfile } from "../Data/profile";
   
   export default function AddAddressScreen() {
       const [location, setLocation] = useState(null);
+      const orders = useSelector((state) => state.cartItems.order)
     const [errorMsg, setErrorMsg] = useState(null);
     const dispatch = useDispatch();
     const [results, setResults] = useState()
@@ -111,7 +114,10 @@ import { updateProfile } from "../Data/profile";
     const m = await searchAddress(value)
     setResults(m)
   }
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+
   async function validateAddress(){
+    setIsLoading(true)
     let locationT = await getPosition(form.address);
     if (locationT.lat){
       setPosition({latitude: locationT.lat, longitude: locationT.lng})
@@ -131,6 +137,20 @@ import { updateProfile } from "../Data/profile";
     else {newData = {...data, ['address'] : [...data.address, {...form, ['address']: m}]} 
   }
   dispatch(updateProfile({id : newData}))
+  
+  setTimeout(async ()=>{
+      try{
+        await AsyncStorage.removeItem('essential')
+      } catch(error){
+        console.error('Error deleting item:', error);
+      }
+      try {
+        await AsyncStorage.setItem("essential", JSON.stringify({address: newData.address, orders:  orders}));
+        console.log("Essential saved successfully.");
+      } catch (error) {
+        console.error("Error saving token:", error);
+      }
+      setIsLoading(false)
       navigation.navigate('Address')
       setForm({
           id : address.length,
@@ -138,7 +158,7 @@ import { updateProfile } from "../Data/profile";
           nameNo: '',
           address: '',
           number: '',
-        }) 
+        }) }, 500)
   }
     else{
       return false
@@ -148,7 +168,9 @@ import { updateProfile } from "../Data/profile";
    
     async function handleLocation(lat, lng){
         
-          handleFormChange('address',await getAddress(lat, lng))
+         try{ handleFormChange('address',await getAddress(lat, lng))} catch (error){
+          console.error("Error saving :", error);
+         }
         
       }
     async function findLocation(){
@@ -160,7 +182,7 @@ import { updateProfile } from "../Data/profile";
         }
       }
     
-    let text = <Text>Waiting.............</Text>
+    let text = <ActivityIndicator size="large" color="#0000ff" />
     SplashScreen.preventAutoHideAsync();
     if (errorMsg) {
       text = errorMsg;
@@ -191,7 +213,11 @@ import { updateProfile } from "../Data/profile";
     return (
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}>
-        <View style={{flex: 1}}>
+      {isLoading ? (
+        // Render loading indicator while loading
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
+      ) : (<><View style={{flex: 1}}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           
         <View style={styles.container}>
@@ -229,7 +255,7 @@ import { updateProfile } from "../Data/profile";
           </BottomSheet>
         </View>
       </GestureHandlerRootView>
-      </View>
+      </View></>)}
       
           </KeyboardAvoidingView>
           
@@ -240,7 +266,7 @@ import { updateProfile } from "../Data/profile";
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#111',
+      backgroundColor: 'white',
       alignItems: 'center',
       justifyContent: 'center',
     },

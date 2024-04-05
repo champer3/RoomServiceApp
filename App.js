@@ -7,6 +7,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Category from "./screens/category/Category";
 import CategorySearch from "./screens/category/CategorySearch";
 import Home from "./screens/Home";
+import Config from 'react-native-config';
 import { Octicons } from "@expo/vector-icons";
 import ProductDisplay from "./screens/ProductDisplay";
 import DealsScreen from "./screens/DealsScreen";
@@ -17,6 +18,17 @@ import OnBoard2 from "./screens/onBoarding/OnBoard2";
 import OnBoard3 from "./screens/onBoarding/onBoard3";
 import { Provider } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  clearCart,
+  completeOrder,
+  addToCart,
+  removeFromCart,
+  deleteFromCart,
+  addOptions,
+  deleteItem,
+  updateCart,
+} from "./Data/cart";
+import { useSelector, useDispatch } from "react-redux";
 import EmailLogin from "./screens/EmailLogin";
 import StartScreen from "./screens/StartScreen";
 import EmailSignUp from "./screens/EmailSignUp";
@@ -28,6 +40,7 @@ import ReviewScreen from "./screens/ReviewScreen";
 import MapScreen from "./screens/MapScreen";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AddPin from "./screens/AddPin";
+import { useEffect, useState, useRef } from "react";
 import CategoryAll from "./screens/category/CategoryAll";
 import ProfileDisplay from "./screens/ProfileDisplay";
 import OrderDisplay from "./screens/OrderDisplay";
@@ -40,9 +53,14 @@ import AddressConfirm from "./screens/AddressConfirm";
 import CheckoutScreen from "./screens/CheckoutScreen";
 import AddAddressScreen from "./screens/AddAddressScreen";
 import { store } from "./Data/Store";
+import { cart } from "./Data/cart";
+import { profile } from "./Data/profile";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import Delivery from "./screens/Delivery";
 import LoaderScreen from "./screens/LoaderScreen";
+import LoadScreen from "./screens/LoadScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import io from 'socket.io-client';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -247,21 +265,25 @@ function HomeTabs() {
   );
 }
 
-const STRIPE_KEY =
-  "pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV";
 
 export default function App() {
+  
   return (
     <Provider store={store}>
-      <StripeProvider publishableKey={STRIPE_KEY}>
+      <StripeProvider publishableKey={"pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"}>
         <NavigationContainer>
           <StatusBar style="light" />
           <Stack.Navigator>
-            {/* <Stack.Screen
+          <Stack.Screen
+              name="Begin"
+              component={LoadScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
               name="OnBoarding"
               component={OnBoarding}
               options={{ headerShown: false }}
-            /> */}
+            />
             <Stack.Screen
               name="Authentication"
               component={Authentication}

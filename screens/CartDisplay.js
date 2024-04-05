@@ -79,6 +79,18 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
     ref?.current?.scrollTo(-570);}else{
     dispatch(addToCart({ id: product }));}
   }
+  function handleAddCart(product) {
+    setPro(product)
+    if (product.extras){
+      setExtra(product.extras)
+      setFoodDictionary(createFoodDictionary(product.extras))
+  
+  }
+  if (product.extras || product.options ){
+    ref2?.current?.scrollTo(0)
+    ref?.current?.scrollTo(-570);}else{
+    dispatch(addToCart({ id: product }));}
+  }
   function handleRemoveFromCart(product){
     dispatch(removeFromCart({id : product}))
   }
@@ -279,26 +291,14 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
                     }}>Have a coupon code?</Text>
             <Input text={'Enter Coupon'} buttonText={'Apply code'}/>
         </View></>}
-        <View style={{paddingHorizontal: '5%', paddingVertical: '10%'}}>
-        <Deal text={"Best Grocery Deals!"} onPress={dealHandler} item={[
-    {
-      title: "Woodstock Organic Frozen Broccoli Florets 10oz",
-      oldPrice: 4.99,
-      newPrice: "10.00",
-      image: require("../assets/cr3.png"),
-    },
-    {
-      title: "Woodstock Frozen Organic Mixed Berries 10oz",
-      oldPrice: 4.99,
-      newPrice: "10.00",
-      image: require("../assets/cr2.png"),
-    },
-    {
-      title: "Sambazon Original Blend Smoothie Superfruit Pack",
-      oldPrice: 4.99,
-      newPrice: '10.00',
-      image: require("../assets/cr1.png"),
-    }
+        <View style={{paddingHorizontal: '1%', paddingVertical: '10%'}}>
+        <Deal text={"Best Grocery Deals!"} onPress={dealHandler} 
+        onAdd={handleAddCart}
+        item={[
+  { title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', newPrice: 4.99, oldPrice: 1.99, image: require('../assets/snacks1.png'), reviews: [], category: 'snacks' },
+  { title: 'Kit Kat Candy Bar King Size 3oz', newPrice: 3.69, oldPrice: 1.99, image: require('../assets/snacks3.png'), reviews: [], category: 'snacks' },
+  { title: 'Tiger Eye Iced Coconut Latte 8.5oz', newPrice: 3.79, oldPrice: 1.99, image: require('../assets/drink4.png'), reviews: [], category: 'drink' },
+  
   ]} color = '#039F03' />
         </View>
         </ScrollView>

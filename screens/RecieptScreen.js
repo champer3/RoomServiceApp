@@ -447,13 +447,10 @@ const selectPrinter = async () => {
         </ScrollView>
         </View>
         
-        <View style={{flex: 1, width: '100%', height: '16%', paddingHorizontal: '5%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
+        <View style={{flex: 1, width: '100%', height: '10%', paddingHorizontal: '5%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
             
-                <View style={[{height: '45%'}]}>
+                <View style={[{height: '85%'}]}>
                     <FlexButton onPress={printToFile} background={'#283618'}><FontAwesome name="send" size={24} color="white" /><Text style={{color: 'white', fontSize: 18}}> Share receipt</Text></FlexButton>
-                </View>
-                <View style={[{height: '45%'}]}>
-                    <FlexButton onPress={handleClearCart} color={'#B22334'}><MaterialCommunityIcons name="cancel" size={24} color="#B22334" /><Text style={{fontSize: 18, color: '#B22334'}}>Cancel Order</Text></FlexButton>
                 </View>
             
                 

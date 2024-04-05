@@ -21,7 +21,7 @@ function AddressDisplay() {
         <ScrollView style={{paddingBottom: '50%' }}>
         
         <View style={styles.recommendedView}>
-           {address.length > 0 && address.map(({name, address, nameNo, id, number}, idx) => <View  key={idx}><Pressable onPress={()=>pressHandler({name, address, nameNo, id, number})} ><AddressEditable address={address} title={name} /></Pressable></View>)}
+           {address.length > 0 && address.map(({name, address, nameNo, id, number}, idx) => <View  key={idx}><AddressEditable onPress={()=>pressHandler({name, address, nameNo, id, number})} address={address} title={name} /></View>)}
            {!address.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>You currently have no saved address, add one to ease your order delivery.</Text></View>}
            <View style={[{height: 75}]}>
                 <FlexButton onPress={()=> {addHandler()}}><Text style={{fontSize: 18}}>Add new address</Text></FlexButton>

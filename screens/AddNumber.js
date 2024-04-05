@@ -81,6 +81,7 @@ function AddNumber() {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
   async function handleSubmit() {
+    
     if (form && form.number && form.number.length == 14) {
       try {
         console.log(phoneNumber)
@@ -165,8 +166,6 @@ function AddNumber() {
             )} */}
           </View>
           </View>
-          
-          <View style={{ justifyContent: 'flex-end', flex: 1 }}>
             <View style={styles.buttonContainer}>
               <Button onPress={handleSubmit} color={(form && form.number && form.number.length == 14) ? '' : '#aaa'}>
                 <Text style={{ fontSize: 16, color: "white" }}>Send Code </Text>
@@ -176,7 +175,6 @@ function AddNumber() {
                 />
               </Button>
             </View>
-          </View>
           </Pressable>
           </KeyboardAvoidingView>
   );
@@ -209,6 +207,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 50,
     marginBottom: 25,
+    marginTop: 58,
     alignSelf: 'flex-end'
   },
   vector: {

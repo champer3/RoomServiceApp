@@ -4,23 +4,43 @@ import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { useNavigation } from "@react-navigation/native";
 import * as WebBrowser from "expo-web-browser"
+import { useSelector, useDispatch } from "react-redux";
+import { updateProfile } from "../Data/profile";
 import  * as Google from "expo-auth-session/providers/google"
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
 function LoaderScreen() {
+  const dispatch = useDispatch();
   const navigation = useNavigation()
-
-  useEffect(() => {
-    // Simulate loading process
-    setTimeout(() => {
-        navigation.replace('HomeTabs');
-      setIsLoading(false); // Set loading status to false after some time (simulating app loading)
-    }, 1000); // Change the timeout value as per your requirement
-  }, []);
-  const [isLoading, setIsLoading] = useState(true); // State variable to track loading status
-
-  
+  useEffect(()=>{setTimeout(()=>{retrieveNewFromAsyncStorage()}, 3000) },[])
+ const retrieveTokenFromAsyncStorage = async () => {
+  try {
+    let profile = await AsyncStorage.getItem("profile");
+    let storedToken = await AsyncStorage.getItem("essential");
+    storedToken = JSON.parse(storedToken)
+    if (profile) {
+      profile = JSON.parse(profile)
+      console.log(profile, storedToken)
+      dispatch(updateProfile({ id: {firstName: profile.firstName, lastName: profile.lastName,phoneNumber : profile.phoneNumber, email: profile.email, address: storedToken.address}}));
+      navigation.replace('HomeTabs')
+    } else{navigation.replace('HomeTabs')} } catch (error) {
+      console.error("Error retrieving token:", error);
+    }
+  };
+  const retrieveNewFromAsyncStorage = async () => {
+    try {
+      let storedToken = await AsyncStorage.getItem("essential");
+      storedToken = JSON.parse(storedToken)
+      if (storedToken == null) {
+        navigation.replace('OnBoarding')
+      } else {
+        retrieveTokenFromAsyncStorage()
+      }
+    } catch (error) {
+      console.error("Error retrieving token:", error);
+    }
+  };
   return (
     <View style={{flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.05)'}}><Image style={styles.image} source={require('../assets/Logo.png')}/></View> 
   );

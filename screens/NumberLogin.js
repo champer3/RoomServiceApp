@@ -36,8 +36,11 @@ function NumberLogin() {
   console.log(number);
   const navigation = useNavigation();
   async function pressHandler() {
-    console.log(phoneNumber)
-    const response = await verifyNumber();
+    let response =""
+    try {
+    response = await verifyNumber();}
+    catch (error){
+    }
     if (response) {
       navigation.navigate("PinLogin", { phoneNumber });
     } else {
@@ -140,7 +143,7 @@ function NumberLogin() {
                 />
               </Button>
             </View>
-            <View>
+            {/* <View>
               <Pressable onPress={emailHandler}>
                 <Text
                   style={{
@@ -155,7 +158,7 @@ function NumberLogin() {
                   Login with email and password
                 </Text>
               </Pressable>
-            </View>
+            </View> */}
           </View>
           <View style={styles.downView}>
             {/* <View style={styles.threeContainer}>
@@ -218,7 +221,7 @@ const styles = StyleSheet.create({
   image: {
   },
   buttonContainer: {
-    height: 65,
+    height: 55,
     marginVertical: 15,
   },
   vector: {
@@ -255,6 +258,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   downView: {
+    marginTop: 22,
     justifyContent: "flex-end",
   },
 });

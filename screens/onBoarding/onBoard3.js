@@ -10,14 +10,21 @@ import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import { useState } from "react";
 const { width, height } = Dimensions.get("window");
 
 function OnBoard3() {
   const navigation = useNavigation()
-  function pressHandler (){
+  async function pressHandler (){
     setIsLoading(true)
+    try {
+      await AsyncStorage.setItem("essential", JSON.stringify({address: [], orders:  [],}));
+      console.log("Essential saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
     setTimeout(() => {
       navigation.replace('Authentication')
       setTimeout(()=>{setIsLoading(false)}, 200)

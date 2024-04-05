@@ -10,7 +10,6 @@ function PhoneIcon(){
     <Image style={{borderRadius: 4, resizeMode: 'cover',width: 30, height: 20, }} source={require('../assets/dsBuffer.bmp1.png')}/>
     </View>
     <View style = {{flexDirection: "row", alignItems:"center"}}>
-    <Text>+1</Text>
     {/* <Ionicons name="chevron-down-outline" size={24} color="#aaa" /> */}
     </View>
     </View>

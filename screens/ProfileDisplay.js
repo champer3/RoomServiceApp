@@ -135,14 +135,9 @@ function ProfileDisplay() {
             <View
               style={{ backgroundColor: "rgba(0,0,0,0.05)", height: 0.75 }}
             ></View>
-            <Content
-              title={"Password"}
-              info={"Change Account Password"}
-              onPress={() => onPress("password")}
-            />
           </View>
         </ScrollView>
-        <BottomSheet ref={ref}>
+        {/* <BottomSheet ref={ref}>
           <View
             style={{
               flex: 1,
@@ -175,10 +170,30 @@ function ProfileDisplay() {
                   icon={<Ionicons name="person" size={24} color={"#aaa"} />}
                   textInputConfig={{
                     cursorColor: "#aaa",
-                    value: form.secondName,
-                    onChangeText: handleFormChange.bind(this, "secondName"),
+                    value: form.lastName,
+                    onChangeText: handleFormChange.bind(this, "lastName"),
                   }}
                 />
+                  <View
+              style={[
+                styles.recommendedView,
+                { height: "20%", paddingTop: "25%" },
+              ]}
+            >
+                 {!(form.lastName.length > 0 && form.firstName.length > 0) && (
+              <Info
+                text={`${'Provide your first and last name'}                                            `}
+              />
+            )}
+              <FlexButton
+                onPress={form.lastName.length > 0 && form.firstName.length > 0 ? handleSubmit : ()=>{} }
+                background={
+                  !(form.lastName.length > 0 && form.firstName.length > 0) ? "rgba(0,0,0,0.5)" : "#283618"
+                }
+              >
+                <Text style={{ color: "white", fontSize: 18 }}>Save</Text>
+              </FlexButton>
+            </View>
               </>
             )}
             {text == "email" && (
@@ -200,6 +215,27 @@ function ProfileDisplay() {
                     onChangeText: handleFormChange.bind(this, "email"),
                   }}
                 />
+                 {warning && text == "email" && (
+              <Info
+                text={`${warning}                                            `}
+              />
+            )}
+              <View
+              style={[
+                styles.recommendedView,
+                { height: "20%", paddingTop: "25%" },
+              ]}
+            >
+              <FlexButton
+                onPress={text == 'language' ? ()=>{} : handleSubmit}
+                background={
+                  text == 'language' ? '"rgba(0,0,0,0.5)"' :
+                  (warning && text == "email" ? "rgba(0,0,0,0.5)" : "#283618")
+                }
+              >
+                <Text style={{ color: "white", fontSize: 18 }}>Save</Text>
+              </FlexButton>
+            </View>
               </>
             )}
             {text == "number" && (
@@ -219,8 +255,8 @@ function ProfileDisplay() {
                   length={14}
                   textInputConfig={{
                     cursorColor: "#aaa",
-                    value: form.number,
-                    onChangeText: handleFormChange.bind(this, "number"),
+                    value: form.phoneNumber,
+                    onChangeText: handleFormChange.bind(this, "phoneNumber"),
                   }}
                 />
               </>
@@ -258,39 +294,8 @@ function ProfileDisplay() {
                 />
               </>
             )}
-            {text == "password" && (
-              <>
-                <View
-                  style={{
-                    justifyContent: "space-between",
-                    flexDirection: "row",
-                  }}
-                >
-                  <Text style={{ fontWeight: "bold" }}>Your Password</Text>
-                </View>
-                <Input
-                  text={"Old Password"}
-                  icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
-                />
-                <Input
-                  text={"New Password"}
-                  type="password"
-                  secured={true}
-                  icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
-                />
-                <Input
-                  text={"Confirm Password"}
-                  type="password"
-                  secured={true}
-                  icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
-                />
-              </>
-            )}
-            {warning && text == "email" && (
-              <Info
-                text={`${warning}                                            `}
-              />
-            )}
+            
+           
             <View
               style={[
                 styles.recommendedView,
@@ -298,16 +303,17 @@ function ProfileDisplay() {
               ]}
             >
               <FlexButton
-                onPress={handleSubmit}
+                onPress={text == 'language' ? ()=>{} : handleSubmit}
                 background={
-                  warning && text == "email" ? "rgba(0,0,0,0.5)" : "#283618"
+                  text == 'language' ? '"rgba(0,0,0,0.5)"' :
+                  (warning && text == "email" ? "rgba(0,0,0,0.5)" : "#283618")
                 }
               >
                 <Text style={{ color: "white", fontSize: 18 }}>Save</Text>
               </FlexButton>
             </View>
           </View>
-        </BottomSheet>
+        </BottomSheet> */}
       </View>
     </GestureHandlerRootView>
   );

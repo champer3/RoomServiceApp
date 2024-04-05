@@ -79,7 +79,7 @@ function EmailSignUp() {
   }
   async function handleSubmit() {
     handleScreenPress()
-    if (!warning && form.email && form.firstName && form.secondName) {
+    if (!warning && form.email && form.firstName && form.lastName) {
       // console.log(form);
       try {
         const checkEmail = await axios.get(
@@ -166,8 +166,8 @@ function EmailSignUp() {
               icon={<Ionicons name="person" size={24} color={"#aaa"} />}
               textInputConfig={{
                 cursorColor: "#aaa",
-                value: form.secondName,
-                onChangeText: handleFormChange.bind(this, "secondName"),
+                value: form.lastName,
+                onChangeText: handleFormChange.bind(this, "lastName"),
               }}
             />
 
@@ -183,7 +183,7 @@ function EmailSignUp() {
             </Text> */}
 
             <View style={styles.buttonContainer}>
-              <Button onPress={handleSubmit} color={!(!warning && form.email && form.firstName && form.secondName) ? '#aaa' : '' }  >
+              <Button onPress={handleSubmit} color={!(!warning && form.email && form.firstName && form.lastName) ? '#aaa' : '' }  >
                 <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
                 <Image
                   style={styles.vector}

@@ -72,7 +72,9 @@ function EmailLogin() {
   
   async function pressHandler() {
     setIsLoading(true)
-    const response = await createAccount();
+    let response = ''
+    try {response = await createAccount();}
+    catch(error){}
     if (typeof response !== "undefined") {
       dispatch(
         updateProfile({

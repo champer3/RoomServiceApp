@@ -18,6 +18,7 @@ import { addReview } from "../Data/Items";
 import {clearCart, completeOrder} from '../Data/cart'
 import OrderDescription from "../components/OrderDescription";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const { width, height } = Dimensions.get("window");
@@ -25,6 +26,7 @@ function OrderDisplay(){
   const orders = useSelector((state) => state.cartItems.order)
   const navigation = useNavigation()
     const [index, setIndex] = useState(0);
+    
     const [rating, setrating] = useState(0);
     const data = useSelector((state) => state.profileData.profile)
     const dispatch = useDispatch();
@@ -39,7 +41,7 @@ function OrderDisplay(){
             rate.push('staro')
         }
     }
-    
+  
   function press(item, id, price) {
     navigation.navigate("Order Receipt", {
       total: price,
@@ -168,8 +170,8 @@ function OrderDisplay(){
     {/* <View style={styles.recommendedView}>
         <Input icon={<Ionicons name="search-outline" size={24} color="#aaa" />} text={'Search orders'}/>
     </View> */}
-    {index == 0 && undeliveredOrders.length == 0 && <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
-    {index == 1 && deliveredOrders.length == 0 &&  <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
+    {index == 0 && undeliveredOrders.length == 0 && <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{navigation.navigate('Home')}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
+    {index == 1 && deliveredOrders.length == 0 &&  <View  style={{gap: 19, marginVertical: 45}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>Your order history is a bit too boring, why don’t you check out our amazing items!</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{navigation.navigate('Home')}}><Text style={{fontSize: 18, color: 'white'}}>Start Shopping</Text></FlexButton></View></View>}
     {/* {index == 0 && <View style={{marginHorizontal: '6%', paddingVertical: '6%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>

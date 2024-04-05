@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View, Pressable, ScrollView } from "react-native";
+import { StyleSheet, Text, View, Pressable, ScrollView, Image, Dimensions, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BareButton from "../components/Buttons/BareButton";
 import ProductAction from "../components/Product/ProductAction";
@@ -14,7 +14,12 @@ import FlexButton from "../components/Buttons/FlexButton";
 import NavBar from "../components/NavBar";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const { width, height } = Dimensions.get("window");
 function AccountDisplay() {
+  const [logged, setLogged] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+  
   const navigation = useNavigation();
   function pressHandler() {
     navigation.navigate("Profile");
@@ -28,18 +33,41 @@ function AccountDisplay() {
   function addressHandler() {
     navigation.navigate("Address");
   }
+  const retrieveTokenFromAsyncStorage = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("profile");
+      if (storedToken !== null) {
+        setLogged(true)
+      } 
+    } catch (error) {
+      console.error("Error retrieving token:", error);
+    }
+  };
   async function logoutHandler() {
     try{
       await AsyncStorage.removeItem('authToken')
       console.log("item removed")
-      navigation.replace("Authentication");
+    } catch(error){
+      console.error('Error deleting item:', error);
+    }
+    try{
+      await AsyncStorage.removeItem('profile')
+      console.log("item removed")
+      navigation.replace("Authentication",{screen : "NumberLogin"});
     } catch(error){
       console.error('Error deleting item:', error);
     }
   }
+  useEffect(()=>{setIsLoading(true); setTimeout(()=>{setIsLoading(false)}, 500)},[])
+  useEffect(()=>{retrieveTokenFromAsyncStorage()}, [])
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View
+      {isLoading ? (
+        // Render loading indicator while loading
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
+      ) : (<>
+     {logged ? <><View
         style={{
           paddingLeft: "5%",
           paddingTop: "7%",
@@ -115,7 +143,7 @@ function AccountDisplay() {
         <View style={{paddingHorizontal: '5%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , justifyContent: "space-between", flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)'}}>
             <NavBar/>
         </View> */}
-      </View>
+      </View></> : <View  style={{flex: 1, alignItems:'center',justifyContent: 'center', paddingHorizontal: 12}}><View><Image style={styles.image} source={require('../assets/empty.png')}/></View><Text style={{textAlign: 'center', fontSize: 15, fontWeight: '500'}}>You don’t have an account try logging in or signing up</Text><View style={[styles.recommendedView, {height: 75}]}><FlexButton background={'#283618'} onPress={()=>{navigation.replace('Authentication', {screen: 'NumberLogin'})}}><Text style={{fontSize: 18, color: 'white'}}>Get my account</Text></FlexButton></View></View>}</>)}
     </SafeAreaView>
   );
 }
@@ -130,5 +158,11 @@ const styles = StyleSheet.create({
   recommendedView: {
     paddingHorizontal: "5%",
     paddingTop: "5%",
+  },
+  image: {
+    height: height / 3,
+    alignSelf: "center",
+    resizeMode: 'contain',
+    marginBottom: 30
   },
 });

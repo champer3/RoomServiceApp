@@ -105,8 +105,8 @@ function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, n
                 numberOfLines={2}
               >
                 {title
-                  ? title.replace(/\b\w/g, (char) => char.toUpperCase())
-                  : ""}
+                  ? title.replace(/\b\w/g, (char) => char.toUpperCase()) + '\n'
+                  : "" }
               </Text>
             </View>
             <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>

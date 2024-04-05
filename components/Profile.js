@@ -8,7 +8,7 @@ const { width, height } = Dimensions.get("window");
 
 function Profile({ action }) {
   const data = useSelector((state) => state.profileData.profile)
-  let text = `${data.firstName} ${data.secondName}`;
+  let text = `${data.firstName} ${data.lastName}`;
   return (
     <View style={[styles.container]}>
       <View style={styles.imageContainer}>

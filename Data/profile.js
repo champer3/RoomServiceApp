@@ -1,6 +1,6 @@
 import {createSlice} from '@reduxjs/toolkit'
 
-const profile = createSlice({
+export const profile = createSlice({
     name : 'profile',
     initialState: {
         profile : {
@@ -9,8 +9,6 @@ const profile = createSlice({
             phoneNumber: '+',
             email: '',
             language: 'English (United States)',
-            password: '',
-            payments: [],
             address: []
           },
     },

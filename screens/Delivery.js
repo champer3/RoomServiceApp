@@ -32,7 +32,7 @@ export default function Delivery() {
       .catch(err => console.log("Something went wrong"));}
   }, [coords, position,driver]);
   useEffect(() => {
-    (async () => {
+   try{ (async () => {
       
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -48,10 +48,10 @@ export default function Delivery() {
       }
       
         
-    })();
+    })()} catch (error) {console.error("Error:", error);};
   }, []);
   useEffect(() => {
-    (async () => {
+   try{ (async () => {
       
       let locationT = await getPosition(route.params.address);
       setLocation({coords: {longitude: locationT.lng, latitude: locationT.lat}});
@@ -59,7 +59,7 @@ export default function Delivery() {
         setPosition({latitude: locationT.lat,
           longitude: locationT.lng })
       }
-    })();
+    })()} catch (error) {console.error("Error:", error);};
   }, []);
 
   

@@ -1,8 +1,9 @@
-import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
+import { ScrollView, StyleSheet, Text, View, Pressable, Dimensions } from "react-native";
 import Item from "../Item/Item";
 import Product from "../Product/Product";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
+const { width, height } = Dimensions.get("window");
 function Deal({ text, onPress,item, onAdd, color = "#283618"}) {
   let items = [...item]
   let odd = "";
@@ -13,11 +14,11 @@ function Deal({ text, onPress,item, onAdd, color = "#283618"}) {
           <View style={[styles.container, {backgroundColor: color,}]}>
             <View style={styles.catHead}>
               <Text style={styles.text}>{text}</Text>
-              <Pressable onPress = {onPress} style={({ pressed }) => pressed && { opacity: 0.5 }}>
+              {onPress && <Pressable onPress = {onPress} style={({ pressed }) => pressed && { opacity: 0.5 }}>
                 <Text style={{ color: color == "#283618" ? "#BC6C25" : 'white', fontSize: 12 }}>
                   More Deals
                 </Text>
-              </Pressable>
+              </Pressable>}
             </View>
             {odd && <Product onAdd={onAdd} title={odd.title} newPrice={odd.newPrice} oldPrice={odd.oldPrice} image={odd.image}/>}
             <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
@@ -36,7 +37,7 @@ export default Deal;
 const styles = StyleSheet.create({
   container: {
     flexWrap: "nowrap",
-    width: "100%",
+    width: width-10,
     // height: "45%",
     gap: 15,
     paddingHorizontal: 15,

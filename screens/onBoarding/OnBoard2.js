@@ -11,6 +11,7 @@ import { StatusBar } from "expo-status-bar";
 import Button from "../../components/Buttons/Button";
 import BareButton from "../../components/Buttons/BareButton";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
 
 const { width, height } = Dimensions.get("window");
@@ -26,10 +27,16 @@ function OnBoard2() {
       // Set loading status to false after some time (simulating app loading)
     }, 400)
   }
-  function skipHandler (){
+  async function skipHandler (){
     setIsLoading(true)
+    try {
+      await AsyncStorage.setItem("essential", JSON.stringify({address: [], orders:  [],}));
+      console.log("Essential saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
     setTimeout(() => {
-      navigation.navigate('Authentication')
+      navigation.replace('Authentication')
       setTimeout(()=>{setIsLoading(false)}, 200)
       // Set loading status to false after some time (simulating app loading)
     }, 400)

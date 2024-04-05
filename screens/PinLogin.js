@@ -38,8 +38,8 @@ function NumberLogin() {
     setOtp(data);
   }
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
-
   
+ 
   const loginData = async () => {
     try {
       const response = await axios.post(
@@ -52,8 +52,8 @@ function NumberLogin() {
         }
       );
       console.log("token", response.data.data.user);
+
       authToken = response.data.token
-      console.log(authToken)
       return response.data.data.user;
     } catch (err) {
       console.log(err.error);
@@ -88,13 +88,26 @@ function NumberLogin() {
     resendVerifyNumber()
   }
   async function pressHandler() {
-    setIsLoading(true)
     const verifyResponse = await verifyNumber(otp);
     
     if (verifyResponse === "success") {
       const loginInfo = await loginData();
-      console.log("login data: ", loginInfo)
-      await saveTokenToAsyncStorage()
+      let storedToken = {address: [], orders:  [],}
+      
+      try {
+        await saveTokenToAsyncStorage()
+        await AsyncStorage.setItem("profile", JSON.stringify({
+          firstName: loginInfo.firstName,
+          lastName: loginInfo.lastName,
+          phoneNumber: loginInfo.phoneNumber,
+          email: loginInfo.email,
+          password: loginInfo.password,
+          address: storedToken.address
+        },));
+        console.log("Profile saved successfully.");
+      } catch (error) {
+        console.error("Error saving token:", error);
+      }
       dispatch(
         updateProfile({
           id: {
@@ -103,19 +116,13 @@ function NumberLogin() {
             phoneNumber: loginInfo.phoneNumber,
             email: loginInfo.email,
             password: loginInfo.password,
-            payments: [],
-            address: []
+            address: storedToken.address
           },
         })
       );
+      navigation.replace('Loader'); 
     }
-    setTimeout(() => {
-      if (verifyResponse === "success") {
-      navigation.replace("HomeTabs");
-      } else{
-        setIsLoading(false)
-        Alert.alert("Incorrect OTP", "Please check your input and try again");}
-    }, 1000)
+   
    
   }
   function signUpHandler() {
@@ -159,7 +166,8 @@ function NumberLogin() {
     <KeyboardAvoidingView  onTouchStart={handleScreenPress} onPress={handleScreenPress} behavior="height"  style={styles.container} >
        {isLoading ? (
         // Render loading indicator while loading
-        <ActivityIndicator size="large" color="#0000ff" />
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#0000ff" /></View>
       ) : (<>
         <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.topView}>
@@ -195,7 +203,7 @@ function NumberLogin() {
           </View>
           
           <View style={styles.downView}>
-            <View style={styles.threeContainer}>
+            {/* <View style={styles.threeContainer}>
               <View style={styles.line}></View>
               <Text>or continue with</Text>
               <View style={styles.line}></View>
@@ -217,7 +225,7 @@ function NumberLogin() {
                 />
                 <Text> Continue with Google</Text>
               </BareButton>
-            </View>
+            </View> */}
             <View style={styles.textContainer}>
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 New to RoomService?

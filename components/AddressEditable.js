@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 
 function AddressEditable({ title, address, onPress }) {
   return (
-    <View style={styles.container}>
+    <Pressable onPress={onPress} style={styles.container}>
       <View style={styles.icon}>
         <View style ={{ backgroundColor: "#FAFAFA",
             padding: 10,
@@ -34,7 +34,7 @@ function AddressEditable({ title, address, onPress }) {
       <Pressable onPress={onPress} style={styles.radio}>
       <Feather name="edit-3" size={30} color="#BC6C25" />
       </Pressable>
-    </View>
+    </Pressable>
   );
 }
 
