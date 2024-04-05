@@ -121,7 +121,9 @@ function NumberLogin() {
         })
       );
       navigation.replace('Loader'); 
-    }
+    } else {
+      Alert.alert("Invalid OTP")
+    } 
    
    
   }
