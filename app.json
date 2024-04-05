@@ -30,7 +30,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff" 
+        "backgroundColor": "#ffffff"
       },
       "package": "com.anonymous.RS"
     },
@@ -42,6 +42,9 @@
       "eas": {
         "projectId": "7e371e73-02b5-4101-9a7a-94cf04e6fdb3"
       }
-    }
+    },
+    "plugins": [
+      "expo-build-properties"
+    ]
   }
 }
