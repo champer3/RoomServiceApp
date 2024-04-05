@@ -1,40 +1,4 @@
 {
-<<<<<<< HEAD
-  "expo": {
-    "name": "RS",
-    "slug": "RS",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.RS",
-      "infoPlist": {
-        "CFBundleURLTypes": [
-          {
-            "CFBundleURLTypes": [
-              "com.googleusercontent.apps.595612958492-gp5rso1fjrccbv1bst08ej45tssvhu4b"
-            ]
-          }
-        ]
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.anonymous.RS"
-=======
   "name": "RS",
   "slug": "RS",
   "version": "1.0.0",
@@ -53,7 +17,6 @@
     "supportsTablet": true,
     "deploymentTarget": {
       "iOS": "14.0"
->>>>>>> a89c2b39ca1084b4f14b7a749108a3456315a988
     },
     "bundleIdentifier": "com.anonymous.RS",
     "infoPlist": {
@@ -71,19 +34,6 @@
       "foregroundImage": "./assets/adaptive-icon.png",
       "backgroundColor": "#ffffff"
     },
-<<<<<<< HEAD
-    "scheme": "Meks",
-    "extra": {
-      "eas": {
-        "projectId": "7e371e73-02b5-4101-9a7a-94cf04e6fdb3"
-      }
-    },
-    "plugins": [
-      "expo-build-properties"
-    ]
-  }
-}
-=======
     "package": "com.anonymous.RS"
   },
   "web": {
@@ -117,4 +67,3 @@
     "web"
   ]
 }
->>>>>>> a89c2b39ca1084b4f14b7a749108a3456315a988
