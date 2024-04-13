@@ -1,6 +1,5 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
-import { Provider as PaperProvider } from "react-native-paper";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -8,7 +7,6 @@ import Category from "./screens/category/Category";
 import CategorySearch from "./screens/category/CategorySearch";
 import registerNNPushToken from 'native-notify';
 import Home from "./screens/Home";
-import Config from 'react-native-config';
 import { Octicons } from "@expo/vector-icons";
 import ProductDisplay from "./screens/ProductDisplay";
 import DealsScreen from "./screens/DealsScreen";
