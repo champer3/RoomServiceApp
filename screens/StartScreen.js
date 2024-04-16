@@ -9,7 +9,6 @@ const { width, height } = Dimensions.get("window");
 function StartScreen() {
   const navigation = useNavigation()
   const [userInfo, setUserInfo] = useState()
-
   function pressHandler (){
       navigation.replace('Loader'); 
     

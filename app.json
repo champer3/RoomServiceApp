@@ -1,69 +1,72 @@
-{"expo": {
-  "name": "RS",
-  "slug": "RS",
-  "version": "1.0.0",
-  "orientation": "portrait",
-  "icon": "./assets/icon.png",
-  "userInterfaceStyle": "light",
-  "splash": {
-    "image": "./assets/splash.png",
-    "resizeMode": "contain",
-    "backgroundColor": "#ffffff"
-  },
-  "assetBundlePatterns": [
-    "**/*"
-  ],
-  "ios": {
-    "supportsTablet": true,
-    "deploymentTarget": {
-      "iOS": "14.0"
-    },
-    "bundleIdentifier": "com.anonymous.RS",
-    "infoPlist": {
-      "CFBundleURLTypes": [
-        {
-          "CFBundleURLTypes": [
-            "com.googleusercontent.apps.595612958492-gp5rso1fjrccbv1bst08ej45tssvhu4b"
-          ]
-        }
-      ]
-    }
-  },
-  "android": {
-    "adaptiveIcon": {
-      "foregroundImage": "./assets/adaptive-icon.png",
+{
+  "expo": {
+    "name": "RS",
+    "slug": "RS",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "package": "com.anonymous.RS"
-  },
-  "web": {
-    "favicon": "./assets/favicon.png"
-  },
-  "scheme": "Meks",
-  "extra": {
-    "eas": {
-      "projectId": "7e371e73-02b5-4101-9a7a-94cf04e6fdb3"
-    }
-  },
-  "plugins": [
-    [
-      "expo-build-properties",
-      {
-        "android": {
-          "compileSdkVersion": 31,
-          "targetSdkVersion": 31,
-          "buildToolsVersion": "31.0.0"
-        },
-        "ios": {
-          "deploymentTarget": "14.0"
-        }
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "deploymentTarget": {
+        "iOS": "14.0"
+      },
+      "bundleIdentifier": "com.anonymous.RS",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires access to the camera to take photos for user profile customization.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLTypes": [
+              "com.googleusercontent.apps.595612958492-gp5rso1fjrccbv1bst08ej45tssvhu4b"
+            ]
+          }
+        ]
       }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.anonymous.RS"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "Meks",
+    "extra": {
+      "eas": {
+        "projectId": "53a371fa-dec6-47d3-acec-1d49adae92e3"
+      }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 31,
+            "targetSdkVersion": 31,
+            "buildToolsVersion": "31.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "14.0"
+          }
+        }
+      ]
+    ],
+    "sdkVersion": "50.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
     ]
-  ],
-  "sdkVersion": "49.0.0",
-  "platforms": [
-    "ios",
-    "android",
-    "web"
-  ]
-}}
+  }
+}

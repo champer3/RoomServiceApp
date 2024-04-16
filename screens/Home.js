@@ -31,7 +31,6 @@ import { addToCart, removeFromCart, addOptions, updateOrder } from "../Data/cart
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from "../components/Modals/BottomSheet";
 import { LinearGradient } from "expo-linear-gradient";
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
 import io from 'socket.io-client';
