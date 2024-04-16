@@ -1,4 +1,4 @@
-{
+{"expo": {
   "name": "RS",
   "slug": "RS",
   "version": "1.0.0",
@@ -66,4 +66,4 @@
     "android",
     "web"
   ]
-}
+}}

@@ -181,7 +181,7 @@ function CheckoutScreen() {
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
   const checkOut = async () => {
-    try {const token = await retrieveTokenFromAsyncStorage();
+    const token = await retrieveTokenFromAsyncStorage();
     console.log("This is the token I recieved: ", token);
     const response = await axios.post(
       "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/checkout-session",
@@ -194,7 +194,7 @@ function CheckoutScreen() {
           // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
         },
       }
-    ); 
+    );
     const initPayment = await initPaymentSheet({
       merchantDisplayName: "RoomService",
       paymentIntentClientSecret: response.data.clientSecret,
@@ -203,7 +203,7 @@ function CheckoutScreen() {
       // defaultBillingDetails: {
       //   name: 'Jane Doe',
       // }
-    });} catch(error) {console.error("Error saving token:", error);}
+    });
     setIsLoading(true)
     const { error } = await presentPaymentSheet();
     
@@ -230,7 +230,18 @@ function CheckoutScreen() {
         })
       );
       dispatch(clearCart({ id: cartItems }));
-   
+        try{
+          await AsyncStorage.removeItem('essential')
+        } catch(error){
+          console.error('Error deleting item:', error);
+        }
+        const newOrder = useSelector((state) => state.cartItems.order);
+        try {
+          await AsyncStorage.setItem("essential", JSON.stringify({address: address, orders: newOrder,}));
+          console.log("Essential saved successfully.");
+        } catch (error) {
+          console.error("Error saving token:", error);
+        } 
         setVisible(true);
         setIsLoading(false)
       

@@ -133,7 +133,7 @@ function AddPin() {
   async function pressHandler (){
     setIsLoading(true)
     let verifyResponse = ""
-    try {verifyResponse = await verifyNumber()}
+    try {verifyResponse = await verifyNumber(otp)}
     catch (error) {console.error("Error:", error);}
     if(verifyResponse === "approved"){
       handleUpdate();

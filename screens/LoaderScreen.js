@@ -3,10 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { useNavigation } from "@react-navigation/native";
-import * as WebBrowser from "expo-web-browser"
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
-import  * as Google from "expo-auth-session/providers/google"
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
