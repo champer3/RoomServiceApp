@@ -21,6 +21,7 @@
       },
       "bundleIdentifier": "com.anonymous.RS",
       "infoPlist": {
+        "NSCameraUsageDescription": "This app requires access to the camera to take photos for user profile customization.",
         "CFBundleURLTypes": [
           {
             "CFBundleURLTypes": [
@@ -28,8 +29,7 @@
             ]
           }
         ]
-      },
-      "buildNumber": "2"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -44,7 +44,7 @@
     "scheme": "Meks",
     "extra": {
       "eas": {
-        "projectId": "c361af9b-2887-4077-939c-39a9054079dc"
+        "projectId": "53a371fa-dec6-47d3-acec-1d49adae92e3"
       }
     },
     "plugins": [
@@ -62,7 +62,7 @@
         }
       ]
     ],
-    "sdkVersion": "49.0.0",
+    "sdkVersion": "50.0.0",
     "platforms": [
       "ios",
       "android",
