@@ -316,13 +316,12 @@ function createFoodDictionary(foodArray) {
                 <Text>({`${route.params.reviews.length}`} Reviews)</Text>
               </View>
               <Pressable
-                onPress={pressHandler}
                 style={({ pressed }) => pressed && { opacity: 0.5 }}
               >
                 <Text
                   style={{ color: "#BC6C25", fontSize: 12, fontWeight: "bold" }}
                 >
-                  See Reviews
+                 ------------
                 </Text>
               </Pressable>
             </View>
@@ -495,8 +494,8 @@ function createFoodDictionary(foodArray) {
                           <Ionicons
                             name={`${
                               idx == option
-                                ? "md-radio-button-on"
-                                : "md-radio-button-off"
+                                ? "radio-button-on"
+                                : "radio-button-off"
                             }`}
                             size={24}
                             color="black"

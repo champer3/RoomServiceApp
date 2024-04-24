@@ -16,7 +16,7 @@ function CreditCardSelect({ card, number, active= false,image }) {
         </View>
       </View>
       <View style={styles.right}>
-        <Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={30} color="black" />
+        <Ionicons name={`${active ? "radio-button-on" : "radio-button-off"  }`} size={30} color="black" />
       </View>
     </View>
   );

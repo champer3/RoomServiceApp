@@ -729,7 +729,7 @@ function Home() {
 
 
                 ]}
-                color="#039F03"
+                color='#283618'
               />
             </View>
             <View style={styles.recommendedView}>
@@ -751,7 +751,7 @@ function Home() {
                 { title: 'White Claw Seltzer Flavor No. 3 Variety 12pk 12oz Can 5.0% ABV $22.99', newPrice: 7.99, oldPrice: 1.99, image: require('../assets/alcohol1.png'), reviews: [], category: 'alcohol' },
 
               ]}
-              color="#00CED1"
+              color='#283618'
             />
             <View style={styles.recommendedView}>
               <Text style={styles.text}>Alcohol</Text>
@@ -771,7 +771,7 @@ function Home() {
                   { title: 'Smoked Gouda Mac & Cheese', oldPrice: 6.00, image: require('../assets/mac.png'), reviews: [], category: 'food', related: ["side dish", "mac and cheese", "pasta", "cheese", "smoked Gouda", "creamy", "comfort food", "casserole", "baked", "cheesy", "vegetarian option", "lunch", "dinner", "kid-friendly", "crowd-pleaser"], description: "Creamy and decadent mac and cheese made with smoked Gouda cheese for a rich and flavorful twist. A cheesy comfort food favorite." },
 
                 ]}
-                color="#00CED1"
+                color='#283618'
               />
             </View>
             <View style={[styles.recommendedView, { alignItems: "center" }]}>
@@ -785,7 +785,7 @@ function Home() {
                   { title: 'Grilled Chicken', oldPrice: 30.00, image: require('../assets/chicken.png'), reviews: [], category: 'food', nutrient: 'protein', extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, description: 'Succulent and juicy grilled chicken breasts, seasoned to perfection and cooked over an open flame. Enjoy the smoky flavor and tender texture, perfect for a satisfying and healthy meal.', related: ["grilled", "chicken", "breasts", "healthy", "protein", "barbecue", "poultry", "marinade", "grilled vegetables", "salad", "sandwich", "entree", "main course", "summer cookout"] },
 
                 ]}
-                color="#F1CEDD"
+                color='#283618'
               />
             </View>
 
@@ -809,7 +809,7 @@ function Home() {
                   { title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', oldPrice: 3.69, image: require('../assets/snacks6.png'), reviews: [], category: 'snacks' },
 
                 ]}
-                color="#D2B48C"
+                color='#283618'
               />
             </View>
             <View style={styles.recommendedView}>
@@ -831,7 +831,7 @@ function Home() {
                   { title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"], description: "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image: require('../assets/shrimp.png'), reviews: [], category: 'food' },
 
                 ]}
-                color="#98FB98"
+                color='#283618'
               />
             </View>
             <View style={{ marginTop: 40 }}>
@@ -846,7 +846,7 @@ function Home() {
                   { title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"], description: "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image: require('../assets/shrimp.png'), reviews: [], category: 'food' },
 
                 ]}
-                color="#98AB98"
+                color='#283618'
               />
             </View>
             <View style={[styles.recommendedView, { alignItems: "center" }]}>
@@ -900,7 +900,7 @@ function Home() {
                       <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item}</Text>
                     </View>
                     <Pressable onPress={() => { setOption(idx) }}>
-                      <Ionicons name={`${idx == option ? "md-radio-button-on" : "md-radio-button-off"}`} size={24} color="black" />
+                      <Ionicons name={`${idx == option ? "radio-button-on" : "radio-button-off"}`} size={24} color="black" />
                     </Pressable>
                   </View>)}</View>}
                 {pro.nutrient && pro.nutrient == 'protein' && <View style={{ gap: 25, paddingTop: 30 }}>
@@ -998,8 +998,8 @@ const styles = StyleSheet.create({
   },
   image: {
     height: height/6,
-    resizeMode: 'center',
-    width: width-20,
+    maxWidth: width-20,
+    alignSelf: "center",
   },
   imageContainer: {
     marginTop: 0,

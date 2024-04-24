@@ -51,8 +51,8 @@ function NumberLogin() {
           },
         }
       );
-      console.log("token", response.data.data.user);
-
+      // console.log("token", response.data.data.user);
+      console.log(response.data)
       authToken = response.data.token
       return response.data.data.user;
     } catch (err) {
@@ -92,6 +92,7 @@ function NumberLogin() {
     
     if (verifyResponse === "success") {
       const loginInfo = await loginData();
+      console.log(loginInfo)
       let storedToken = {address: [], orders:  [],}
       
       try {

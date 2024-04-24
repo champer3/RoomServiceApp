@@ -39,7 +39,7 @@ function CreatePassword() {
   const phoneNumber = "+1" + phoneNumberString
   const postData = {
     firstName: form.firstName,
-    lastName: form.secondName,
+    lastName: form.lastName,
     phoneNumber,
     email: form.email,
     password: form.password,
@@ -55,15 +55,25 @@ function CreatePassword() {
       setIsLoading(true)
     try {
       handleUpdate();
-      console.log(profile);
-      await createAccount();
-      // Call the function to save the token
-      await saveTokenToAsyncStorage();
+       try{
+      await createAccount();} catch(error) {
+        console.error("Error:", error);
+      }
+      try{
+        await saveTokenToAsyncStorage();} catch(error) {
+        console.error("Error:", error);
+      }
+      try{
+        await saveProfileToAsyncStorage();} catch(error) {
+        console.error("Error:", error);
+      }
       setTimeout(() => {
-        navigation.navigate('HomeTabs'); // Set loading status to false after some time (simulating app loading)
-      }, 1000)
+        navigation.replace('Loader'); 
+        
+        // Set loading status to false after some time (simulating app loading)
+      }, 300)
     } catch (err) {
-      setIsLoading(false)
+      setTimeout(()=>{ setIsLoading(false)}, 300)
       console.log(err);
     }}
   }
@@ -171,6 +181,17 @@ function CreatePassword() {
       console.error("Error saving token:", error);
     }
   };
+  const saveProfileToAsyncStorage = async () => {
+    try {
+      await AsyncStorage.setItem("profile", JSON.stringify(postData));
+      console.log("Profile saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
+  };
+  function nextHandler(){
+    navigation.navigate('AddNumber')
+  }
   const [keyboardActive, setKeyboardActive] = useState(false);
 
   useEffect(() => {
@@ -194,7 +215,7 @@ function CreatePassword() {
       keyboardDidHideListener.remove();
     };
   }, []);
-  useEffect(()=>{validatePassword(form.password);handleConfirmPasswordChange('');return ()=> {}}
+  useEffect(()=>{if (form.password)validatePassword(form.password);handleConfirmPasswordChange('');return ()=> {}}
 ,[])
  
   return (
@@ -339,7 +360,7 @@ const styles = StyleSheet.create({
   },
   line: {
     height: 2,
-    width: "20%",
+    width: "22%",
     backgroundColor: "#D9D9D9",
   },
 });

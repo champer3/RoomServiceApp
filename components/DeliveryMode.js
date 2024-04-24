@@ -8,7 +8,7 @@ function DeliveryMode({ mode, time, active= false, special}) {
     <View style={[styles.container, {borderColor: active ? 'black' : 'rgba(0,0,0,0.05)'}]}>
       <View style={styles.topView}>
         <MaterialIcons name="timer" size={24} color="black" />
-        <Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="black" />
+        <Ionicons name={`${active ? "radio-button-on" : "radio-button-off"  }`} size={24} color="black" />
       </View>
       <View>
         <Text style={styles.text}>{mode}</Text>

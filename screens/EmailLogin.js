@@ -73,9 +73,27 @@ function EmailLogin() {
   async function pressHandler() {
     setIsLoading(true)
     let response = ''
+    let storedToken = {address: [], orders:  [],}
+      
+     
     try {response = await createAccount();}
     catch(error){}
+    
     if (typeof response !== "undefined") {
+      try {
+        
+        await AsyncStorage.setItem("profile", JSON.stringify({
+          firstName: response.firstName,
+          lastName: response.lastName,
+          phoneNumber: response.phoneNumber,
+          email: response.email,
+          password: response.password,
+          address: storedToken.address
+        },));
+        console.log("Profile saved successfully.");
+      } catch (error) {
+        console.error("Error saving token:", error);
+      }
       dispatch(
         updateProfile({
           id: {
@@ -84,14 +102,11 @@ function EmailLogin() {
             phoneNumber: response.phoneNumber,
             email: response.email,
             password: response.password,
-            payments: [],
-            address: []
+            address: storedToken.address
           },
         })
       );
-      setTimeout(() => {
-        navigation.navigate('HomeTabs'); // Set loading status to false after some time (simulating app loading)
-      }, 1000)
+        navigation.replace('Loader'); // Set loading status to false after some time (simulating app loading)
     } else {
       setIsLoading(false)
       Alert.alert("Invalid input", "check the email or password");
@@ -125,7 +140,7 @@ function EmailLogin() {
         }
       );
       const authToken = response.data.token;
-      console.log(response.data.data.user);
+      console.log(authToken);
       await saveTokenToAsyncStorage(authToken);
       return response.data.data.user;
     } catch (err) {
@@ -144,7 +159,7 @@ function EmailLogin() {
   }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
-         <KeyboardAvoidingView onPress={handleScreenPress} behavior="height" style={styles.container}>
+         <KeyboardAvoidingView onPress={handleScreenPress}  style={styles.container}>
          {isLoading ? (
         // Render loading indicator while loading
         <ActivityIndicator size="large" color="#0000ff" />
@@ -197,7 +212,7 @@ function EmailLogin() {
                 color: "#283618",
               }}
             >
-              Forgot Password?
+
             </Text>
 
             <View style={styles.buttonContainer}>
@@ -231,7 +246,7 @@ function EmailLogin() {
               //   borderColor: "black",
             }}
           >
-            <View style={styles.threeContainer}>
+            {/* <View style={styles.threeContainer}>
               <View style={styles.line}></View>
               <Text>or continue with</Text>
               <View style={styles.line}></View>
@@ -265,7 +280,7 @@ function EmailLogin() {
                 />
                 <Text> Continue with Google</Text>
               </BareButton>
-            </View>
+            </View> */}
             <View style={styles.textContainer}>
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 New to RoomService?
@@ -300,9 +315,9 @@ const styles = StyleSheet.create({
   welcomeView: {
     // borderWidth: 2,
     // borderColor: "black",
-    flex: 1,
+    // flex: 0.6,
     justifyContent: "flex-start",
-    marginBottom: 23,
+    marginBottom: 3,
   },
   description: {
     width: "100%",
@@ -312,8 +327,7 @@ const styles = StyleSheet.create({
   },
   image: {
     // flex: 1,
-    width: "100%",
-    resizeMode: "contain",
+    height: height/3
   },
   buttonContainer: {
     width: "100%",
@@ -321,8 +335,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   vector: {
-    width: "10%",
-    resizeMode: "center",
+    width: width/10
   },
   facebook: {
     width: "12%",

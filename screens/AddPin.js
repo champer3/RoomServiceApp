@@ -58,7 +58,7 @@ function AddPin() {
   const newphoneNumber = "+1" + phoneNumberString
   const postData = {
     firstName: form.firstName,
-    lastName: form.secondName,
+    lastName: form.lastName,
     phoneNumber,
     email: form.email,
     address: []

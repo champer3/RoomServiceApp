@@ -230,18 +230,18 @@ function CheckoutScreen() {
         })
       );
       dispatch(clearCart({ id: cartItems }));
-        try{
-          await AsyncStorage.removeItem('essential')
-        } catch(error){
-          console.error('Error deleting item:', error);
-        }
-        const newOrder = useSelector((state) => state.cartItems.order);
-        try {
-          await AsyncStorage.setItem("essential", JSON.stringify({address: address, orders: newOrder,}));
-          console.log("Essential saved successfully.");
-        } catch (error) {
-          console.error("Error saving token:", error);
-        } 
+        // try{
+        //   await AsyncStorage.removeItem('essential')
+        // } catch(error){
+        //   console.error('Error deleting item:', error);
+        // }
+        // const newOrder = useSelector((state) => state.cartItems.order);
+        // try {
+        //   await AsyncStorage.setItem("essential", JSON.stringify({address: address, orders: newOrder,}));
+        //   console.log("Essential saved successfully.");
+        // } catch (error) {
+        //   console.error("Error saving token:", error);
+        // } 
         setVisible(true);
         setIsLoading(false)
       
@@ -755,8 +755,8 @@ function CheckoutScreen() {
                       <Ionicons
                         name={`${
                           pro.options[idx] == option1
-                            ? "md-radio-button-on"
-                            : "md-radio-button-off"
+                            ? "radio-button-on"
+                            : "radio-button-off"
                         }`}
                         size={24}
                         color="black"

@@ -26,6 +26,7 @@ import React, {
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const height = Dimensions.get('screen').height
+const width = Dimensions.get('screen').width
 function NumberLogin() {
   function handleScreenPress() {
     Keyboard.dismiss();
@@ -143,7 +144,7 @@ function NumberLogin() {
                 />
               </Button>
             </View>
-            {/* <View>
+            <View>
               <Pressable onPress={emailHandler}>
                 <Text
                   style={{
@@ -158,7 +159,7 @@ function NumberLogin() {
                   Login with email and password
                 </Text>
               </Pressable>
-            </View> */}
+            </View>
           </View>
           <View style={styles.downView}>
             {/* <View style={styles.threeContainer}>
@@ -225,8 +226,8 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   vector: {
-    width: "10%",
-    resizeMode: "center",
+    width: width/6,
+    height: height/18
   },
   facebook: {
     resizeMode: "center",
@@ -249,7 +250,6 @@ const styles = StyleSheet.create({
   image: {
     height: height / 3,
     alignSelf: "center",
-    resizeMode: 'contain'
   },
   text: {
     color: "#333333",

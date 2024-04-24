@@ -334,7 +334,7 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
                                     <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
                                 </View>
                                 <Pressable onPress={()=> {setOption(idx)}}>
-                                <Ionicons name={`${idx == option ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="black" />
+                                <Ionicons name={`${idx == option ? "radio-button-on" : "radio-button-off"  }`} size={24} color="black" />
                                 </Pressable>
                             </View>)}</View>}
               {pro.nutrient && pro.nutrient == 'protein' && <View style={{gap: 25, paddingTop: 30}}>
@@ -408,7 +408,7 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
                                     <Text  style={{color: "black",fontWeight: "900",fontSize: 16,}}>{item}</Text>
                                 </View>
                                 <Pressable onPress={()=> {setOption1(pro.options[idx])}}>
-                                <Ionicons name={`${pro.options[idx] == option1 ? "md-radio-button-on" : "md-radio-button-off"  }`} size={24} color="black" />
+                                <Ionicons name={`${pro.options[idx] == option1 ? "radio-button-on" : "radio-button-off"  }`} size={24} color="black" />
                                 </Pressable>
                             </View>)}</View>}
               {pro.nutrient && pro.nutrient == 'protein' && <View style={{gap: 25, paddingTop: 30}}>
@@ -464,7 +464,7 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
                     </Text>
             </View>
             <View style ={{width: '40%', height: '130%'}}>
-                <FlexButton onPress = {pressHandler} background={cartItems.length == 0 ? "rgba(0,0,0,0.5)" :  '#283618'}><FontAwesome name="shopping-bag" size={24} color="white" /><Text style={{color: 'white'}}>Checkout</Text></FlexButton>
+                <FlexButton onPress = {pressHandler} background={cartItems.length == 0 ? "rgba(0,0,0,0.5)" :  '#283618'}><FontAwesome name="shopping-bag" size={width/13} color="white" /><Text style={{color: 'white'}}>Checkout</Text></FlexButton>
             </View>
         </View>
 

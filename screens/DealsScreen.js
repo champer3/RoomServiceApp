@@ -152,7 +152,7 @@ function DealsScreen() {
                       <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item}</Text>
                     </View>
                     <Pressable onPress={() => { setOption(idx) }}>
-                      <Ionicons name={`${idx == option ? "md-radio-button-on" : "md-radio-button-off"}`} size={24} color="black" />
+                      <Ionicons name={`${idx == option ? "radio-button-on" : "radio-button-off"}`} size={24} color="black" />
                     </Pressable>
                   </View>)}</View>}
                 {pro.nutrient && pro.nutrient == 'protein' && <View style={{ gap: 25, paddingTop: 30 }}>

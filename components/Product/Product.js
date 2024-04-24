@@ -20,6 +20,7 @@ function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, n
   const navigation = useNavigation()
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids)
+  const productItems = useSelector((state) => state.productItems.ids);
   function handleAddToCart(product){
     dispatch(addToCart({id : product}))
   }
@@ -36,6 +37,8 @@ function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, n
     });
     return result;
 }
+  const item = productItems.find(item => item.title === title);
+
 
   // Example usage:
 
@@ -45,10 +48,9 @@ function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, n
       quantity = newList[title]
   }
   function pressHandler (){
-    navigation.navigate('Product', {image: image, title : title, reviews: reviews, oldPrice: oldPrice, addOn: addOn, category: category,nutrient : nutrient, instructions: instructions, description: description,extras: extras, options: options })
+    navigation.navigate('Product',item)
 
   }
-  const productItems = useSelector((state) => state.productItems.ids)
 
   const getAverageRatingByTitle = () => {
     const item = productItems.find(item => item.title === title);
