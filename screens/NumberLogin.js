@@ -26,7 +26,6 @@ import React, {
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const height = Dimensions.get('screen').height
-const width = Dimensions.get('screen').width
 function NumberLogin() {
   function handleScreenPress() {
     Keyboard.dismiss();
@@ -226,8 +225,10 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   vector: {
-    width: width/6,
-    height: height/18
+    width: 21.5,
+    height: 15,
+    // resizeMode: 'center',
+    marginLeft: 5,
   },
   facebook: {
     resizeMode: "center",

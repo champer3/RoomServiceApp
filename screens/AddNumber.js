@@ -211,8 +211,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end'
   },
   vector: {
-    width: "10%",
-    resizeMode: "center",
+    width: 21.5,
+    height: 15,
+    // resizeMode: 'center',
+    marginLeft: 5,
   },
   text: {
     color: "#333333",

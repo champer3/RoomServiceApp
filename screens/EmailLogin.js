@@ -335,7 +335,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   vector: {
-    width: width/10
+    width: 21.5,
+    height: 15,
+    // resizeMode: 'center',
+    marginLeft: 5,
   },
   facebook: {
     width: "12%",
