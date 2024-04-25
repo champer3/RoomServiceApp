@@ -15,6 +15,7 @@
       "**/*"
     ],
     "ios": {
+      "icon": "./assets/ios/icon.png",
       "supportsTablet": true,
       "deploymentTarget": {
         "iOS": "14.0"

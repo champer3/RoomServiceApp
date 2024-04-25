@@ -136,7 +136,7 @@ function NumberLogin() {
             </View>
             <View style={styles.buttonContainer}>
               <Button onPress={number.length == 14 ? pressHandler: ()=>{}} color={number.length == 14 ? '' : '#aaa'}>
-                <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
+                <Text style={{ fontSize: 16, color: "white" }}>Continue</Text>
                 <Image
                   style={styles.vector}
                   source={require("../assets/Vector.png")}

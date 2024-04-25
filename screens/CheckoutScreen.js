@@ -195,11 +195,13 @@ function CheckoutScreen() {
         },
       }
     );
+    console.log("we past that")
     const initPayment = await initPaymentSheet({
       merchantDisplayName: "RoomService",
       paymentIntentClientSecret: response.data.clientSecret,
       customerEphemeralKeySecret: response.data.ephemeralKey,
       customerId: response.data.customer,
+      returnURL: 'yourapp://payment-completed'
       // defaultBillingDetails: {
       //   name: 'Jane Doe',
       // }
