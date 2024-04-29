@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View, Pressable, ScrollView, Image, Dimensions, ActivityIndicator } from "react-native";
+import { StyleSheet, Text, View, Pressable, Alert, ScrollView, Image, Dimensions, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BareButton from "../components/Buttons/BareButton";
 import ProductAction from "../components/Product/ProductAction";
 import { FontAwesome } from "@expo/vector-icons";
+import { AntDesign } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
@@ -14,9 +15,12 @@ import FlexButton from "../components/Buttons/FlexButton";
 import NavBar from "../components/NavBar";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useSelector} from 'react-redux'
+import axios from "axios";
 
 const { width, height } = Dimensions.get("window");
 function AccountDisplay() {
+  const data = useSelector((state) => state.profileData.profile)
   const [logged, setLogged] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
   
@@ -43,8 +47,82 @@ function AccountDisplay() {
       console.error("Error retrieving token:", error);
     }
   };
+  const retrievePrivateTokenFromAsyncStorage = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("authToken");
+      if (storedToken !== null) {
+        return storedToken;
+      } else {
+        navigation.navigate('Account')
+      }
+    } catch (error) {
+      console.error("Error retrieving token:", error);
+    }
+  };
+  useEffect(()=>{retrievePrivateTokenFromAsyncStorage()}, [])
+  // Allert to delete account.....................................................................
+
+  const handleYes = () => {
+    // Perform action when user selects "Yes"
+    console.log('User selected Yes');
+  };
+
+  const handleNo = () => {
+    // Perform action when user selects "No"
+    console.log('User selected No');
+  };
+
+  const showAlert = () => {
+    Alert.alert(
+      'Confirmation',
+      'Are you sure you want to delete your account?',
+      [
+        {
+          text: 'No',
+          onPress: handleNo,
+          style: 'cancel'
+        },
+        {
+          text: 'Yes',
+          onPress: deleteHandler
+        }
+      ],
+      { cancelable: false }
+    );
+  };
+
   async function logoutHandler() {
     try{
+      await AsyncStorage.removeItem('authToken')
+      console.log("item removed")
+    } catch(error){
+      console.error('Error deleting item:', error);
+    }
+    try{
+      await AsyncStorage.removeItem('profile')
+      console.log("item removed")
+      navigation.replace("Authentication",{screen : "NumberLogin"});
+    } catch(error){
+      console.error('Error deleting item:', error);
+    }
+  }
+
+  async function deleteHandler() {
+    console.log("here")
+    console.log(data.email)
+    try{
+      const token = await retrievePrivateTokenFromAsyncStorage();
+      console.log(token)
+      await axios.delete(
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/${data.email}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("done")
       await AsyncStorage.removeItem('authToken')
       console.log("item removed")
     } catch(error){
@@ -136,6 +214,12 @@ function AccountDisplay() {
             <BareButton color={"#B22334"} onPress={logoutHandler}>
               <Ionicons name="log-out-outline" size={width/11} color="#B22334" />
               <Text style={{ fontSize: 18, color: "#B22334" }}> Logout</Text>
+            </BareButton>
+          </View>
+          <View style={[styles.recommendedView, { flex: 1 }]}>
+            <BareButton color={"#B22334"} onPress={showAlert}>
+              <AntDesign name="delete" size={width/12} color="#B22334" />
+              <Text style={{ fontSize: 18, color: "#B22334" }}> Delete Account</Text>
             </BareButton>
           </View>
         </ScrollView>
