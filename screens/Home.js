@@ -1000,6 +1000,7 @@ const styles = StyleSheet.create({
     height: height/6,
     maxWidth: width-20,
     alignSelf: "center",
+    borderRadius: 20,
   },
   imageContainer: {
     marginTop: 0,
@@ -1013,6 +1014,7 @@ const styles = StyleSheet.create({
   horizontalCat: {
     width: "100%",
     paddingHorizontal: "2%",
+    paddingTop: 5
   },
   catHead: {
     flexDirection: "row",

@@ -23,6 +23,7 @@
       "bundleIdentifier": "com.anonymous.RS",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to take photos for user profile customization.",
+        "NSPrivacyAccessedAPITypes": "This app requires access to the camera to take photos for user profile customization.",
         "CFBundleURLTypes": [
           {
             "CFBundleURLTypes": [
