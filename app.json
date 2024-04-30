@@ -24,6 +24,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to take photos for user profile customization.",
         "NSPrivacyAccessedAPITypes": "This app requires access to the camera to take photos for user profile customization.",
+        "NSLocationWhenInUseUsageDescription": "This app would like to access your location in order to make the delivery to you",
         "CFBundleURLTypes": [
           {
             "CFBundleURLTypes": [
