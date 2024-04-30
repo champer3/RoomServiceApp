@@ -129,7 +129,7 @@ export default function MapScreen() {
         console.error("Error saving token:", error);
       }
       setIsLoading(false)
-      navigation.navigate('Address')}, 500)
+      navigation.navigate('Address')}, 0)
   }
     else{
       return false

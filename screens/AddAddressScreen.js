@@ -158,7 +158,7 @@ import { updateProfile } from "../Data/profile";
           nameNo: '',
           address: '',
           number: '',
-        }) }, 500)
+        }) }, 0)
   }
     else{
       return false
@@ -185,7 +185,8 @@ import { updateProfile } from "../Data/profile";
     let text = <ActivityIndicator size="large" color="#0000ff" />
     SplashScreen.preventAutoHideAsync();
     if (errorMsg) {
-      text = errorMsg;
+      text = <Text>{errorMsg}</Text>;
+      // navigation.goBack()
     } else if (position) {
       
       text =  <MapView
