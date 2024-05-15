@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { Button, StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -91,46 +91,46 @@ function Authentication() {
     <Stack.Navigator
       screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}
     >
-      
+
       <Stack.Screen
         name="StartScreen"
         component={StartScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="NumberLogin"
         component={NumberLogin}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="PinLogin"
         component={PinLogin}
-        options={{ headerShadowVisible: false, title: "" }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="EmailLogin"
         component={EmailLogin}
-        options={{ headerShadowVisible: false, title: "" }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="EmailSignUp"
         component={EmailSignUp}
-        options={{ headerShadowVisible: false, title: "" }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="AddNumber"
         component={AddNumber}
-        options={{ headerShadowVisible: false, title: "" }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="AddPin"
         component={AddPin}
-        options={{ headerShadowVisible: false, title: "" }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="CreatePassword"
         component={CreatePassword}
-        options={{ headerShadowVisible: false, title: "" }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
       />
     </Stack.Navigator>
   );
@@ -138,26 +138,26 @@ function Authentication() {
 function Home2() {
   return (
     <Stack.Navigator
-    screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}>
+      screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}>
       <Stack.Screen
         name="HomeDefault"
         component={Home}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="Category"
         component={CategorySearch}
-        options={{ headerShadowVisible: false, title: "" }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="All Categories"
         component={CategoryAll}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="All Deals"
         component={DealsScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, headerBackTitle: ''  }}
       />
     </Stack.Navigator>
   );
@@ -168,38 +168,38 @@ function Search() {
       <Stack.Screen
         name="SearchDefault"
         component={Category}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, headerBackTitle: ''  }}
       />
       <Stack.Screen
         name="CategorySearch"
         component={CategorySearch}
-        options={{ headerShadowVisible: false, title: "" }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
       />
     </Stack.Navigator>
   );
 }
 function Account() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerBackTitle: 'Custom Back'}}>
       <Stack.Screen
         name="Profile"
         component={{ ProfileDisplay }}
-        options={{ headerShadowVisible: false, title: "My Profile" }}
+        options={{ headerShadowVisible: false, title: "My Profile", headerBackTitle: ''}}
       />
       <Stack.Screen
         name="Payment"
         component={{ PaymentsDisplay }}
-        options={{ headerShadowVisible: false, title: "Payments" }}
+        options={{ headerShadowVisible: false, title: "Payments", headerBackTitle: ''}}
       />
       <Stack.Screen
         name="Order History"
         component={{ OrderDisplay }}
-        options={{ headerShadowVisible: false, title: "Orders" }}
+        options={{ headerShadowVisible: false, title: "Orders", headerBackTitle: ''}}
       />
       <Stack.Screen
         name="Address"
         component={{ AddressDisplay }}
-        options={{ headerShadowVisible: false, title: "Address" }}
+        options={{ headerShadowVisible: false, title: "Address", headerBackTitle: ''}}
       />
     </Stack.Navigator>
   );
@@ -265,14 +265,14 @@ function HomeTabs() {
 
 
 export default function App() {
-  
+
   return (
     <Provider store={store}>
       <StripeProvider publishableKey={"pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"}>
         <NavigationContainer>
           <StatusBar style="light" />
           <Stack.Navigator>
-          <Stack.Screen
+            <Stack.Screen
               name="Begin"
               component={LoadScreen}
               options={{ headerShown: false }}
