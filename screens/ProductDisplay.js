@@ -8,7 +8,9 @@ import {
   ScrollView,
   RefreshControl,
   TextInput,
+  Animated
 } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -28,11 +30,15 @@ import CartModal from "../components/Cart/CartModal";
 import CarouselCards from "../components/CarouselCards";
 import OrderSuccess from "../components/Modals/OrderSuccess";
 import ProductPreview from "../components/Product/ProductPreview";
+import FancyTextInput from "../components/Inputs/FancyTextInput";
+import ErrorMessage from "../components/ErrorMessage";
+import CartButton from "../components/Buttons/CartButton";
+import IncrementDecrementBton from "../components/Buttons/IncrementDecrementBtn copy";
 
 function ProductDisplay() {
   const route = useRoute();
   const title = route.params.title;
-
+  const [animatedValue] = useState(new Animated.Value(0));
   const [visible, setVisible] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [option, setOption] = useState();
@@ -51,8 +57,13 @@ function ProductDisplay() {
   const [plus, setPlus] = useState([]);
   console.log(route.params)
   const timer = useRef();
+  let background = '#aaa'
+  if((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
+    background = "#283618";
+}else if(!route.params.extras && !route.params.options){ background = '#283618'}
   const image = route.params.image;
   const [index, setIndex] = useState(0);
+  console.log(index)
   const [selected, setSelected] = useState([]);
   const [display, setDisplay] = useState(false);
   const dispatch = useDispatch();
@@ -120,6 +131,19 @@ function ProductDisplay() {
     
     setFoodDictionary(foodStore)
     dispatch(addToCart({id : {title: route.params.title, ...{...route.params, ...newItem, ['oldPrice'] : route.params.oldPrice + price} }}))
+
+    Animated.sequence([
+      Animated.timing(animatedValue, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: false,
+      }),
+      Animated.timing(animatedValue, {
+        toValue: 0,
+        duration: 0,
+        useNativeDriver: false,
+      }),
+    ]).start();
   
     // if (option >= 0 && route.params.options) {
     //   dispatch(addToCart({ id: product }));
@@ -130,19 +154,47 @@ function ProductDisplay() {
     //   setVisible(true);
     // }
   }
-  function handleAddToCartInc(product) {
-    if (option >= 0 && route.params.options) {
-      dispatch(addToCart({ id: product }));
-      setVisible(true);
-      setOption();
-    } else if (!route.params.options) {
-      dispatch(addToCart({ id: product }));
-      setVisible(true);
+  function handleRemoveFromCart(product){
+    dispatch(removeFromCart({id : product}))
+  }
+const [errorVisible, setErrorVisible] = useState(false);
+
+const showError = () => {
+  setErrorVisible(true);
+  setTimeout(() => {
+    setErrorVisible(false);
+  }, 3000); // Hide the error message after 3 seconds
+};
+
+
+const interpolateRotation = animatedValue.interpolate({
+  inputRange: [0, 1],
+  outputRange: ['0deg', '360deg'],
+});
+
+const animatedStyle = {
+  transform: [
+    {
+      rotateX: interpolateRotation,
+    },
+    {
+      rotateY: interpolateRotation
     }
+  ],
+};
+function cartHandler() {
+  navigation.navigate("Cart");
 }
-function handleRemoveFromCart(product){
-  dispatch(deleteFromCart({id : product}))
-}
+
+// useEffect(() => {
+//   let timer;
+//   if (modalVisible) {
+//     timer = setTimeout(() => {
+//       setModalVisible(false);
+//     }, 1000); // Hide the modal after 3 seconds
+//   }
+//   return () => clearTimeout(timer); // Clear the timeout if the component unmounts or the modal is closed manually
+// }, [modalVisible]);
 const cost = {}
 function addQuantityToObjects(inputList) {
     const titleCountMap = {};
@@ -269,15 +321,7 @@ function createFoodDictionary(foodArray) {
                 right: "15%",
               }}
             >
-              <Text
-                style={{
-                  color: "black",
-                  fontWeight: "900",
-                  fontSize: 24,
-                }}
-              >
-                {`$${route.params.oldPrice}`}
-              </Text>
+             
             </View>
           </View>
           <View style={{ paddingHorizontal: "5%", marginVertical: "4%" }}>
@@ -303,27 +347,18 @@ function createFoodDictionary(foodArray) {
                 paddingBottom: "3%",
               }}
             >
+              <Text
+                style={{
+                  color: "black",
+                  fontWeight: "900",
+                  fontSize: 24,
+                }}
+              >
+                {`$${route.params.oldPrice}`}
+              </Text>
               <View>
                 <Pill text="9289 Sold" type="null" />
               </View>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
-              >
-                <AntDesign name="star" size={30} color="black" />
-                <Text>
-                  {getAverageRatingByTitle(route.params.title).toFixed(1)}
-                </Text>
-                <Text>({`${route.params.reviews.length}`} Reviews)</Text>
-              </View>
-              <Pressable
-                style={({ pressed }) => pressed && { opacity: 0.5 }}
-              >
-                <Text
-                  style={{ color: "#BC6C25", fontSize: 12, fontWeight: "bold" }}
-                >
-                 ------------
-                </Text>
-              </Pressable>
             </View>
             <View style={{ gap: 15, marginVertical: 30 }}>
               <Text
@@ -335,13 +370,16 @@ function createFoodDictionary(foodArray) {
               >
                 Quantity
               </Text>
-              <View style={{ height: "auto", width: "30%" }}>
-                <IncrementDecrementBtn
+              <View style={{ height: "auto", width: "25%" }}>
+                <IncrementDecrementBton
                   minValue={quantity}
                   onIncrease ={() => {
                     if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
                       handleAddToCart();
-                  }else if(!route.params.extras && !route.params.options){handleAddToCart();}}}
+                  }else if(!route.params.extras && !route.params.options){handleAddToCart();}else{
+                    showError()
+                  }
+                }}
                   onDecrease={() => handleRemoveFromCart(route.params)}
                 />
               </View>
@@ -581,16 +619,7 @@ function createFoodDictionary(foodArray) {
                     </View>
                   )}
                 {route.params.instructions && (
-                  <View style={{ color: "white", backgroundColor: "white" }}>
-                    <TextInput
-                      multiline
-                      placeholder="Special Instructions?"
-                      cursorColor={"#aaa"}
-                      numberOfLines={6}
-                      clearButtonMode="always"
-                      style={{ paddingHorizontal: 10 }}
-                    />
-                  </View>
+                    <FancyTextInput />
                 )}
               </View>
               {/* <View style={styles.catHead}>
@@ -618,7 +647,13 @@ function createFoodDictionary(foodArray) {
           </View>
         </View>
       </ScrollView>
-
+      <ErrorMessage visible={errorVisible} message="Please choose an option!" />
+      <View style={styles.animatedItem}>
+      <Animated.View style={[ animatedStyle]} >
+      <CartButton onPress={cartHandler} itemCount={quantity}/>
+      </Animated.View>
+      <View style={{width: '100%', height: 3, backgroundColor: 'black', marginTop:10, borderRadius: 4}}></View>
+    </View>
       <View
         style={{
           flex: 1,
@@ -670,8 +705,10 @@ function createFoodDictionary(foodArray) {
             onPress={() => {
               if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
                 handleAddToCart();
-            }else if(!route.params.extras && !route.params.options){handleAddToCart();}}}
-            background={"#283618"}
+            }else if(!route.params.extras && !route.params.options){handleAddToCart();}else{
+              showError()
+            }}}
+            background={background} 
           >
             <FontAwesome name="shopping-bag" size={24} color="white" />
             <Text style={{ color: "white" }}>Add to cart</Text>
@@ -698,7 +735,7 @@ function createFoodDictionary(foodArray) {
         </View>} */}
       {display && (
         <Pressable
-          onPress={() => setDisplay(false)}
+          // onTouchStart={() => setDisplay(false)}
           style={{
             flex: 1,
             alignItems: "center",
@@ -739,5 +776,11 @@ const styles = StyleSheet.create({
   catHead: {
     justifyContent: "space-between",
     gap: 19,
+  },
+  animatedItem: {
+    position: 'absolute',
+    borderRadius: 10,
+    top: 20, // Adjust as needed
+    right: 20, // Adjust as needed
   },
 });

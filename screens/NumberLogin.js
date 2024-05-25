@@ -127,10 +127,12 @@ function NumberLogin() {
               <Input
                 length={14}
                 icon={<PhoneIcon />}
-                keyboard="numeric"
+                keyboard="number-pad"
                 textInputConfig={{
                   onChangeText: (text) => formatPhoneNumber(text),
                   value: number,
+                  autoComplete: 'tel',
+                  inputmode: 'tel'
                 }}
               />
             </View>

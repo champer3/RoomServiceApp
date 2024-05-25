@@ -21,9 +21,9 @@ function Deal({ text, onPress,item, onAdd, color = "#283618"}) {
               </Pressable>}
             </View>
             {odd && <Product onAdd={onAdd} title={odd.title} newPrice={odd.newPrice} oldPrice={odd.oldPrice} image={odd.image}/>}
-            <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 28 }}>
               {items.map((item, index) => (
-                <View key={index} style={{ width: "50%", marginBottom: 15 }}>
+                <View key={index} style={{ width: "46%", marginBottom: 15 }}>
                   <Product onAdd={onAdd} widths={200} title={item.title} oldPrice={item.oldPrice} newPrice={item.newPrice} image={item.image} />
                 </View>
               ))}

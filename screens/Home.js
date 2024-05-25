@@ -365,6 +365,39 @@ function Home() {
     setFoodDictionary(foodStore)
     dispatch(addToCart({ id: { title: pro.title, ...{ ...pro, ...newItem, ['oldPrice']: pro.oldPrice + price } } }))
   }
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    const startScrolling = () => {
+      scrollX.setValue(0); // Reset the animation value
+
+      const scrollAnimation = Animated.loop(
+        Animated.timing(scrollX, {
+          toValue: width*4.15,
+          duration: 40000, // 3 seconds per image
+          useNativeDriver: true,
+        })
+      ).start();
+
+      const listenerId = scrollX.addListener(({ value }) => {
+        if (scrollViewRef.current) {
+          scrollViewRef.current.scrollTo({
+            x: value,
+            animated: false,
+          });
+        }
+      });
+      
+      // return () => {
+      //   scrollAnimation.stop();
+      //   scrollX.removeListener(listenerId);
+      // };
+    };
+
+    startScrolling();
+  }, [scrollX]);
+  
   function handleBuy() {
     let price = 0;
     let newItem = {}
@@ -412,6 +445,7 @@ function Home() {
     const day = String(today.getDate()).padStart(2, "0");
     return today.toString();
   }
+  
   const timer = useRef()
   // useEffect(()=>{if (deliveringOrdersCount > 0){timer.current = setTimeout(()=>{setBlink((prev)=> !prev)},5)}})
   function handleAddToCart(product) {
@@ -581,7 +615,7 @@ function Home() {
                   },
                   { text: "Food", image: require("../assets/food.png") },
                   { text: "Snacks", image: require("../assets/snack.png") },
-                ].map(({text, image},index) => <Pressable key={index}><Text style={{fontWeight: "bold", fontSize: 13, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
+                ].map(({text, image},index) => <Pressable onPress={()=> {navigation.navigate('Category', {cat: text})}} key={index}><Text style={{fontWeight: "bold", fontSize: 13, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
       </FadeInView>
     </ScrollView>}
               {!isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
@@ -596,7 +630,7 @@ function Home() {
                   },
                   { text: "Food", image: require("../assets/food.png") },
                   { text: "Snacks", image: require("../assets/snack.png") },
-                ].map(({text, image},index) => <Pressable key={index}><Text style={{fontWeight: "bold", fontSize: 13, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
+                ].map(({text, image},index) => <Pressable onPress={()=> {navigation.navigate('Category', {cat: text})}} key={index}><Text style={{fontWeight: "bold", fontSize: 13, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
       </FadeOutView>
     </ScrollView>}
               </View>
@@ -662,7 +696,14 @@ function Home() {
               />
             </Pressable>
           </ScrollView> */}
-              <ScrollView horizontal={true} style={{}}>
+              <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        scrollEventThrottle={16}
+        contentContainerStyle={styles.scrollViewContent}
+      >
                 <View
                   style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15}}
                 >
@@ -710,8 +751,8 @@ function Home() {
               </ScrollView>
             </View>
 
-            <View style={[styles.recommendedView, {marginTop: 3,}]}>
-              <Text style={styles.text}>Recommended Foods</Text>
+            <View style={{marginTop: 16}}>
+              <Text style={[styles.text, {paddingLeft: '3%' }]}>Recommended Foods</Text>
               <ProductHorizontal
                 items={categoryObject["food"].slice(0, 6)}
                 onPress={handleAddToCart}
@@ -732,8 +773,8 @@ function Home() {
                 color='#283618'
               />
             </View>
-            <View style={styles.recommendedView}>
-              <Text style={styles.text}>Snacks For You</Text>
+            <View style={{marginTop: 16}}>
+              <Text style={[styles.text, {paddingLeft: '3%' }]}>Snacks For You</Text>
               <ProductHorizontal
                 items={categoryObject["snacks"]}
                 onPress={handleAddToCart}
@@ -753,8 +794,8 @@ function Home() {
               ]}
               color='#283618'
             />
-            <View style={styles.recommendedView}>
-              <Text style={styles.text}>Alcohol</Text>
+             <View style={{marginTop: 16}}>
+              <Text style={[styles.text, {paddingLeft: '3%' }]}>Alcohol</Text>
               <ProductHorizontal
                 items={categoryObject["alcohol"]}
                 onPress={handleAddToCart}
@@ -789,8 +830,8 @@ function Home() {
               />
             </View>
 
-            <View style={styles.recommendedView}>
-              <Text style={styles.text}>Drinks</Text>
+            <View style={{marginTop: 16}}>
+              <Text style={[styles.text, {paddingLeft: '3%' }]}>Drinks</Text>
               <ProductHorizontal
                 items={categoryObject["drink"]}
                 onPress={handleAddToCart}
@@ -812,8 +853,8 @@ function Home() {
                 color='#283618'
               />
             </View>
-            <View style={styles.recommendedView}>
-              <Text style={styles.text}>Home</Text>
+            <View style={{marginTop: 16}}>
+              <Text style={[styles.text, {paddingLeft: '3%' }]}>Home</Text>
               <ProductHorizontal
                 items={categoryObject["home"]}
                 onPress={handleAddToCart}
@@ -998,13 +1039,12 @@ const styles = StyleSheet.create({
   },
   image: {
     height: height/6,
-    maxWidth: width-20,
+    maxWidth: width,
     alignSelf: "center",
     borderRadius: 20,
   },
   imageContainer: {
     marginTop: 0,
-    width: width-20,
   },
   deals: {
     marginVertical: 16,
@@ -1013,8 +1053,8 @@ const styles = StyleSheet.create({
   },
   horizontalCat: {
     width: "100%",
-    paddingHorizontal: "2%",
-    paddingTop: 5
+    // paddingHorizontal: "2%",
+    paddingTop: 4
   },
   catHead: {
     flexDirection: "row",

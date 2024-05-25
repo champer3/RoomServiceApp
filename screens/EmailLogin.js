@@ -181,9 +181,11 @@ function EmailLogin() {
             <Input
               type="email"
               text="Email"
+              keyboard="email-address"
               textInputConfig={{
                 onChangeText: (text) => handleEmailChange(text),
                 value: email,
+                inputmode: email
               }}
               icon={<MaterialIcons name="email" size={24} color="#aaa" />}
             />

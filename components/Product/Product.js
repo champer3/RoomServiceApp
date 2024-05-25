@@ -1,13 +1,17 @@
 import { Image, Pressable, Dimensions } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 import FlexButton from "../Buttons/FlexButton";
+import { MaterialIcons } from '@expo/vector-icons';
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
 import {addToCart, removeFromCart} from '../../Data/cart'
+import { FontAwesome } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import IncrementDecrementBtn from "../Buttons/IncrementDecrementBtn";
+import CircleButton from "../Buttons/CircleButton";
+import IncrementDecrementBton from "../Buttons/IncrementDecrementBtn copy";
 
 const { width, height } = Dimensions.get("window");
 
@@ -75,11 +79,14 @@ function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, n
     }
 
   return (
-    <View style={[styles.container]}>
-      <View style={[styles.priceView, {backgroundColor: newPrice ? "#283618" : 'white', fontStyle: newPrice ? "italic" : 'normal',}]}>
-        <Text style={[styles.priceText, {color : newPrice ? 'white' : 'black'}]}>{`$${oldPrice.toFixed(2)}`}</Text>
-        {newPrice && <Text style={styles.crossPrice}>{`$${newPrice}`}</Text>}
-      </View>
+    <View style={{paddingTop: 9}}>
+    <View style={[styles.container,{  shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.8,
+      shadowRadius: 2,
+      elevation: 5, // Add elevation for Android shadow
+    }]}>
+      
       <View style={styles.imageContainer}>
         <View
           style={{
@@ -104,49 +111,45 @@ function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, n
               <Text
                 style={[styles.text]}
                 ellipsizeMode="tail"
-                numberOfLines={2}
+                numberOfLines={title.length > 25 ? 2 : 1}
               >
                 {title
                   ? title.replace(/\b\w/g, (char) => char.toUpperCase()) + '\n'
                   : "" }
               </Text>
-            </View>
-            <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 2 }}
-              >
-                {rate.map((star, idx)=><AntDesign key={idx} name={star} size={15} color="#BC6C25"/>)}
-
+              <View style={[styles.priceView, {backgroundColor: newPrice ? "#283618" : 'white', fontStyle: newPrice ? "italic" : 'normal', paddingHorizontal: newPrice ? 6 : 0,}]}>
+                <Text style={[styles.priceText, {color : newPrice ? 'white' : 'black'}]}>{`$${oldPrice.toFixed(2)}`}</Text>
+              {newPrice && <Text style={styles.crossPrice}>{`$${newPrice}`}</Text>}
               </View>
-              <Text style={{ fontSize: 14, fontWeight: "400", lineHeight: 20 }}>
-              {reviews ? reviews.length : 0}
-              </Text>
             </View>
           </Pressable>
-          <View style={{ height: height / 18 }}>
-            {(!show || !quantity) && <FlexButton color={"#aaa"} borderRadius={5} width={1.5} onPress={()=>{onAdd({image, title, oldPrice, newPrice, addOn, nutrient, extras, options}); setShow(true)}}>
-              <Text style={{ fontSize: 10 }}>
-                {" "}
-                <Feather name="shopping-cart" size={10} color="black" /> Add to
-                Cart
-              </Text>
-            </FlexButton>}
-            {show && quantity && <IncrementDecrementBtn minValue={quantity} onIncrease={()=>{onAdd({image, title, oldPrice, newPrice, addOn, nutrient, extras, options})}} onDecrease ={()=>{handleRemoveFromCart({ image, title, oldPrice})}}/>}
-          </View>
         </View>
       </View>
+    </View>
+    <View style={{ height: height / 18, position: 'absolute', top: 0 , right: 0,zIndex: 12}}>
+      {(!show || !quantity) && <Pressable style={{backgroundColor: 'white', borderRadius: 100, borderRightColor: '#aaa', borderRightWidth: 0.5,   shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.8,
+      shadowRadius: 2,
+      elevation: 5, // Add elevation for Android shadow
+    }} onPress={()=>{onAdd({image, title, oldPrice, newPrice, addOn, nutrient, extras, options}); setShow(true)}}>
+        <AntDesign name="pluscircle" size={32} color="#BC6C25" />
+      </Pressable>}
+      {show && quantity && <IncrementDecrementBton minValue={quantity} onIncrease={()=>{onAdd({image, title, oldPrice, newPrice, addOn, nutrient, extras, options})}} onDecrease ={()=>{handleRemoveFromCart({ image, title, oldPrice})}}/>}
+    </View>
     </View>
   );
 }
 export default Product;
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 2,
+    // borderWidth: 2,
     borderColor: "rgba(0,0,0,0.05)",
     borderRadius: 10,
     marginHorizontal: 8,
+    marginBottom: 15,
     // marginTop: 20,
-    padding: 12,
+    padding: 10,
     backgroundColor: "white",
     justifyContent: "space-around",
   },
@@ -161,24 +164,18 @@ const styles = StyleSheet.create({
     maxWidth: width / 3.3,
     height: height / 7,
     alignSelf: "center",
+    
   },
   text: { fontSize: 14, fontWeight: 500 },
   priceView: {
-    position: "absolute",
-    top: 15,
-    zIndex: 2,
-    left: 15,
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
-
-    borderWidth: 1,
     borderColor : '#aaa',
     borderRadius: 10,
-    padding: 0.5,
-    paddingHorizontal: 6,
+    marginTop: 2,
+    paddingTop: 0.5,
     borderRadius: 30,
-    zIndex: 1,
   },
   priceText: {
     color: "white",

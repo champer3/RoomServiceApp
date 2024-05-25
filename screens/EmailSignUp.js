@@ -139,10 +139,13 @@ function EmailSignUp() {
           >
             <Input
               text={"Email Address"}
+              keyboard="email-address"
               icon={<MaterialIcons name="email" size={24} color="#aaa" />}
               textInputConfig={{
                 cursorColor: "#aaa",
                 value: form.email,
+                autoComplete: 'email',
+                inputmode: 'email',
                 onChangeText: handleFormChange.bind(this, "email"),
               }}
             />
@@ -158,6 +161,9 @@ function EmailSignUp() {
               textInputConfig={{
                 cursorColor: "#aaa",
                 value: form.firstName,
+                autoComplete: 'given-name',
+                autoCapitalize: 'words',
+                inputmode: 'text',
                 onChangeText: handleFormChange.bind(this, "firstName"),
               }}
             />
@@ -167,6 +173,9 @@ function EmailSignUp() {
               textInputConfig={{
                 cursorColor: "#aaa",
                 value: form.lastName,
+                autoCapitalize: 'words',
+                autoComplete: 'given-name',
+                inputmode: 'text',
                 onChangeText: handleFormChange.bind(this, "lastName"),
               }}
             />

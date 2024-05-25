@@ -1,63 +1,77 @@
-import { StyleSheet, Text, View } from "react-native"
-import { Feather } from '@expo/vector-icons';
+import React, { useEffect } from 'react';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 
-function CartModal(){
-    return <View style={styles.container}>
-        <View style={styles.iconContainer}>
-        <Feather name="shopping-cart" size={30} color="white" />
-        </View>
-        <View style={styles.textContainer}>
-            <Text style={styles.topText}>Success</Text>
-            <Text style={styles.text}>Product has been added to cart, click to checkout</Text>
-        </View>
-    </View>
-}
+const CartModal = ({ visible, onClose }) => {
+  const translateY = new Animated.Value(100); // Initial position for slide animation
 
-export default CartModal
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(translateY, {
+        toValue: 100,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible, translateY]);
+
+  return (
+    <Modal
+      animationType="none"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <Animated.View style={[styles.modalContainer, { transform: [{ translateY: translateY }] }]}>
+          <Text style={styles.modalText}>Item added to cart!</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {
-        height: 180,
-        width: "100%",
-        backgroundColor: "white",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 8,
-        padding: 16,
-        shadowColor: 'black',
-        shadowOffset: {
-            width: 1,
-            height: 1
-        },
-        shadowOpacity: 0.4,
-        shadowRadius: 5
-    },
-    iconContainer: {
-        height: 65,
-        width: 65,
-        borderRadius: 50,
-        flex: 1,
-        backgroundColor: '#283618',
-        justifyContent: "center",
-        alignItems: "center"
-    },
-    textContainer: {
-        flex: 4,
-        justifyContent: "center",
-        alignItems: "flex-start",
-        marginLeft: 10
-    },
-    topText: {
-        fontSize: 24,
-        fontWeight: "700",
-        color: "#283618",
-        marginBottom: 5
-    },
-    text: {
-        fontSize: 20,
-        fontWeight: "300",
-        color: "#283618",
-        opacity: 0.7
-    }
-})
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5, // Add elevation for Android shadow
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  closeButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+});
+
+export default CartModal;

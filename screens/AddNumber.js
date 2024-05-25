@@ -129,6 +129,8 @@ function AddNumber() {
               length={14}
               textInputConfig={{
                 cursorColor: "#aaa",
+                autoComplete: 'tel',
+                inputmode: 'tel',
                 value: form.number,
                 onChangeText: handleFormChange.bind(this, "number"),
               }}
