@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, View, Text } from "react-native";
+import { Pressable, StyleSheet, View, } from "react-native";
 import React, { useState } from "react";
 import { MaterialIcons } from '@expo/vector-icons';
+import Text from '../Text';
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from '@expo/vector-icons';
 
@@ -29,7 +30,7 @@ function IncrementDecrementBton({ minValue = 0, maxValue = 100, onIncrease, onDe
         <View style={{alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', borderRadius: 200, borderWidth: 0 }}><AntDesign name="minuscircle" size={32} color="#BC6C25" /></View>
         
       </Pressable>
-      <Text style={{color: 'white', fontWeight: 600, fontSize: 12}}>{minValue}</Text>
+      <Text style={{color: 'white',  fontSize: 12}}>{minValue}</Text>
       <Pressable onPress={
           handleIncrementCounter
         } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50, alignItems: 'center', justifyContent: 'center' }}>

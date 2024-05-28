@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, Pressable, ScrollView, TextInput, Dimensions } from "react-native";
+import { StyleSheet, Image, View, Pressable, ScrollView, TextInput, Dimensions } from "react-native";
 import Input from "../components/Inputs/Input";
 import Button from "../components/Buttons/Button";
 import BottomSheet from '../components/Modals/BottomSheet';
@@ -17,7 +17,7 @@ import {useSelector, useDispatch} from 'react-redux'
 import { addReview } from "../Data/Items";
 import {clearCart, completeOrder} from '../Data/cart'
 import OrderDescription from "../components/OrderDescription";
-
+import Text from '../components/Text';
 
 const { width, height } = Dimensions.get("window");
 function OrderDisplay(){

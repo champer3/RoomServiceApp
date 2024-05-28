@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View, TextInput, Pressable } from "react-native";
+import { StyleSheet, View, TextInput, Pressable } from "react-native";
+import Text from '../Text';
 import { Feather } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
 import { Ionicons } from '@expo/vector-icons';

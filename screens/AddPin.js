@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TouchableWithoutFeedback, Keyboard, Alert, Dimensions, KeyboardAvoidingView, Pressable, ActivityIndicator } from "react-native";
+import { StyleSheet, Image,  View, TouchableWithoutFeedback, Keyboard, Alert, Dimensions, KeyboardAvoidingView, Pressable, ActivityIndicator } from "react-native";
 import CodeInput from "../components/Inputs/CodeInput";
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
-
+import Text from '../components/Text';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 

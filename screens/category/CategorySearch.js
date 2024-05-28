@@ -2,13 +2,13 @@ import {
   ImageBackground,
   StyleSheet,
   View,
-  Text,
   TextInput,
   Pressable,
   Dimensions,
   Image,
   Modal,
 } from "react-native";
+import Text from '../../components/Text';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, EvilIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from '@expo/vector-icons';

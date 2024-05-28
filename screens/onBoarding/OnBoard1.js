@@ -4,9 +4,9 @@ import {
   Dimensions,
   ImageBackground,
   StatusBar,
-  Text,
   ActivityIndicator
 } from "react-native";
+import Text from '../../components/Text';
 // import { StatusBar } from "expo-status-bar";
 import Button from "../../components/Buttons/Button";
 import AsyncStorage from "@react-native-async-storage/async-storage";

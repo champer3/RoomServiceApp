@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable, ScrollView } from "react-native";
+import { StyleSheet, View, Pressable, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,7 +14,7 @@ import {clearCart, completeOrder} from '../Data/cart'
 import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
 import OrderSuccess from "../components/Modals/OrderSuccess";
-
+import Text from '../components/Text';
 function PaymentScreen() {
   const [visible, setVisible] = useState(false)
   const dispatch = useDispatch();

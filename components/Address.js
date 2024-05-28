@@ -30,7 +30,7 @@ function Address({ title, address, active= false }) {
       </View>
       </View>
       <View style={styles.radio}>
-      <Ionicons name={`${active ? "md-radio-button-on" : "md-radio-button-off"  }`} size={30} color="black" />
+      <Ionicons name={`${active ? "radio-button-on" : "radio-button-off"  }`} size={30} color="black" />
       </View>
     </View>
   );

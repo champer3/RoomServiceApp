@@ -59,7 +59,9 @@ import LoaderScreen from "./screens/LoaderScreen";
 import LoadScreen from "./screens/LoadScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import io from 'socket.io-client';
-
+import * as Font from 'expo-font';
+import AppLoading from 'expo-app-loading';
+import FalseHomeScreen from "./screens/FalseHomeScreen";
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -265,7 +267,31 @@ function HomeTabs() {
 
 
 export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000); // 5 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    loadFonts().then(() => setFontsLoaded(true));
+  }, []);
+
+  const loadFonts = () => {
+    return Font.loadAsync({
+      'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
+      // 'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
+      // Add other Poppins font styles if needed
+    });
+  };
+  // if (!fontsLoaded) {
+  //   return <AppLoading />;
+  // }
   return (
     <Provider store={store}>
       <StripeProvider publishableKey={"pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"}>
@@ -287,11 +313,15 @@ export default function App() {
               component={Authentication}
               options={{ headerShown: false }}
             />
+             {isLoading ? (
+              <Stack.Screen name="HomeTabs" component={FalseHomeScreen} options={{ headerShown: false }} />
+        
+            ) : (
             <Stack.Screen
               name="HomeTabs"
               component={HomeTabs}
               options={{ headerShown: false }}
-            />
+            />)}
             <Stack.Screen
               name="Product"
               component={ProductDisplay}

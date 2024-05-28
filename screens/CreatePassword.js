@@ -1,7 +1,6 @@
 import {
   StyleSheet,
   Image,
-  Text,
   View,
   TouchableWithoutFeedback,
   Keyboard,
@@ -9,6 +8,7 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator
 } from "react-native";
+import Text from '../components/Text';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Button from "../components/Buttons/Button";
 import Info from "../components/Info";

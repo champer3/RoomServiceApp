@@ -1,7 +1,6 @@
 import {
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
@@ -10,6 +9,7 @@ import {
   Image,
   StatusBar,
 } from "react-native";
+import Text from '../../components/Text';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
 import BoxItemCategory from "../../components/Category/BoxItemCategory";
@@ -248,8 +248,8 @@ function Category() {
   const result = searchTitles(productItems, value);
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={styles.container}>
+      <GestureHandlerRootView  style={styles.container}>
+        <SafeAreaView>
         <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.search}>
             <Input
@@ -278,7 +278,7 @@ function Category() {
           <View
             style={[
               styles.horizontalCat,
-              { height: value.length ? height / 8 : height / 5.5 },
+              { height: value.length ? height / 7 : height / 5.2 },
             ]}
           >
             {!value.length && <Text style={styles.text}>Categories</Text>}
@@ -400,8 +400,8 @@ export default Category;
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: "2%",
-    marginTop: "5%",
+    paddingHorizontal: "2%",
+    mpaddingTop: "4%",
     flex: 1,
     backgroundColor: "white"
   },
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     paddingRight: 30,
-    width: width / 4.2,
+    width: width / 4,
   },
   browseText: {
     fontSize: 24,

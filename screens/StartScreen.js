@@ -1,8 +1,9 @@
-import { Image, Pressable, SafeAreaView, StyleSheet, Text, View , ActivityIndicator, Dimensions} from "react-native";
+import { Image, Pressable, SafeAreaView, StyleSheet, View , ActivityIndicator, Dimensions} from "react-native";
 import React, { useState, useEffect } from 'react';
 import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { useNavigation } from "@react-navigation/native";
+import Text from '../components/Text';
 
 
 const { width, height } = Dimensions.get("window");
@@ -100,7 +101,6 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: "100%",
     height: "30%",
-    marginTop: 6,
     marginBottom: 32
   },
   description: {

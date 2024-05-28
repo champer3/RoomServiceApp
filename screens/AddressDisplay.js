@@ -1,9 +1,10 @@
-import { Image, StyleSheet, Text, View, Pressable, Dimensions, Keyboard, ScrollView } from "react-native";
+import { Image, StyleSheet, View, Pressable, Dimensions, Keyboard, ScrollView } from "react-native";
 import FlexButton from "../components/Buttons/FlexButton";
 import AddressEditable from "../components/AddressEditable";
 import {useSelector, useDispatch} from 'react-redux'
 import { useNavigation } from "@react-navigation/native";
 const { width, height } = Dimensions.get("window");
+import Text from '../components/Text';
 function AddressDisplay() {
   const navigation = useNavigation()
   const address = useSelector((state) => state.profileData.profile).address

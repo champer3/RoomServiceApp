@@ -1,6 +1,7 @@
-import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView } from "react-native";
+import { Image, StyleSheet,  View, Pressable, Dimensions, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
+import Text from '../components/Text';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Review from "../components/Reviews/Review"
 import Rating from "../components/Reviews/Rating"

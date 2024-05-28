@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
+import { StyleSheet,View, Modal, Animated , Dimensions, Platform,
     TouchableWithoutFeedback,
     Button,
     Keyboard,
@@ -9,6 +9,7 @@ import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
     ActivityIndicator} from "react-native";
   import MapView from "react-native-maps";
   import * as Location from 'expo-location';
+  import Text from '../components/Text';
   import { Marker } from "react-native-maps";
   import { Polyline } from "react-native-maps";
   import { Octicons } from '@expo/vector-icons';

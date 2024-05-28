@@ -1,6 +1,5 @@
 import {
   StyleSheet,
-  Text,
   View,
   Pressable,
   Alert,
@@ -8,6 +7,7 @@ import {
   TextInput,
   ActivityIndicator
 } from "react-native";
+import Text from '../components/Text';
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useRef, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -106,9 +106,11 @@ function CheckoutScreen() {
     }
     return "Item not found in the menu";
   }
+  
   const navigation = useNavigation();
   function pressHandler() {
-    if (address.length) {
+    console.log(address, 'address')
+    if (address.length>= 1) {
       navigation.navigate("Make Payment", { total: getTotalSum().toFixed(2) });
     }
   }
@@ -417,14 +419,14 @@ function CheckoutScreen() {
   }
   const newList = addQuantityToObjects(cartItems);
   return (
-    <GestureHandlerRootView style={{ flex: 1, paddingTop: 20 }}>
+    <GestureHandlerRootView style={{ flex: 1}}>
        {isLoading ? (
         // Render loading indicator while loading
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
         <ActivityIndicator size="large" color="#0000ff" /></View>
       ) : (<><ScrollView
         onTouchStart={() => ref2?.current?.scrollTo(0)}
-        style={{ marginBottom: "19%" }}
+        style={{ marginBottom: "29%", paddingTop: 10  }}
       >
         <View style={styles.recommendedView}>
           <Text style={styles.text}>Shipping Address</Text>
@@ -954,7 +956,7 @@ function CheckoutScreen() {
           <FlexButton
             background={!address.length ? "rgba(0,0,0,0.5)" : "#283618"}
             // onPress={tryCreateOrder}
-            onPress={checkOut}
+            onPress={address.length ? checkOut : ()=>{}}
           >
             <Fontisto name="credit-card" size={24} color="white" />
             <Text style={{ color: "white" }}>Make Payment</Text>

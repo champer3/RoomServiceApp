@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView, ActivityIndicator } from "react-native";
+import { Image, StyleSheet,  View, Pressable, Dimensions, ScrollView, ActivityIndicator } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,7 +20,7 @@ import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-
+import Text from '../components/Text';
 function AddressConfirm() {
   const data = useSelector((state) => state.profileData.profile)
   const orders = useSelector((state) => state.cartItems.order)

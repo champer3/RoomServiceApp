@@ -2,12 +2,12 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
-    Text,
     TextInput,
     View,
   Dimensions,
   Image
   } from "react-native";
+  import Text from '../../components/Text';
   import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
   import { Feather, EvilIcons } from "@expo/vector-icons";
   import BoxItemCategory from "../../components/Category/BoxItemCategory";

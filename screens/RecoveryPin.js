@@ -1,8 +1,8 @@
-import { StyleSheet, Image, Text, View } from "react-native";
+import { StyleSheet, Image, View } from "react-native";
 import CodeInput from "../components/Inputs/CodeInput";
 import Button from "../components/Buttons/Button";
 import Info from "../components/Info";
-
+import Text from '../components/Text';
 function RecoveryPin() {
   return (
     <View style={styles.container}>

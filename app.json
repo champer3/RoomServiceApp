@@ -63,7 +63,8 @@
             "deploymentTarget": "14.0"
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "sdkVersion": "50.0.0",
     "platforms": [

@@ -1,7 +1,8 @@
 import { Image, Pressable, Dimensions } from "react-native";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import FlexButton from "../Buttons/FlexButton";
 import { MaterialIcons } from '@expo/vector-icons';
+import Text from '../Text';
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -179,12 +180,12 @@ const styles = StyleSheet.create({
   },
   priceText: {
     color: "white",
-    fontWeight: "900",
+    // fontWeight: "900",
     fontSize: 14,
   },
   crossPrice: {
     color: "#aaa",
-    fontWeight: "700",
+    // fontWeight: "700",
     fontStyle: "italic",
     textDecorationLine: "line-through",
     fontSize: 14,

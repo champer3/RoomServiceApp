@@ -1,7 +1,6 @@
 import {
   StyleSheet,
   Image,
-  Text,
   View,
   TouchableWithoutFeedback,
   Keyboard,
@@ -10,6 +9,7 @@ import {
   Dimensions,
   Alert,
 } from "react-native";
+import Text from '../components/Text';
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";

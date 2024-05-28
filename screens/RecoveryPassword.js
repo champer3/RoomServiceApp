@@ -1,9 +1,9 @@
-import { StyleSheet, Image, Text, View } from "react-native";
+import { StyleSheet, Image, View } from "react-native";
 import Button from "../components/Buttons/Button";
 import Info from "../components/Info";
 import Input from "../components/Inputs/Input";
 import { MaterialIcons } from "@expo/vector-icons";
-
+import Text from '../components/Text';
 function RecoveryPassword() {
   return (
     <View style={styles.container}>

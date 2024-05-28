@@ -2,7 +2,6 @@ import {
   StyleSheet,
   View,
   TextInput,
-  Text,
   Pressable,
   Image,
   Dimensions,
@@ -10,7 +9,7 @@ import {
   Button,
   Animated
 } from "react-native";
-
+import Text from '../components/Text';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -35,6 +34,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
 import io from 'socket.io-client';
 import TransparentSheet from "../components/Modals/TransparentSheet.";
+import axios from "axios";
 import { current } from "@reduxjs/toolkit";
 
 // const SERVER_URL = 'ws://192.168.179.1:3000';
@@ -95,7 +95,7 @@ const FadeInView = (props) => {
 };
 
 function Home() {
-
+  
   const [socket, setSocket] = useState(null);
   const address = useSelector((state) => state.profileData.profile)
   console.log(address)
@@ -279,6 +279,29 @@ function Home() {
     // Return the count of "Delivering" orders
     return count;
   }
+
+  const tryCreateOrder = async () => {
+    try {
+      const token = await retrieveTokenFromAsyncStorage();
+      console.log(token)
+      const order = await axios.get(
+        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/orders/get-your-orders",
+        // "http://10.0.0.173:3000/api/v1/orders",
+       
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // "Content-Type": "application/json",
+          },
+        }
+      );
+      return order
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  console.log(tryCreateOrder().data)
   // deliveringOrdersCount = countDeliveringOrders(orders);
   useEffect(() => {
     setBlink(true)
@@ -365,39 +388,34 @@ function Home() {
     setFoodDictionary(foodStore)
     dispatch(addToCart({ id: { title: pro.title, ...{ ...pro, ...newItem, ['oldPrice']: pro.oldPrice + price } } }))
   }
-  const scrollX = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const startScrolling = () => {
-      scrollX.setValue(0); // Reset the animation value
+    const timer = setInterval(() => {
+      let nextIndex = currentIndex + 1;
+      if (nextIndex >= 5) {
+        nextIndex = 0;
+      }
+      setCurrentIndex(nextIndex);
+      Animated.spring(animatedValue, {
+        toValue: nextIndex * (width  ),
+        useNativeDriver: true,
+      }).start();
+    }, 5000);
 
-      const scrollAnimation = Animated.loop(
-        Animated.timing(scrollX, {
-          toValue: width*4.15,
-          duration: 40000, // 3 seconds per image
-          useNativeDriver: true,
-        })
-      ).start();
+    return () => clearInterval(timer);
+  }, [currentIndex, 5, animatedValue]);
 
-      const listenerId = scrollX.addListener(({ value }) => {
-        if (scrollViewRef.current) {
-          scrollViewRef.current.scrollTo({
-            x: value,
-            animated: false,
-          });
-        }
-      });
-      
-      // return () => {
-      //   scrollAnimation.stop();
-      //   scrollX.removeListener(listenerId);
-      // };
-    };
+  useEffect(() => {
+    animatedValue.addListener(({ value }) => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ x: value, animated: false });
+      }
+    });
+  }, [animatedValue]);
 
-    startScrolling();
-  }, [scrollX]);
-  
   function handleBuy() {
     let price = 0;
     let newItem = {}
@@ -517,7 +535,7 @@ function Home() {
                     color: "white",
                     fontSize: 16,
                     letterSpacing: 0.4,
-                    fontWeight: 900,
+                    // fontWeight: 900,
                   }}
                 >
                   {greeting}
@@ -526,19 +544,25 @@ function Home() {
                   style={{
                     color: "white",
                     fontSize: 16,
-                    fontWeight: 800,
+                    // fontWeight: 800,
                     letterSpacing: 1,
                   }}
                 >{`${data.firstName} `}</Text>
                 {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
               </View>}
 
-              <View style={[styles.cart, { width: 50, height: 40 }]}>
+              <View style={[styles.cart, { width: 60, height: 45, 
+              shadowColor: '#000',
+              shadowOffset: { width: 10, height: 7 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,
+              elevation: 5, // Ad
+              }]}>
                 <Pressable
                   onPress={cartHandler}
                 >
                   <View>
-                    <Feather name="shopping-cart" size={20} color="white" />
+                    <Feather name="shopping-cart" size={24} color="#425928" />
                   </View>
 
                   {cartItems.length > 0 && (
@@ -705,7 +729,7 @@ function Home() {
         contentContainerStyle={styles.scrollViewContent}
       >
                 <View
-                  style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15}}
+                  style={{ flexDirection: "row", flexWrap: "nowrap"}}
                 >
                   <Pressable >
                     <View style={styles.imageContainer}>
@@ -747,17 +771,28 @@ function Home() {
                       />
                     </View>
                   </Pressable>
+                  <Pressable >
+                    <View style={styles.imageContainer}>
+                      <Image
+                        style={styles.image}
+                        source={require("../assets/deal1.png")}
+                      />
+                    </View>
+                  </Pressable>
                 </View>
               </ScrollView>
             </View>
 
-            <View style={{marginTop: 16}}>
-              <Text style={[styles.text, {paddingLeft: '3%' }]}>Recommended Foods</Text>
+              <View style={{marginTop: 16, height: 250, alignItems: 'center'}}>
+              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
+                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Recommended Foods</Text>
+              </View>
               <ProductHorizontal
                 items={categoryObject["food"].slice(0, 6)}
                 onPress={handleAddToCart}
               />
             </View>
+
 
             <View style={[styles.recommendedView, { alignItems: "center" }]}>
               <Deal
@@ -773,13 +808,22 @@ function Home() {
                 color='#283618'
               />
             </View>
-            <View style={{marginTop: 16}}>
+            <View style={{marginVertical: 16, height: 270, alignItems: 'center'}}>
+              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
+                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Snacks For You</Text>
+              </View>
+              <ProductHorizontal
+                items={categoryObject["snacks"].slice(0, 6)}
+                onPress={handleAddToCart}
+              />
+            </View>
+            {/* <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Snacks For You</Text>
               <ProductHorizontal
                 items={categoryObject["snacks"]}
                 onPress={handleAddToCart}
               />
-            </View>
+            </View> */}
             <Deal
               text={"Best Grocery Deals"}
               onPress={dealHandler}
@@ -794,13 +838,22 @@ function Home() {
               ]}
               color='#283618'
             />
-             <View style={{marginTop: 16}}>
+            <View style={{marginVertical: 16, height: 270, alignItems: 'center'}}>
+              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
+                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Alcohol</Text>
+              </View>
+              <ProductHorizontal
+                items={categoryObject["alcohol"].slice(0, 6)}
+                onPress={handleAddToCart}
+              />
+            </View>
+             {/* <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Alcohol</Text>
               <ProductHorizontal
                 items={categoryObject["alcohol"]}
                 onPress={handleAddToCart}
               />
-            </View>
+            </View> */}
             <View style={[styles.recommendedView, { alignItems: "center" }]}>
               <Deal
                 text={"Gourmet Takes on Comfort Food"}
@@ -829,14 +882,22 @@ function Home() {
                 color='#283618'
               />
             </View>
-
-            <View style={{marginTop: 16}}>
+            <View style={{marginVertical: 16, height: 270, alignItems: 'center'}}>
+              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
+                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Drinks</Text>
+              </View>
+              <ProductHorizontal
+                items={categoryObject["drink"].slice(0, 6)}
+                onPress={handleAddToCart}
+              />
+            </View>
+            {/* <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Drinks</Text>
               <ProductHorizontal
                 items={categoryObject["drink"]}
                 onPress={handleAddToCart}
               />
-            </View>
+            </View> */}
             <View style={[{ alignItems: "center" }]}>
               <Deal
                 text={"Pantry Deals"}
@@ -853,13 +914,22 @@ function Home() {
                 color='#283618'
               />
             </View>
-            <View style={{marginTop: 16}}>
+            <View style={{marginVertical: 16, height: 270, alignItems: 'center'}}>
+              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
+                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Home</Text>
+              </View>
+              <ProductHorizontal
+                items={categoryObject["home"].slice(0, 6)}
+                onPress={handleAddToCart}
+              />
+            </View>
+            {/* <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Home</Text>
               <ProductHorizontal
                 items={categoryObject["home"]}
                 onPress={handleAddToCart}
               />
-            </View>
+            </View> */}
             <View style={{}}>
               <Deal
                 text={'Lighter Options'}
@@ -1032,7 +1102,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // borderWidth: 1,
     borderRadius: 10,
-    backgroundColor: '#283618',
+    backgroundColor: 'white',
     // backgroundColor: "#023C72",
     borderColor: "white",
     // borderWidth: 1

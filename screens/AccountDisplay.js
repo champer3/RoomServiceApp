@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable, Alert, ScrollView, Image, Dimensions, ActivityIndicator } from "react-native";
+import { StyleSheet,  View, Pressable, Alert, ScrollView, Image, Dimensions, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useSelector} from 'react-redux'
 import axios from "axios";
+import Text from '../components/Text';
 
 const { width, height } = Dimensions.get("window");
 function AccountDisplay() {

@@ -1,7 +1,7 @@
 import { Image, Pressable, Dimensions } from "react-native";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet,  View } from "react-native";
 import {useSelector} from 'react-redux'
-
+import Text from './Text';
 const { width, height } = Dimensions.get("window");
 
 
@@ -51,7 +51,7 @@ function Profile({ action }) {
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 9, alignItems: 'center' }}
               >
-                <Text style={{fontWeight: '300', fontSize: 16, color: 'white'}}>{`${data.email}`}</Text>
+                <Text style={{ fontSize: 13, color: 'white'}}>{`${data.email}`}</Text>
               </View>
             </View>
         </View>
@@ -64,7 +64,8 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 10,
     // marginTop: 20,
-    padding: 20,
+    padding: 10,
+    paddingVertical: 20,
     backgroundColor: "#283618",
     justifyContent: "space-around",
     
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
     maxWidth: width / 5.7,
     height: height / 12,
   },
-  text: { fontSize: 20, fontWeight: 'bold', lineHeight: 25, color: 'white' },
+  text: { fontSize: 20, lineHeight: 25, color: 'white' },
   priceView: {
     position: "absolute",
     top: 15,
@@ -97,14 +98,14 @@ const styles = StyleSheet.create({
   },
   priceText: {
     color: "white",
-    fontWeight: "900",
-    fontStyle: "italic",
+    // fontWeight: "900",
+    // fontStyle: "italic",
     fontSize: 14,
   },
   crossPrice: {
     color: "#aaa",
-    fontWeight: "700",
-    fontStyle: "italic",
+    // fontWeight: "700",
+    // fontStyle: "italic",
     textDecorationLine: "line-through",
     fontSize: 14,
   },

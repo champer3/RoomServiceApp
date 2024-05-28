@@ -3,9 +3,9 @@ import {
   View,
   Dimensions,
   ImageBackground,
-  Text,
   ActivityIndicator
 } from "react-native";
+import Text from '../../components/Text';
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import Button from "../../components/Buttons/Button";

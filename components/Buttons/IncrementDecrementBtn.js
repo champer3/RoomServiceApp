@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, View, Text } from "react-native";
+import { Pressable, StyleSheet, View, } from "react-native";
 import React, { useState } from "react";
 import { MaterialIcons } from '@expo/vector-icons';
+import Text from '../Text';
 import { Feather } from '@expo/vector-icons';
 
 function IncrementDecrementBtn({ minValue = 0, maxValue = 100, onIncrease, onDecrease }) {

@@ -1,7 +1,6 @@
 import {
   Image,
   StyleSheet,
-  Text,
   View,
   Pressable,
   Dimensions,
@@ -10,7 +9,7 @@ import {
   TextInput,
   Animated
 } from "react-native";
-
+import Text from '../components/Text';
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";

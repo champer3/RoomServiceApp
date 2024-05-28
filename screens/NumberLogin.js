@@ -1,7 +1,6 @@
 import {
   StyleSheet,
   Image,
-  Text,
   View,
   TouchableWithoutFeedback,
   Keyboard,
@@ -23,6 +22,7 @@ import React, {
   useImperativeHandle,
   useState,
 } from "react";
+import Text from '../components/Text';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const height = Dimensions.get('screen').height

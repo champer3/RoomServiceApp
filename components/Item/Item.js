@@ -1,5 +1,6 @@
 import { Image, Pressable, Animated } from "react-native";
-import { StyleSheet, Text, View, Dimensions } from "react-native";
+import { StyleSheet,  View, Dimensions } from "react-native";
+import Text from '../Text';
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 
@@ -101,7 +102,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     height: height/13,
     width: width/6.2,
+    shadowColor: 'purple',
+              shadowOffset: { width: 10, height: 70 },
+              shadowOpacity: 1,
+              shadowRadius: 3,
+              elevation: 25, // Ad
   },
   image: { width: width/5.8, height: height/ 18, resizeMode: 'contain'  },
-  text: { fontWeight: "bold", fontSize: 13, textAlign: "center" },
+  text: {  fontSize: 13, textAlign: "center" },
 });

@@ -1,6 +1,6 @@
 import { Image, Pressable, Dimensions, ScrollView } from "react-native";
-import { StyleSheet, Text, View } from "react-native";
-
+import { StyleSheet, View } from "react-native";
+import Text from '../Text';
 const { width, height } = Dimensions.get("window");
 import { AntDesign } from "@expo/vector-icons";
 import { EvilIcons } from '@expo/vector-icons';

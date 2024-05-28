@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable, ScrollView, Dimensions, Image } from "react-native";
+import { StyleSheet, View, Pressable, ScrollView, Dimensions, Image } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,7 +14,7 @@ import {clearCart, completeOrder} from '../Data/cart'
 import { useNavigation , useRoute} from "@react-navigation/native";
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
-import {Mailer} from 'react-native-mail'
+import Text from '../components/Text';
 
 const { width, height } = Dimensions.get("window");
 function RecieptScreen() {

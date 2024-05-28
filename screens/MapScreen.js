@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
+import { StyleSheet, View, Modal, Animated , Dimensions, Platform,
   TouchableWithoutFeedback,
   Button,
   Keyboard,
@@ -25,7 +25,7 @@ import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-  
+import Text from '../components/Text';
 
 export default function MapScreen() {
     const [location, setLocation] = useState(null);

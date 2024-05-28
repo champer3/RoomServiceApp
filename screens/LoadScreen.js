@@ -1,16 +1,27 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import { store } from "../Data/Store";
+import FalseHomeScreen from "./FalseHomeScreen";
 
 
 function LoadScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation()
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000); // 5 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(()=>{setTimeout(()=>{retrieveNewFromAsyncStorage()}, 3000) },[])
  const retrieveTokenFromAsyncStorage = async () => {
   try {
@@ -19,8 +30,12 @@ function LoadScreen() {
     storedToken = JSON.parse(storedToken)
     if (profile) {
       profile = JSON.parse(profile)
-      console.log(profile, storedToken)
       dispatch(updateProfile({ id: {firstName: profile.firstName, lastName: profile.lastName,phoneNumber : profile.phoneNumber, email: profile.email, address: storedToken.address}}));
+     setIsLoading(true)
+     
+      if (isLoading) { 
+        return <FalseHomeScreen/>
+      }
       navigation.replace('HomeTabs')
     } else {
       navigation.replace('Authentication')

@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TextInput, View, Pressable, Dimensions } from "react-native";
+import { Image, StyleSheet, TextInput, View, Pressable, Dimensions } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef , useEffect} from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,6 +14,7 @@ import { EvilIcons } from '@expo/vector-icons';
 import ProductAction from "../components/Product/ProductAction";
 import Input from "../components/Inputs/Input";
 import Deal from "../components/Category/Deal";
+import Text from '../components/Text';
 import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
 import {addToCart, removeFromCart, deleteFromCart, addOptions, deleteItem, updateCart} from '../Data/cart'
@@ -276,8 +277,8 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
     console.log(display)
     const ref3 = useRef()
   return (
-    <GestureHandlerRootView  style = {{flex: 1, paddingTop: 20}}>
-        <ScrollView onTouchStart={()=>{ref2?.current?.scrollTo(0);ref?.current?.scrollTo(0); ref3?.current?.scrollTo(0); }} style={{marginBottom: '19%' }}>
+    <GestureHandlerRootView  style = {{flex: 1,}}>
+        <ScrollView onTouchStart={()=>{ref2?.current?.scrollTo(0);ref?.current?.scrollTo(0); ref3?.current?.scrollTo(0); }} style={{marginBottom: '19%' , paddingTop: 20 }}>
 
         {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
         {cartItems.length > 0 && <><View style={{marginHorizontal: '10%', alignItems: 'center', justifyContent: 'flex-start', gap: 35}}>
@@ -286,7 +287,6 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
         <View  style={{paddingHorizontal: '5%', paddingVertical: '10%'}}>
             <Text style={{
                         color: "black",
-                        fontWeight: "bold",
                         fontSize: 16,
                     }}>Have a coupon code?</Text>
             <Input text={'Enter Coupon'} buttonText={'Apply code'}/>
@@ -449,7 +449,7 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
                 <Text
                 style={{
                     color: "#aaa",
-                    fontWeight: "bold",
+                    // fontWeight: "bold",
                     fontSize: 20,
                 }}
                 > Total Payment</Text>

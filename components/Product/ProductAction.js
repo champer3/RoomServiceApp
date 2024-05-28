@@ -1,6 +1,7 @@
 import { Image, Pressable, Dimensions } from "react-native";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import Text from '../Text';
 const { width, height } = Dimensions.get("window");
 
 
@@ -11,7 +12,14 @@ function ProductAction({title, image, price, reviews, category, quantity, action
     navigation.navigate('Product', {title: title, image : image, reviews: reviews, oldPrice: price, category: category })
   }
   return (
-    <View style={[styles.container]}>
+    <Pressable onPress={onTap} style={[styles.container,
+      {shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.8,
+      shadowRadius: 2,
+      elevation: 5, // Add elevation for Android shadow
+    }
+    ]}>
       <View style={styles.imageContainer}>
         <View
           style={{
@@ -53,7 +61,7 @@ function ProductAction({title, image, price, reviews, category, quantity, action
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 9, alignItems: 'center' }}
               >
-                <Text style={{fontWeight: 'bold', fontSize: 18}}>{`$${(price).toFixed(2)}`}</Text>
+                <Text style={{ fontSize: 18}}>{`$${(price).toFixed(2)}`}</Text>
                 {quantity != null && <View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 5, borderRadius: 50}}>
                     <Text>{quantity}</Text>
                 </View>}
@@ -64,7 +72,7 @@ function ProductAction({title, image, price, reviews, category, quantity, action
             </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 export default ProductAction;
@@ -75,6 +83,9 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.05)",
     borderRadius: 45,
     // marginTop: 20,
+    borderTopWidth: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
     padding: 20,
     backgroundColor: "white",
     justifyContent: "space-around",
@@ -108,13 +119,13 @@ const styles = StyleSheet.create({
   },
   priceText: {
     color: "white",
-    fontWeight: "900",
+    // fontWeight: "900",
     fontStyle: "italic",
     fontSize: 14,
   },
   crossPrice: {
     color: "#aaa",
-    fontWeight: "700",
+    // fontWeight: "700",
     fontStyle: "italic",
     textDecorationLine: "line-through",
     fontSize: 14,

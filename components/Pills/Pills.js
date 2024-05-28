@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet,  View } from "react-native";
+import Text from '../Text';
 
 function Pill({ text, type = "pill" , onPress}) {
   const weight = type == "pill" ? "thin" : "bold";

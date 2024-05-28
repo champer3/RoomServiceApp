@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Modal, Animated , Dimensions, Platform,
+import { StyleSheet,  View, Modal, Animated , Dimensions, Platform,
   TouchableWithoutFeedback,
   Button,
   Keyboard,
@@ -15,7 +15,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getAddress, getPosition, searchAddress, getDirections } from "../util/location";
 import { useRoute } from "@react-navigation/native";
-  
+import Text from '../components/Text';
 
 export default function Delivery() {
     const [location, setLocation] = useState(null);

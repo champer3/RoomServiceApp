@@ -1,6 +1,7 @@
-import { ScrollView, StyleSheet, Text, View, Pressable, Dimensions } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, Dimensions } from "react-native";
 import Item from "../Item/Item";
 import Product from "../Product/Product";
+import Text from '../Text';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
@@ -50,5 +51,5 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "95%",
   },
-  text: { fontWeight: "bold", fontSize: 16, marginBottom: 20, color: "white" },
+  text: {  fontSize: 16, marginBottom: 20, color: "white" },
 });

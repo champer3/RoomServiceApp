@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View, Pressable, Dimensions, ScrollView } from "react-native";
+import { Image, StyleSheet, View, Pressable, Dimensions, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,6 +11,7 @@ import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import ProductCategory from "../components/Category/ProductCategory";
 import FlexButton from "../components/Buttons/FlexButton";
 import { useRoute } from "@react-navigation/native";
+import Text from '../components/Text';
 
 const { width, height } = Dimensions.get("window");
 function ReviewScreen() {
