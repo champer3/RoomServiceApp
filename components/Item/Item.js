@@ -102,11 +102,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     height: height/13,
     width: width/6.2,
-    shadowColor: 'purple',
-              shadowOffset: { width: 10, height: 70 },
-              shadowOpacity: 1,
-              shadowRadius: 3,
-              elevation: 25, // Ad
   },
   image: { width: width/5.8, height: height/ 18, resizeMode: 'contain'  },
   text: {  fontSize: 13, textAlign: "center" },
