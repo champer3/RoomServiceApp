@@ -21,8 +21,5 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'nowrap',
         // height: "45%",
-        position: 'absolute',
-        top: 32,
-        
     }
 })

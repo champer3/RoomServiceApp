@@ -783,12 +783,10 @@ function Home() {
               </ScrollView>
             </View>
 
-              <View style={{marginTop: 16, height: 250, alignItems: 'center'}}>
-              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
-                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Recommended Foods</Text>
-              </View>
+             <View style={{marginTop: 16}}>
+              <Text style={[styles.text, {paddingLeft: '3%' }]}>Recommended Foods</Text>
               <ProductHorizontal
-                items={categoryObject["food"].slice(0, 6)}
+                items={categoryObject["food"]}
                 onPress={handleAddToCart}
               />
             </View>
@@ -808,22 +806,13 @@ function Home() {
                 color='#283618'
               />
             </View>
-            <View style={{marginVertical: 16, height: 270, alignItems: 'center'}}>
-              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
-                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Snacks For You</Text>
-              </View>
-              <ProductHorizontal
-                items={categoryObject["snacks"].slice(0, 6)}
-                onPress={handleAddToCart}
-              />
-            </View>
-            {/* <View style={{marginTop: 16}}>
+            <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Snacks For You</Text>
               <ProductHorizontal
                 items={categoryObject["snacks"]}
                 onPress={handleAddToCart}
               />
-            </View> */}
+            </View>
             <Deal
               text={"Best Grocery Deals"}
               onPress={dealHandler}
@@ -838,22 +827,13 @@ function Home() {
               ]}
               color='#283618'
             />
-            <View style={{marginVertical: 16, height: 270, alignItems: 'center'}}>
-              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
-                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Alcohol</Text>
-              </View>
-              <ProductHorizontal
-                items={categoryObject["alcohol"].slice(0, 6)}
-                onPress={handleAddToCart}
-              />
-            </View>
-             {/* <View style={{marginTop: 16}}>
+             <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Alcohol</Text>
               <ProductHorizontal
                 items={categoryObject["alcohol"]}
                 onPress={handleAddToCart}
               />
-            </View> */}
+            </View>
             <View style={[styles.recommendedView, { alignItems: "center" }]}>
               <Deal
                 text={"Gourmet Takes on Comfort Food"}
@@ -882,22 +862,13 @@ function Home() {
                 color='#283618'
               />
             </View>
-            <View style={{marginVertical: 16, height: 270, alignItems: 'center'}}>
-              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
-                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Drinks</Text>
-              </View>
-              <ProductHorizontal
-                items={categoryObject["drink"].slice(0, 6)}
-                onPress={handleAddToCart}
-              />
-            </View>
-            {/* <View style={{marginTop: 16}}>
+            <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Drinks</Text>
               <ProductHorizontal
                 items={categoryObject["drink"]}
                 onPress={handleAddToCart}
               />
-            </View> */}
+            </View>
             <View style={[{ alignItems: "center" }]}>
               <Deal
                 text={"Pantry Deals"}
@@ -914,22 +885,13 @@ function Home() {
                 color='#283618'
               />
             </View>
-            <View style={{marginVertical: 16, height: 270, alignItems: 'center'}}>
-              <View style={{backgroundColor: '#283618', height: '100%', width: '90%', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10}}>
-                <Text style={[styles.text, {paddingLeft: '3%', color: 'white' }]}>Home</Text>
-              </View>
-              <ProductHorizontal
-                items={categoryObject["home"].slice(0, 6)}
-                onPress={handleAddToCart}
-              />
-            </View>
-            {/* <View style={{marginTop: 16}}>
+            <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Home</Text>
               <ProductHorizontal
                 items={categoryObject["home"]}
                 onPress={handleAddToCart}
               />
-            </View> */}
+            </View>
             <View style={{}}>
               <Deal
                 text={'Lighter Options'}
