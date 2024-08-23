@@ -1,7 +1,6 @@
 import io from 'socket.io-client';
 
-const SERVER_URL = 'http://10.0.0.173:3000';
-// const SERVER_URL = 'http://10.136.109.204:3000';
+const SERVER_URL = 'https://afternoon-waters-32871-fdb986d57f83.herokuapp.com'
 
 let socket;
 
