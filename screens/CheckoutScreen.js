@@ -40,11 +40,12 @@ import {
 } from "react-native-gesture-handler";
 import ProductDescription from "../components/Product/ProductDescription";
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
+import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
 const { width, height } = Dimensions.get("window");
 
 function CheckoutScreen() {
   const [visible, setVisible] = useState(false);
-  
+
   const orders = useSelector((state) => state.cartItems.order);
   console.log(orders);
   const mode = [
@@ -106,11 +107,11 @@ function CheckoutScreen() {
     }
     return "Item not found in the menu";
   }
-  
+
   const navigation = useNavigation();
   function pressHandler() {
     console.log(address, 'address')
-    if (address.length>= 1) {
+    if (address.length >= 1) {
       navigation.navigate("Make Payment", { total: getTotalSum().toFixed(2) });
     }
   }
@@ -135,7 +136,7 @@ function CheckoutScreen() {
       console.error("Error retrieving token:", error);
     }
   };
-  useEffect(()=>{retrieveTokenFromAsyncStorage()}, [])
+  useEffect(() => { retrieveTokenFromAsyncStorage() }, [])
   const tryCreateOrder = async () => {
     try {
       console.log("DID WE TRY TO CREATE AN ORDERRRR?????")
@@ -182,6 +183,14 @@ function CheckoutScreen() {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
+  const emitOrderMessage = () => {
+    const socket = getSocket()
+    if (socket) {
+      console.log("Tried to emit the message")
+      socket.emit('order', 'Hello from React Native!'); // Replace 'chatMessage' with your event name
+    }
+  };
+
   const checkOut = async () => {
     const token = await retrieveTokenFromAsyncStorage();
     console.log("This is the token I recieved: ", token);
@@ -210,11 +219,11 @@ function CheckoutScreen() {
     });
     setIsLoading(true)
     const { error } = await presentPaymentSheet();
-    
+
     if (error) {
       setIsLoading(false)
     } else {
-      
+
       const row = [...cartItems];
       date = getTodaysDate();
 
@@ -234,21 +243,21 @@ function CheckoutScreen() {
         })
       );
       dispatch(clearCart({ id: cartItems }));
-        // try{
-        //   await AsyncStorage.removeItem('essential')
-        // } catch(error){
-        //   console.error('Error deleting item:', error);
-        // }
-        // const newOrder = useSelector((state) => state.cartItems.order);
-        // try {
-        //   await AsyncStorage.setItem("essential", JSON.stringify({address: address, orders: newOrder,}));
-        //   console.log("Essential saved successfully.");
-        // } catch (error) {
-        //   console.error("Error saving token:", error);
-        // } 
-        setVisible(true);
-        setIsLoading(false)
-      
+      // try{
+      //   await AsyncStorage.removeItem('essential')
+      // } catch(error){
+      //   console.error('Error deleting item:', error);
+      // }
+      // const newOrder = useSelector((state) => state.cartItems.order);
+      // try {
+      //   await AsyncStorage.setItem("essential", JSON.stringify({address: address, orders: newOrder,}));
+      //   console.log("Essential saved successfully.");
+      // } catch (error) {
+      //   console.error("Error saving token:", error);
+      // } 
+      setVisible(true);
+      setIsLoading(false)
+
       console.log("ARE WE HERE????");
       // const paymentMethods = await axios.post(
       //   "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-methods",
@@ -261,9 +270,11 @@ function CheckoutScreen() {
       //   }
       // );
       tryCreateOrder();
+      emitOrderMessage()
       // Alert.alert("Success", "Your order is confirmed!");
       // navigation.navigate("Home");
-    }}
+    }
+  }
 
 
   function addressHandler() {
@@ -419,14 +430,14 @@ function CheckoutScreen() {
   }
   const newList = addQuantityToObjects(cartItems);
   return (
-    <GestureHandlerRootView style={{ flex: 1}}>
-       {isLoading ? (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {isLoading ? (
         // Render loading indicator while loading
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <ActivityIndicator size="large" color="#0000ff" /></View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#0000ff" /></View>
       ) : (<><ScrollView
         onTouchStart={() => ref2?.current?.scrollTo(0)}
-        style={{ marginBottom: "29%", paddingTop: 10  }}
+        style={{ marginBottom: "29%", paddingTop: 10 }}
       >
         <View style={styles.recommendedView}>
           <Text style={styles.text}>Shipping Address</Text>
@@ -522,465 +533,462 @@ function CheckoutScreen() {
         </View>
       </ScrollView>
 
-      <View
-        style={{
-          flex: 1,
-          width: "100%",
-          paddingVertical: "7%",
-          position: "absolute",
-          bottom: 0,
-          zIndex: 1,
-          backgroundColor: "white",
-          flexDirection: "row",
-          justifyContent: "space-around",
-          alignItems: "center",
-        }}
-      >
         <View
           style={{
-            height: "150%",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Text
-            style={{
-              color: "#aaa",
-              fontWeight: "bold",
-              fontSize: 20,
-            }}
-          >
-            {" "}
-            Total Payment
-          </Text>
-          <Text
-            style={{
-              color: "black",
-              fontWeight: "600",
-              fontSize: 20,
-            }}
-          >
-            {" "}
-            {`$${getTotalSum().toFixed(2)}`}
-          </Text>
-        </View>
-        <View style={{ width: "45%", height: "130%" }}>
-          <FlexButton
-            background={!address.length ? "rgba(0,0,0,0.5)" : "#283618"}
-            onPress={pressHandler}
-          >
-            <Fontisto name="credit-card" size={24} color="white" />
-            <Text style={{ color: "white" }}>Make Payment</Text>
-          </FlexButton>
-        </View>
-      </View>
-      <BottomSheet ref={ref2}>
-        <ScrollView
-          style={{
             flex: 1,
+            width: "100%",
+            paddingVertical: "7%",
+            position: "absolute",
+            bottom: 0,
+            zIndex: 1,
             backgroundColor: "white",
-            paddingHorizontal: "5%",
-            gap: 20,
+            flexDirection: "row",
+            justifyContent: "space-around",
+            alignItems: "center",
           }}
         >
-          <View style={{ marginBottom: 590, gap: 30 }}>
-            {display.map(
-              (
-                { Flavour, instruction, Sides, Picked, title, images, oldPrice },
-                idx
-              ) => (
-                <View key={idx}>
-                  <ProductDescription
-                    option={Picked}
-                    instruction={instruction}
-                    flavour={getFlavors(Flavour)}
-                    side={Sides}
-                    price={oldPrice}
-                    image={images[0]}
-                    title={title}
+          <View
+            style={{
+              height: "150%",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <Text
+              style={{
+                color: "#aaa",
+                fontWeight: "bold",
+                fontSize: 20,
+              }}
+            >
+              {" "}
+              Total Payment
+            </Text>
+            <Text
+              style={{
+                color: "black",
+                fontWeight: "600",
+                fontSize: 20,
+              }}
+            >
+              {" "}
+              {`$${getTotalSum().toFixed(2)}`}
+            </Text>
+          </View>
+          <View style={{ width: "45%", height: "130%" }}>
+            <FlexButton
+              background={!address.length ? "rgba(0,0,0,0.5)" : "#283618"}
+              onPress={pressHandler}
+            >
+              <Fontisto name="credit-card" size={24} color="white" />
+              <Text style={{ color: "white" }}>Make Payment</Text>
+            </FlexButton>
+          </View>
+        </View>
+        <BottomSheet ref={ref2}>
+          <ScrollView
+            style={{
+              flex: 1,
+              backgroundColor: "white",
+              paddingHorizontal: "5%",
+              gap: 20,
+            }}
+          >
+            <View style={{ marginBottom: 590, gap: 30 }}>
+              {display.map(
+                (
+                  { Flavour, instruction, Sides, Picked, title, images, oldPrice },
+                  idx
+                ) => (
+                  <View key={idx}>
+                    <ProductDescription
+                      option={Picked}
+                      instruction={instruction}
+                      flavour={getFlavors(Flavour)}
+                      side={Sides}
+                      price={oldPrice}
+                      image={images[0]}
+                      title={title}
+                    />
+                  </View>
+                )
+              )}
+            </View>
+          </ScrollView>
+        </BottomSheet>
+        <BottomSheet ref={ref3}>
+          <ScrollView
+            style={{
+              flex: 1,
+              backgroundColor: "white",
+              paddingHorizontal: "5%",
+              gap: 20,
+            }}
+          >
+            <View style={{ marginBottom: 590 }}>
+              {pro.addOn && (
+                <View style={{ gap: 25, paddingTop: 30, marginBottom: 50 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Text
+                      style={{ color: "black", fontWeight: "900", fontSize: 19 }}
+                    >
+                      {"Choose Exotic Flavor"}
+                    </Text>
+                    {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
+                  </View>
+                  <Text
+                    style={{ color: "black", fontWeight: "bold", fontSize: 13 }}
+                  >{`Choose up to ${2}`}</Text>
+                  {pro.extras.map((item, idx) => (
+                    <View
+                      key={idx}
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        borderBottomWidth: 1,
+                        borderColor: "rgba(0,0,0,0.05)",
+                        paddingBottom: 15,
+                      }}
+                    >
+                      <View>
+                        <Text
+                          style={{
+                            color: "black",
+                            fontWeight: "900",
+                            fontSize: 16,
+                          }}
+                        >
+                          {item}
+                        </Text>
+                      </View>
+                      <Pressable
+                        onPress={() => {
+                          addOn1.length < 2 || addOn1.indexOf(idx) !== -1
+                            ? toggleNumberInArray1(idx)
+                            : {};
+                        }}
+                      >
+                        <MaterialCommunityIcons
+                          name={`${addOn1.indexOf(idx) === -1
+                              ? "checkbox-blank-outline"
+                              : "checkbox-marked"
+                            }`}
+                          size={24}
+                          color={`${addOn1.length < 2 || addOn1.indexOf(idx) !== -1
+                              ? "black"
+                              : "rgba(0,0,0,0.05)"
+                            }`}
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              )}
+              {pro.options && (
+                <View>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginTop: 15,
+                      borderColor: "rgba(0,0,0,0.05)",
+                      paddingBottom: 15,
+                    }}
+                  >
+                    <Text
+                      style={{ color: "black", fontWeight: "900", fontSize: 19 }}
+                    >
+                      {"Choose One"}
+                    </Text>
+                    <View style={{ width: width / 3.7, height: "170%" }}>
+                      <FlexButton
+                        onPress={option1 ? handleUpdate : () => { }}
+                        background={option1 < 2 ? "rgba(0,0,0,0.5)" : "#283618"}
+                      >
+                        <Text
+                          style={{
+                            color: "white",
+                            fontWeight: 900,
+                            fontSize: 15,
+                          }}
+                        >
+                          Update
+                        </Text>
+                      </FlexButton>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      padding: 6,
+                      borderRadius: 15,
+                      backgroundColor: "rgba(0,0,0,0.1)",
+                      width: width / 5,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{ color: "black", fontWeight: "bold", fontSize: 13 }}
+                    >
+                      Required
+                    </Text>
+                  </View>
+                  {pro.options.map((item, idx) => (
+                    <View
+                      key={idx}
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        borderBottomWidth: 1,
+                        borderColor: "rgba(0,0,0,0.05)",
+                        paddingVertical: 13,
+                      }}
+                    >
+                      <View>
+                        <Text
+                          style={{
+                            color: "black",
+                            fontWeight: "900",
+                            fontSize: 16,
+                          }}
+                        >
+                          {item}
+                        </Text>
+                      </View>
+                      <Pressable
+                        onPress={() => {
+                          setOption1(pro.options[idx]);
+                        }}
+                      >
+                        <Ionicons
+                          name={`${pro.options[idx] == option1
+                              ? "radio-button-on"
+                              : "radio-button-off"
+                            }`}
+                          size={24}
+                          color="black"
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              )}
+              {pro.nutrient && pro.nutrient == "protein" && (
+                <View style={{ gap: 25, paddingTop: 30 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{ color: "black", fontWeight: "900", fontSize: 19 }}
+                    >
+                      {"Pick Your Sides"}
+                    </Text>
+                    <View style={{ width: width / 3.7, height: "170%" }}>
+                      <FlexButton
+                        onPress={plus1.length == 2 ? handleUpdate : () => { }}
+                        background={
+                          plus1.length < 2 ? "rgba(0,0,0,0.5)" : "#283618"
+                        }
+                      >
+                        <Text
+                          style={{
+                            color: "white",
+                            fontWeight: 900,
+                            fontSize: 15,
+                          }}
+                        >
+                          Update
+                        </Text>
+                      </FlexButton>
+                    </View>
+                  </View>
+                  <Text
+                    style={{ color: "black", fontWeight: "bold", fontSize: 13 }}
+                  >{`Choose ${2}`}</Text>
+                  <View
+                    style={{
+                      padding: 6,
+                      borderRadius: 15,
+                      backgroundColor: "rgba(0,0,0,0.1)",
+                      width: width / 5,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{ color: "black", fontWeight: "bold", fontSize: 13 }}
+                    >
+                      Required
+                    </Text>
+                  </View>
+
+                  {pro.extras.map((item, idx) => (
+                    <View
+                      key={idx}
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        borderBottomWidth: 1,
+                        borderColor: "rgba(0,0,0,0.05)",
+                        paddingBottom: 15,
+                      }}
+                    >
+                      <View>
+                        <Text
+                          style={{
+                            color: "black",
+                            fontWeight: "900",
+                            fontSize: 16,
+                          }}
+                        >
+                          {item[0]}
+                        </Text>
+                        <Text>{item[1] ? `+ $${item[1]}` : ""}</Text>
+                      </View>
+                      {(plus1.length < 2 ||
+                        (plus1.length && plus1.indexOf(item[0]) !== -1)) && (
+                          <View>
+                            <IncrementDecrementBtn
+                              minValue={foodDictionary[item[0]]}
+                              onIncrease={() => {
+                                if (plus1.length < 2) {
+                                  setFoodDictionary((prev) => {
+                                    return {
+                                      ...prev,
+                                      [item[0]]: foodDictionary[item[0]] + 1,
+                                    };
+                                  });
+                                  setSides((prev) => {
+                                    const arr = [...prev];
+                                    arr.push(item[0]);
+                                    return arr;
+                                  });
+                                }
+                              }}
+                              onDecrease={() => {
+                                if (plus1.length > 0) {
+                                  setFoodDictionary((prev) => {
+                                    return {
+                                      ...prev,
+                                      [item[0]]:
+                                        (foodDictionary[item[0]]
+                                          ? foodDictionary[item[0]]
+                                          : 1) - 1,
+                                    };
+                                  });
+                                  setSides((prev) => {
+                                    const arr = [...prev];
+                                    const index = prev.indexOf(item[0]);
+                                    if (index != -1) {
+                                      arr.splice(index, 1);
+                                    }
+                                    return arr;
+                                  });
+                                }
+                              }}
+                            />
+                          </View>
+                        )}
+                    </View>
+                  ))}
+                </View>
+              )}
+              {pro.instructions && (
+                <View
+                  style={{ color: "white", backgroundColor: "rgba(0,0,0,0.05)" }}
+                >
+                  <TextInput
+                    multiline
+                    placeholder="Special Instructions?"
+                    cursorColor={"#aaa"}
+                    numberOfLines={6}
+                    clearButtonMode="always"
+                    style={{ paddingHorizontal: 10 }}
                   />
                 </View>
-              )
-            )}
-          </View>
-        </ScrollView>
-      </BottomSheet>
-      <BottomSheet ref={ref3}>
-        <ScrollView
-          style={{
-            flex: 1,
-            backgroundColor: "white",
-            paddingHorizontal: "5%",
-            gap: 20,
-          }}
-        >
-          <View style={{ marginBottom: 590 }}>
-            {pro.addOn && (
-              <View style={{ gap: 25, paddingTop: 30, marginBottom: 50 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Text
-                    style={{ color: "black", fontWeight: "900", fontSize: 19 }}
-                  >
-                    {"Choose Exotic Flavor"}
-                  </Text>
-                  {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
-                </View>
-                <Text
-                  style={{ color: "black", fontWeight: "bold", fontSize: 13 }}
-                >{`Choose up to ${2}`}</Text>
-                {pro.extras.map((item, idx) => (
-                  <View
-                    key={idx}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      borderBottomWidth: 1,
-                      borderColor: "rgba(0,0,0,0.05)",
-                      paddingBottom: 15,
-                    }}
-                  >
-                    <View>
-                      <Text
-                        style={{
-                          color: "black",
-                          fontWeight: "900",
-                          fontSize: 16,
-                        }}
-                      >
-                        {item}
-                      </Text>
-                    </View>
-                    <Pressable
-                      onPress={() => {
-                        addOn1.length < 2 || addOn1.indexOf(idx) !== -1
-                          ? toggleNumberInArray1(idx)
-                          : {};
-                      }}
-                    >
-                      <MaterialCommunityIcons
-                        name={`${
-                          addOn1.indexOf(idx) === -1
-                            ? "checkbox-blank-outline"
-                            : "checkbox-marked"
-                        }`}
-                        size={24}
-                        color={`${
-                          addOn1.length < 2 || addOn1.indexOf(idx) !== -1
-                            ? "black"
-                            : "rgba(0,0,0,0.05)"
-                        }`}
-                      />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            )}
-            {pro.options && (
-              <View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginTop: 15,
-                    borderColor: "rgba(0,0,0,0.05)",
-                    paddingBottom: 15,
-                  }}
-                >
-                  <Text
-                    style={{ color: "black", fontWeight: "900", fontSize: 19 }}
-                  >
-                    {"Choose One"}
-                  </Text>
-                  <View style={{ width: width / 3.7, height: "170%" }}>
-                    <FlexButton
-                      onPress={option1 ? handleUpdate : () => {}}
-                      background={option1 < 2 ? "rgba(0,0,0,0.5)" : "#283618"}
-                    >
-                      <Text
-                        style={{
-                          color: "white",
-                          fontWeight: 900,
-                          fontSize: 15,
-                        }}
-                      >
-                        Update
-                      </Text>
-                    </FlexButton>
-                  </View>
-                </View>
-                <View
-                  style={{
-                    padding: 6,
-                    borderRadius: 15,
-                    backgroundColor: "rgba(0,0,0,0.1)",
-                    width: width / 5,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{ color: "black", fontWeight: "bold", fontSize: 13 }}
-                  >
-                    Required
-                  </Text>
-                </View>
-                {pro.options.map((item, idx) => (
-                  <View
-                    key={idx}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      borderBottomWidth: 1,
-                      borderColor: "rgba(0,0,0,0.05)",
-                      paddingVertical: 13,
-                    }}
-                  >
-                    <View>
-                      <Text
-                        style={{
-                          color: "black",
-                          fontWeight: "900",
-                          fontSize: 16,
-                        }}
-                      >
-                        {item}
-                      </Text>
-                    </View>
-                    <Pressable
-                      onPress={() => {
-                        setOption1(pro.options[idx]);
-                      }}
-                    >
-                      <Ionicons
-                        name={`${
-                          pro.options[idx] == option1
-                            ? "radio-button-on"
-                            : "radio-button-off"
-                        }`}
-                        size={24}
-                        color="black"
-                      />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            )}
-            {pro.nutrient && pro.nutrient == "protein" && (
-              <View style={{ gap: 25, paddingTop: 30 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{ color: "black", fontWeight: "900", fontSize: 19 }}
-                  >
-                    {"Pick Your Sides"}
-                  </Text>
-                  <View style={{ width: width / 3.7, height: "170%" }}>
-                    <FlexButton
-                      onPress={plus1.length == 2 ? handleUpdate : () => {}}
-                      background={
-                        plus1.length < 2 ? "rgba(0,0,0,0.5)" : "#283618"
-                      }
-                    >
-                      <Text
-                        style={{
-                          color: "white",
-                          fontWeight: 900,
-                          fontSize: 15,
-                        }}
-                      >
-                        Update
-                      </Text>
-                    </FlexButton>
-                  </View>
-                </View>
-                <Text
-                  style={{ color: "black", fontWeight: "bold", fontSize: 13 }}
-                >{`Choose ${2}`}</Text>
-                <View
-                  style={{
-                    padding: 6,
-                    borderRadius: 15,
-                    backgroundColor: "rgba(0,0,0,0.1)",
-                    width: width / 5,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{ color: "black", fontWeight: "bold", fontSize: 13 }}
-                  >
-                    Required
-                  </Text>
-                </View>
-
-                {pro.extras.map((item, idx) => (
-                  <View
-                    key={idx}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      borderBottomWidth: 1,
-                      borderColor: "rgba(0,0,0,0.05)",
-                      paddingBottom: 15,
-                    }}
-                  >
-                    <View>
-                      <Text
-                        style={{
-                          color: "black",
-                          fontWeight: "900",
-                          fontSize: 16,
-                        }}
-                      >
-                        {item[0]}
-                      </Text>
-                      <Text>{item[1] ? `+ $${item[1]}` : ""}</Text>
-                    </View>
-                    {(plus1.length < 2 ||
-                      (plus1.length && plus1.indexOf(item[0]) !== -1)) && (
-                      <View>
-                        <IncrementDecrementBtn
-                          minValue={foodDictionary[item[0]]}
-                          onIncrease={() => {
-                            if (plus1.length < 2) {
-                              setFoodDictionary((prev) => {
-                                return {
-                                  ...prev,
-                                  [item[0]]: foodDictionary[item[0]] + 1,
-                                };
-                              });
-                              setSides((prev) => {
-                                const arr = [...prev];
-                                arr.push(item[0]);
-                                return arr;
-                              });
-                            }
-                          }}
-                          onDecrease={() => {
-                            if (plus1.length > 0) {
-                              setFoodDictionary((prev) => {
-                                return {
-                                  ...prev,
-                                  [item[0]]:
-                                    (foodDictionary[item[0]]
-                                      ? foodDictionary[item[0]]
-                                      : 1) - 1,
-                                };
-                              });
-                              setSides((prev) => {
-                                const arr = [...prev];
-                                const index = prev.indexOf(item[0]);
-                                if (index != -1) {
-                                  arr.splice(index, 1);
-                                }
-                                return arr;
-                              });
-                            }
-                          }}
-                        />
-                      </View>
-                    )}
-                  </View>
-                ))}
-              </View>
-            )}
-            {pro.instructions && (
-              <View
-                style={{ color: "white", backgroundColor: "rgba(0,0,0,0.05)" }}
-              >
-                <TextInput
-                  multiline
-                  placeholder="Special Instructions?"
-                  cursorColor={"#aaa"}
-                  numberOfLines={6}
-                  clearButtonMode="always"
-                  style={{ paddingHorizontal: 10 }}
-                />
-              </View>
-            )}
-          </View>
-        </ScrollView>
-      </BottomSheet>
-      <View
-        style={{
-          flex: 1,
-          width: "100%",
-          paddingVertical: "7%",
-          position: "absolute",
-          bottom: 0,
-          zIndex: 1,
-          backgroundColor: "white",
-          flexDirection: "row",
-          justifyContent: "space-around",
-          alignItems: "center",
-        }}
-      >
+              )}
+            </View>
+          </ScrollView>
+        </BottomSheet>
         <View
           style={{
-            height: "150%",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Text
-            style={{
-              color: "#aaa",
-              fontWeight: "bold",
-              fontSize: 20,
-            }}
-          >
-            {" "}
-            Total Payment
-          </Text>
-          <Text
-            style={{
-              color: "black",
-              fontWeight: "600",
-              fontSize: 20,
-            }}
-          >
-            {" "}
-            {`$${getTotalSum().toFixed(2)}`}
-          </Text>
-        </View>
-        <View style={{ width: "45%", height: "130%" }}>
-          <FlexButton
-            background={!address.length ? "rgba(0,0,0,0.5)" : "#283618"}
-            // onPress={tryCreateOrder}
-            onPress={address.length ? checkOut : ()=>{}}
-          >
-            <Fontisto name="credit-card" size={24} color="white" />
-            <Text style={{ color: "white" }}>Make Payment</Text>
-          </FlexButton>
-        </View>
-      </View>
-      {visible && (
-        <Pressable
-          onPress={() => navigation.navigate("HomeTabs")}
-          style={{
             flex: 1,
-            padding: 20,
-            alignItems: "center",
-            justifyContent: "center",
-            justifyContent: "center",
-            zIndex: 2,
+            width: "100%",
+            paddingVertical: "7%",
             position: "absolute",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.9)",
+            bottom: 0,
+            zIndex: 1,
+            backgroundColor: "white",
+            flexDirection: "row",
+            justifyContent: "space-around",
+            alignItems: "center",
           }}
         >
-          <OrderSuccess onPress={press} onMove={move} />
-        </Pressable>
-      )}</>)}
+          <View
+            style={{
+              height: "150%",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <Text
+              style={{
+                color: "#aaa",
+                fontWeight: "bold",
+                fontSize: 20,
+              }}
+            >
+              {" "}
+              Total Payment
+            </Text>
+            <Text
+              style={{
+                color: "black",
+                fontWeight: "600",
+                fontSize: 20,
+              }}
+            >
+              {" "}
+              {`$${getTotalSum().toFixed(2)}`}
+            </Text>
+          </View>
+          <View style={{ width: "45%", height: "130%" }}>
+            <FlexButton
+              background={!address.length ? "rgba(0,0,0,0.5)" : "#283618"}
+              // onPress={tryCreateOrder}
+              onPress={address.length ? checkOut : () => { }}
+            >
+              <Fontisto name="credit-card" size={24} color="white" />
+              <Text style={{ color: "white" }}>Make Payment</Text>
+            </FlexButton>
+          </View>
+        </View>
+        {visible && (
+          <Pressable
+            onPress={() => navigation.navigate("HomeTabs")}
+            style={{
+              flex: 1,
+              padding: 20,
+              alignItems: "center",
+              justifyContent: "center",
+              justifyContent: "center",
+              zIndex: 2,
+              position: "absolute",
+              height: "100%",
+              backgroundColor: "rgba(0,0,0,0.9)",
+            }}
+          >
+            <OrderSuccess onPress={press} onMove={move} />
+          </Pressable>
+        )}</>)}
     </GestureHandlerRootView>
   );
 }

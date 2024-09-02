@@ -35,6 +35,7 @@ import FlexButton from "../components/Buttons/FlexButton";
 import io from 'socket.io-client';
 import TransparentSheet from "../components/Modals/TransparentSheet.";
 import axios from "axios";
+import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
 import { current } from "@reduxjs/toolkit";
 import {fetchProducts} from "../Data/Items"
 // const SERVER_URL = 'ws://192.168.179.1:3000';
@@ -96,42 +97,43 @@ const FadeInView = (props) => {
 
 function Home() {
   
-  const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState(socket);
   const address = useSelector((state) => state.profileData.profile)
   console.log(address)
 
   useEffect(() => {
-    const initializeSocket = async () => {
-      try {
-        const token = await retrieveTokenFromAsyncStorage();
-        // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MGRiYWY2NmVjYWE0MWUyODQwYjZlNiIsImlhdCI6MTcxMjE3NTg2MiwiZXhwIjoxNzEzMDM5ODYyfQ.C8dASXQn_jHO0tBGd7-wnFWOfpWwwTSED-xqcpc7oVU"
-        console.log(token)
-        const newSocket = io(SERVER_URL, {
-          query: { token }
-        });
-        setSocket(newSocket);
+    const setupSocket = async () => {
+      const token = await retrieveTokenFromAsyncStorage();
+      console.log('Token:', token);
 
-        newSocket.on('connect', () => {
-          console.log('Connected to server');
-        });
-        // console.log(token)
-        // if (token) {
-        //   const newSocket = io(SERVER_URL, {
-        //     auth: {
-        //       token,
-        //     },
-        //   });
-        //   // setSocket(newSocket);
-        //   newSocket.on('connect', () => {
-        //     console.log('Connected to server');
-        //   });
-        // }
-      } catch (error) {
-        console.error('Error initializing socket:', error);
-      }
+      await initializeSocket(token);
+    }
+    setupSocket();
+
+    return () => {
+      disconnectSocket(); // Clean up the socket on component unmount
     };
+    // const initializeSocket = async () => {
+    //   try {
+    //     const token = await retrieveTokenFromAsyncStorage();
+    //     // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MGRiYWY2NmVjYWE0MWUyODQwYjZlNiIsImlhdCI6MTcxMjE3NTg2MiwiZXhwIjoxNzEzMDM5ODYyfQ.C8dASXQn_jHO0tBGd7-wnFWOfpWwwTSED-xqcpc7oVU"
+    //     console.log(token)
+    //     console.log("Did we even get here?")
+    //     const newSocket = io(SERVER_URL, {
+    //       query: { token }
+    //     });
+    //     // console.log("New socket in the local backend",newSocket);
+    //     setSocket(newSocket);
 
-    initializeSocket();
+    //     newSocket.on('connect', () => {
+    //       console.log('Connected to server');
+    //     });
+    //   } catch (error) {
+    //     console.error('Error initializing socket:', error);
+    //   }
+    // };
+
+    // initializeSocket();
   }, [])
 
 
