@@ -36,10 +36,10 @@ import io from 'socket.io-client';
 import TransparentSheet from "../components/Modals/TransparentSheet.";
 import axios from "axios";
 import { current } from "@reduxjs/toolkit";
-
+import {fetchProducts} from "../Data/Items"
 // const SERVER_URL = 'ws://192.168.179.1:3000';
 // const SERVER_URL = 'http://10.0.0.173:3000';
-const SERVER_URL="https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
+ const SERVER_URL="https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
 
 
 
@@ -311,9 +311,16 @@ function Home() {
   const data = useSelector((state) => state.profileData.profile);
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids);
+
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
+
   const productItems = useSelector((state) => state.productItems.ids);
   const categoryObject = {};
-
+  
   productItems.forEach((item) => {
     const category = item.category;
 
@@ -786,7 +793,7 @@ function Home() {
              <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Recommended Foods</Text>
               <ProductHorizontal
-                items={categoryObject["food"]}
+                items={categoryObject["Food"]}
                 onPress={handleAddToCart}
               />
             </View>
@@ -809,7 +816,7 @@ function Home() {
             <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Snacks For You</Text>
               <ProductHorizontal
-                items={categoryObject["snacks"]}
+                items={categoryObject["Snacks"]}
                 onPress={handleAddToCart}
               />
             </View>
@@ -830,7 +837,7 @@ function Home() {
              <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Alcohol</Text>
               <ProductHorizontal
-                items={categoryObject["alcohol"]}
+                items={categoryObject["Alcohol"]}
                 onPress={handleAddToCart}
               />
             </View>
@@ -865,7 +872,7 @@ function Home() {
             <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Drinks</Text>
               <ProductHorizontal
-                items={categoryObject["drink"]}
+                items={categoryObject["Drink"]}
                 onPress={handleAddToCart}
               />
             </View>
@@ -888,7 +895,7 @@ function Home() {
             <View style={{marginTop: 16}}>
               <Text style={[styles.text, {paddingLeft: '3%' }]}>Home</Text>
               <ProductHorizontal
-                items={categoryObject["home"]}
+                items={categoryObject["Home"]}
                 onPress={handleAddToCart}
               />
             </View>

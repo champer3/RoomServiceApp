@@ -19,8 +19,15 @@ const { width, height } = Dimensions.get("window");
 
 
 
-function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, nutrient, description, instructions, widths = 89 ,options,extras, onAdd}) {
+function Product({ image, title, oldPrice=0, addOn, newPrice, reviews, category, nutrient, description, instructions, widths = 89 ,options,extras, onAdd}) {
   let size = widths;
+  function isValidURL(str) {
+    if (typeof str !== 'string') {
+      str = String(str);
+    }
+    
+    return str.startsWith("http://") || str.startsWith("https://");
+  }
   const [show, setShow] = useState(false)
   const navigation = useNavigation()
   const dispatch = useDispatch();
@@ -99,10 +106,10 @@ function Product({ image, title, oldPrice, addOn, newPrice, reviews, category, n
           }}
         >
           <Pressable onPress={pressHandler} style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Image
+            {image && isValidURL(image) && <Image
               style={styles.image}
-              source={image}
-            />
+              source={{uri:image}}
+            />}
           </Pressable>
         </View>
 
@@ -162,7 +169,7 @@ const styles = StyleSheet.create({
   },
   textContainer: { marginBottom: 5 },
   image: {
-    maxWidth: width / 3.3,
+    width: width / 4.3,
     height: height / 7,
     alignSelf: "center",
     

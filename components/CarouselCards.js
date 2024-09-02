@@ -4,15 +4,22 @@ import Carousel, { Pagination } from 'react-native-snap-carousel'
 
 const SLIDER_WIDTH = Dimensions.get('window').width
 const ITEM_WIDTH = Math.round(SLIDER_WIDTH)
-
+function isValidURL(str) {
+  if (typeof str !== 'string') {
+    str = String(str);
+  }
+  
+  return str.startsWith("http://") || str.startsWith("https://");
+}
 const CarouselCardItem = ({item, index, onPress }) => {
     const { width, height } = Dimensions.get("window");
+    console.log('item',item)
   return (
     <Pressable onPress={onPress} style ={{width: width, alignItems: 'center' }} key={index}>
-      <Image
-        source={item.image}
+       {item && isValidURL(item) && <Image
+        source={{uri: item}}
         style ={{width: width, height: height/2 }} 
-      />
+      />}
     </Pressable>
   )
 }

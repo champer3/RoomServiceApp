@@ -11,6 +11,13 @@ function ProductAction({title, image, price, reviews, category, quantity, action
   function pressHandler (){
     navigation.navigate('Product', {title: title, image : image, reviews: reviews, oldPrice: price, category: category })
   }
+    function isValidURL(str) {
+    if (typeof str !== 'string') {
+      str = String(str);
+    }
+    
+    return str.startsWith("http://") || str.startsWith("https://");
+  }
   return (
     <Pressable onPress={onTap} style={[styles.container,
       {shadowColor: '#000',
@@ -34,10 +41,10 @@ function ProductAction({title, image, price, reviews, category, quantity, action
           }}
         >
           <Pressable onPress={onTap} style={({ pressed }) => pressed && { opacity: 0.5 }}>
-            <Image
+          {image && isValidURL(image) && <Image
               style={styles.image}
-              source={image}
-            />
+              source={{uri:image}}
+            />}
           </Pressable>
         </View>
 
@@ -99,7 +106,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {flexDirection: 'row', justifyContent: 'space-between'},
   image: {
-    maxWidth: width / 5.7,
+    width: width / 5.7,
     height: height / 12,
   },
   text: { fontSize: 16, fontWeight: 500, lineHeight: 25, },

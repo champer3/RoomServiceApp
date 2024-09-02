@@ -1,67 +1,54 @@
-import {createSlice} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
+
+// Async thunk to fetch products
+export const fetchProducts = createAsyncThunk('items/fetchProducts', async () => {
+  try {
+    const response = await axios.get(
+      `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/products`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data.data.products;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+});
 
 const items = createSlice({
-    name : 'items',
-    initialState: {
-        ids: [{title: 'Cajun Catfish', oldPrice: 30.00, image : require('../assets/catfish.png'), reviews : [], category: 'food', related : ["catfish", "dinner", "recipe", "fried", "blackened", "grilled", "fillets", "sauce", "cornmeal", "baked", "southern", "seasoning", "cajun", "pond", "aquaculture", "fishing", "farm-raised", "restaurant", 'fish'] , nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true, description : 'Golden-fried Cajun Catfish, a culinary delight that takes your taste buds on a flavorful journey. Crispy on the outside, tender and flaky on the inside, each bite bursts with a symphony of Cajun spices, delivering a perfect balance of heat and zest. Served alongside a medley of delectable sides, this dish promises a feast for the senses. Whether paired with buttery cornbread, creamy coleslaw, or tangy tartar sauce, every element harmonizes to create a mouthwatering experience.'},
-        {title: 'Strawberry Cheesecake', oldPrice: 12.00, image : require('../assets/Cheesecake.png'), reviews : [], category: 'food', related : ["Cheesecake", "Dessert", "Strawberry", "Creamy", "Sweet", "Classic", "Buttery", "Graham cracker crust", "Fresh fruit", "Glaze", "Bakery", "Restaurant", "Party food", "Special occasion", "Celebration", "Indulgent", "Refreshing", "Comfort food", "Individual serving", "Sharing dessert", "Valentine's Day", "Mother's Day", "Birthday", "No bake"], description : ' Indulge in a slice of creamy delight with our decadent Strawberry Cheesecake. A classic dessert featuring a buttery graham cracker crust topped with a smooth and rich cheesecake filling, all adorned with fresh strawberries and a sweet glaze. Each bite offers a perfect balance of textures and flavors, making it an irresistible treat for any occasion.',},
-        {title: 'Grilled Chicken', oldPrice: 30.00, image : require('../assets/chicken.png'), reviews : [], category: 'food', nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true, description: 'Succulent and juicy grilled chicken breasts, seasoned to perfection and cooked over an open flame. Enjoy the smoky flavor and tender texture, perfect for a satisfying and healthy meal.', related: ["grilled", "chicken", "breasts", "healthy", "protein", "barbecue", "poultry", "marinade", "grilled vegetables", "salad", "sandwich", "entree", "main course", "summer cookout"]},
-        {title: 'Eggrolls', oldPrice: 16.00, image : require('../assets/chickenEggRolls.png'), reviews : [], category: 'food', options : ['Philly Eggrolls', 'Buffalo Chicken Eggrolls','Cheesy Garlic Eggrolls'], description: 'Choose from our crispy and flavorful eggrolls, filled with delicious combinations like Philly cheesesteak, spicy buffalo chicken, or cheesy garlic. Enjoy them as a satisfying starter or shareable appetizer.', related: ["appetizer", "snack", "Asian cuisine", "fried", "spring rolls", "wontons", "chicken", "beef", "cheese", "garlic", "buffalo sauce", "Philly cheesesteak", "dipping sauce", "lunch", "dinner", "party food"]},
-        {title: 'Alfredo', oldPrice: 7.00, image : require('../assets/alfredo.png'), reviews : [], category: 'food', description: "Rich and creamy Alfredo sauce, made with parmesan cheese and butter, poured over your choice of pasta. A classic comfort food that's sure to please.", related: ["pasta", "fettuccine", "cheese", "parmesan", "butter", "creamy", "comfort food", "Italian cuisine", "sauce", "garlic", "chicken", "shrimp", "vegetarian option", "main course", "lunch", "dinner", "family meal"]} ,
-        {title: 'Spinach Dip', oldPrice: 18.00, image : require('../assets/dip.png'), reviews : [], category: 'food', description: "Creamy spinach dip, packed with flavor and perfect for dipping with chips, vegetables, or breadsticks. A crowd-pleasing appetizer for any occasion.", related: ["appetizer", "dip", "spinach", "artichoke", "cheese", "creamy", "party food", "snack", "chips", "vegetables", "breadsticks", "spinach and artichoke dip", "hot dip", "cold dip", "game day", "football", "gathering", "finger food"]},
-        {title: 'Collard Greens', oldPrice: 6.00, image : require('../assets/greens.png'), reviews : [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"]},
-        {title: 'Grits', oldPrice: 6.00, image : require('../assets/grits.png'), reviews : [], category: 'food',description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"]},
-        {title: 'Australian Lamb Chops', oldPrice: 50.00, image : require('../assets/lamb.png'), reviews : [], category: 'food', nutrient: 'protein',related: ["main course", "lamb", "chops", "Australian", "grilled", "rosemary", "garlic", "protein", "gourmet", "dinner", "entree", "special occasion", "date night", "herbs", "spices", "mint jelly", "roasted vegetables", "mashed potatoes", "red wine"],description: "Tender and flavorful Australian lamb chops, grilled to perfection and seasoned with rosemary and garlic. A gourmet main course that's sure to impress.", extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        {title: 'Lobster Tails', oldPrice: 60.00, image : require('../assets/lobster.png'), reviews : [], related: ["seafood", "lobster", "tails", "protein", "luxury", "gourmet", "dinner", "entree", "special occasion", "date night", "seafood platter", "melted butter", "lemon wedges", "drawn butter", "cocktail sauce", "side dishes", "vegetables", "rice", "pasta"], description: "Succulent and luxurious lobster tails, steamed to perfection and served with melted butter. A seafood lover's delight!",category: 'food', nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        {title: 'Smoked Gouda Mac & Cheese', oldPrice: 6.00, image : require('../assets/mac.png'), reviews : [], category: 'food',related: ["side dish", "mac and cheese", "pasta", "cheese", "smoked Gouda", "creamy", "comfort food", "casserole", "baked", "cheesy", "vegetarian option", "lunch", "dinner", "kid-friendly", "crowd-pleaser"], description: "Creamy and decadent mac and cheese made with smoked Gouda cheese for a rich and flavorful twist. A cheesy comfort food favorite."},
-        {title: 'Garlic & Herb Mashed Potatoes', oldPrice: 6, image : require('../assets/marsh.png'), reviews : [], category: 'food', description: "Fluffy and flavorful mashed potatoes, infused with garlic and herbs for a delicious and savory side dish.", related: ["side dish", "mashed potatoes", "garlic", "herbs", "creamy", "fluffy", "savory", "potatoes", "comfort food", "butter", "milk", "sour cream", "gravy", "vegetarian option", "lunch", "dinner", "kid-friendly"]},
-        {title: 'Oysters', oldPrice: 18, image : require('../assets/oyster.png'), reviews : [], category: 'food', nutrient: 'protein',related: ["appetizer", "seafood", "oysters", "raw", "on the half shell", "mignonette sauce", "cocktail sauce", "horseradish", "lemon wedges", "tabasco sauce", "protein", "aphrodisiac", "luxury", "gourmet", "special occasion", "date night", "seafood platter"],description: "Fresh and flavorful oysters, served on the half shell with your choice of toppings like mignonette sauce, cocktail sauce, or horseradish. A seafood appetizer that's both elegant and delicious.", extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        {title: 'Dirty Rice', oldPrice: 6, image : require('../assets/rice.png'), reviews : [], category: 'food',related: ["Rice", "Cajun", "Side dish", "Sausage", "Vegetables", "Spices", "Spicy", "Flavorful", "Pork", "Chicken liver", "Giblets", "Southern", "Louisiana", "Comfort food", "Pairings: fried chicken", "grilled fish"], description: 'Savory Cajun-style rice dish packed with flavorful sausage, vegetables, and spices. The "dirty" comes from the bits of cooked pork or chicken liver and giblets traditionally used, adding a rich depth of flavor. Enjoy this flavorful side dish alongside fried chicken, grilled fish, or anything else that needs a spicy kick.'},
-        {title: 'Salad', oldPrice: 7, image : require('../assets/salad.png'), reviews : [], category: 'food', related: ["Greens", "Vegetables", "Healthy", "Customizable", "House Salad", "Caesar Salad", "Protein", "Add-ons: chicken", "shrimp", "avocado", "boiled egg", "Lunch", "Dinner", "Light meal", "Vegetarian", "Vegan"],description: "Choose from our refreshing and customizable salad options. Our House Salad features a blend of leafy greens, cherry tomatoes, cucumbers, and carrots, while our Caesar Salad offers romaine lettuce, parmesan cheese, and classic Caesar dressing. Customize your salad with your favorite add-ons like grilled chicken, shrimp, avocado, or boiled egg.", options : ['House Salad', 'Ceasar Salad']},
-        {title: 'Salmon', oldPrice: 40, image : require('../assets/salmon.png'), related: ["Fish", "Salmon", "Protein", "Healthy", "Seafood", "Grilled", "Pan-seared", "Baked", "Main course", "Dinner", "Lunch", "Entrees", "Omega-3 fatty acids", "Sides: vegetables", "rice", "mashed potatoes"],description: "Succulent and flavorful salmon fillet, cooked to perfection and served with your choice of preparation. Enjoy it grilled, pan-seared, or baked, each highlighting the delicate taste of the fish. This protein-packed dish is a healthy and satisfying choice for any meal.", reviews : [], category: 'food',nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        {title: 'Ribeye', oldPrice: 60, image : require('../assets/ribeye.png'), related: ["Steak", "Ribeye", "Beef", "Protein", "Premium", "Grilled", "Flavorful", "Juicy", "Main course", "Dinner", "Entrees", "Steakhouse", "Sides: mashed potatoes", "asparagus", "creamed spinach", "baked potato"],description: "Juicy and marbled ribeye steak, grilled to your desired doneness. Savor the robust flavor and tender texture of this premium cut of beef. Enjoy it a la carte or choose from our selection of classic steakhouse sides.", reviews : [], category: 'food',nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        {title: 'Fried Salmon Bits (8pcs)', oldPrice: 20, image : require('../assets/salmon-bites.png'), related: ["Salmon", "Seafood", "Fried", "Appetizer", "Snack", "Bites", "Crispy", "Flavorful", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"],description: "Bite-sized pieces of crispy fried salmon, perfect for a quick and delicious snack or appetizer. Enjoy the satisfying crunch and savory flavor of this seafood treat.",reviews : [], category: 'food'},
-        {title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"],description : "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image : require('../assets/shrimp.png'), reviews : [], category: 'food'},
-        {title: 'Stuffed Salmon', oldPrice: 45, image : require('../assets/stuffed_salmon.png'), related: ["Salmon", "Seafood", "Stuffed", "Healthy", "Flavorful", "Protein", "Lunch", "Dinner", "Entrees", "Special occasion", "Crabmeat", "Shrimp", "Vegetables", "Herbs", "Spices"],description: "Salmon fillet generously filled with a flavorful blend of herbs, spices, and your choice of ingredients like crabmeat, shrimp, or vegetables. Baked to perfection, this dish is both decadent and healthy.",reviews : [], category: 'food', nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        {title: 'French Toast', oldPrice: 10, image : require('../assets/toast.png'),related: ["Breakfast", "Brunch", "French toast", "Bread", "Sweet", "Custard", "Batter", "Fried", "Toppings: syrup", "butter", "fruit", "Comfort food", "Dessert", "Kids menu"],description: "Classic French toast made with thick slices of bread, dipped in a sweet custard batter, and fried to golden perfection. Enjoy it topped with your favorite syrup, butter, and fresh fruit.", reviews : [], category: 'food'},
-        // {title: 'Steak', oldPrice: 40, image : require('../assets/steak.jpg'),description: "Choose from our selection of high-quality steaks, cooked to your desired doneness. Whether you prefer a juicy ribeye, a tender filet mignon, or a flavorful New York strip, we have the perfect steak for you.", reviews : [], category: 'food', nutrient: 'protein', extras : [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]] , instructions: true,},
-        {title: 'Waffle', oldPrice: 6, image : require('../assets/waffle.png'), related: ["Breakfast", "Brunch", "Dessert", "Waffle", "Belgian", "Sweet", "Light", "Fluffy", "Toppings: butter", "syrup", "fruit", "whipped cream", "bacon", "cheese", "Versatile", "Kids menu"],description: "Light and fluffy Belgian waffle, perfect for breakfast, brunch, or dessert. Enjoy it plain, topped with butter and syrup, or get creative with your favorite toppings like fresh fruit, whipped cream, or savory ingredients like bacon and cheese.", reviews : [], category: 'food'},
-        {title: 'Party Wings (8pcs)', oldPrice: 15, image : require('../assets/wings.png'),related: ["Chicken wings", "Appetizer", "Party food", "Game day", "Finger food", "Buffalo wings", "Boneless wings", "Sauces", "Dipping sauce", "Ranch", "Blue cheese", "Spicy", "Sweet", "Savory", "Sharing plates", "Wings night"], description: "A party favorite! Eight juicy chicken wings, deep-fried to crispy perfection and tossed in your choice of our flavorful sauces like Swag Seasoned, Lemon Pepper, Sweet Bourbon Parmesan, Mild, Honey Gold, or Sweet Pepper Ranch. Served with your choice of dipping sauce - Ranch, Blue Cheese, or None - for an extra burst of flavor. Perfect for sharing or enjoying as a satisfying appetizer or main course.", reviews : [], category: 'food', addOn : 'sauce', extras: ['Swag Seasoned','Lemon Pepper','Sweet Bourbon Parmesan','Mild','Honey Gold','Sweet Pepper Ranch'], options: ['Ranch','Blue Cheese','None']},
-        {title: 'Candied Yams', oldPrice: 6,related: ["Yams", "Sweet potatoes", "Side dish", "Southern cuisine", "Candied", "Brown sugar glaze", "Sweet", "Savory", "Comfort food", "Soul food", "Thanksgiving", "Christmas", "Holidays", "Vegetables", "Vegetarian", "Vegan option"],description: "Sweet and tender candied yams, simmered in a rich brown sugar glaze until perfectly caramelized. This classic Southern side dish is a delicious combination of sweet and savory flavors, and pairs perfectly with fried chicken, roasted pork, or any other main course.", image : require('../assets/yams.png'), reviews : [], category: 'food'},
-        {title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', oldPrice: 3.69, image : require('../assets/snacks1.png'), reviews : [], category: 'snacks'},
-        {title: 'Hostess Donettes Chocolate Mini Donuts Bag 10.75oz', oldPrice: 3.69, image : require('../assets/snacks2.png'), reviews : [], category: 'snacks'},
-        {title: 'Kit Kat Candy Bar King Size 3oz', oldPrice: 3.69, image : require('../assets/snacks3.png'), reviews : [], category: 'snacks'},
-        {title: 'Basically, Sour Rainbow Bites 5oz', oldPrice: 3.69, image : require('../assets/snacks4.png'), reviews : [], category: 'snacks'},
-        {title: 'Ferrero Rocher Hazelnut Chocolate Candy 1.3oz', oldPrice: 3.69, image : require('../assets/snacks5.png'), reviews : [], category: 'snacks'},
-        {title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', oldPrice: 3.69, image : require('../assets/snacks6.png'), reviews : [], category: 'snacks'},
-        {title: 'White Claw Seltzer Flavor No. 3 Variety 12pk 12oz Can 5.0% ABV $22.99', oldPrice: 3.69, image : require('../assets/alcohol1.png'), reviews : [], category: 'alcohol'},
-        {title: 'White Claw Surge Variety 12pk 12oz Can 8% ABV $22.99', oldPrice: 3.69, image : require('../assets/alcohol2.png'), reviews : [], category: 'alcohol'},
-        {title: 'White Claw Seltzer Variety 12pk 12oz Can 5.0% ABV $22.99', oldPrice: 3.69, image : require('../assets/alcohol3.png'), reviews : [], category: 'alcohol'},
-        {title: 'Dolce Vita Italy Sparkling Prosecco 750ml $39.49', oldPrice: 3.69, image : require('../assets/alcohol4.png'), reviews : [], category: 'alcohol'},
-        {title: "Jack Daniel's & Coca-Cola 355ml Can 7% ABV", oldPrice: 3.69, image : require('../assets/alcohol5.png'), reviews : [], category: 'alcohol'},
-        {title: 'Don Romeo Blanco Tequila 750ml (80 Proof)', oldPrice: 3.69, image : require('../assets/alcohol6.png'), reviews : [], category: 'alcohol'},
-        {title: 'CELSIUS Peach Mango Green Tea, Essential', oldPrice: 3.69, image : require('../assets/drink1.png'), reviews : [], category: 'drink'},
-        {title: 'GHOST® Energy Sour Patch Kids Blue Raspberry 16oz Can $2.99', oldPrice: 3.69, image : require('../assets/drink2.png'), reviews : [], category: 'drink'},
-        {title: 'Mountain Valley Spring Water Sparkling Glass', oldPrice: 3.69, image : require('../assets/drink3.png'), reviews : [], category: 'drink'},
-        {title: 'Tiger Eye Iced Coconut Latte 8.5oz', oldPrice: 3.69, image : require('../assets/drink4.png'), reviews : [], category: 'drink'},
-        {title: "La Colombe Cold Brew Colombian Light Roast Coffee 42oz $8.59", oldPrice: 3.69, image : require('../assets/drink5.png'), reviews : [], category: 'drink'},
-        {title: 'La Colombe Cold Brew Brazilian Medium Roast', oldPrice: 3.69, image : require('../assets/drink6.png'), reviews : [], category: 'drink'},
-        {title: 'Basically, 4ct Large Roll Soft Toilet Paper $22.99', oldPrice: 3.69, image : require('../assets/home1.png'), reviews : [], category: 'home'},
-        {title: 'Bounty Select-A-Size Paper Towels, Double Roll', oldPrice: 3.69, image : require('../assets/home2.png'), reviews : [], category: 'home'},
-        {title: 'Gain Ultra Original Liquid Dish Soap 8oz', oldPrice: 3.69, image : require('../assets/home4.png'), reviews : [], category: 'home'},
-        {title: 'Tide PODS Liquid Laundry Detergent Pacs Spring Meadow Scent 42ct $15.49', oldPrice: 3.69, image : require('../assets/home3.png'), reviews : [], category: 'home'},
-        {title: "Febreze April Fresh Fabric Refreshener with Downy", oldPrice: 3.69, image : require('../assets/home5.png'), reviews : [], category: 'home'},
-        {title: 'Tide Liquid Laundry Detergent Original Scent', oldPrice: 3.69, image : require('../assets/home6.png'), reviews : [], category: 'home'},
-    ]
+  name: 'items',
+  initialState: {
+    ids: [],
+    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    error: null,
+  },
+  reducers: {
+    addReview: (state, action) => {
+      const index = state.ids.findIndex(item => item.title === action.payload.id.title);
+      if (index !== -1) {
+        state.ids[index].reviews.push(action.payload.id.reviews);
+      }
     },
-    reducers: {
-        addReview : (state, action) => { const index = state.ids.findIndex(item => item.title === action.payload.id.title);
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchProducts.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchProducts.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.ids = action.payload;
+      })
+      .addCase(fetchProducts.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      });
+  },
+});
 
-            if (index !== -1) {
-                state.ids[index].reviews.push(action.payload.id.reviews);
-            }},
-    }
-})
-
-export const addReview= items.actions.addReview
-export default items.reducer
+export const { addReview } = items.actions;
+export default items.reducer;

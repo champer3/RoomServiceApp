@@ -7,7 +7,13 @@ import { EvilIcons } from '@expo/vector-icons';
 
 
 function ProductDescription({title, image, price, reviews, category, side,flavour,option,instruction,quantity, action,onPress, onTap, children }) {
-  
+  function isValidURL(str) {
+    if (typeof str !== 'string') {
+      str = String(str);
+    }
+    
+    return str.startsWith("http://") || str.startsWith("https://");
+  }
   return (
     <View style={[styles.container]}>
       <View style={styles.imageContainer}>
@@ -28,10 +34,10 @@ function ProductDescription({title, image, price, reviews, category, side,flavou
             paddingVertical: 10,
             paddingHorizontal: 10,
           }}>
-            <Image
+            {image && isValidURL(image) && <Image
               style={styles.image}
-              source={image}
-            />
+              source={{uri:image}}
+            />}
           </View>
           <Text style={{fontWeight: 900, fontSize: 14}}>{`Total: $${(price).toFixed(2)}`}</Text>
           {option && <Text style={{fontWeight: 900, fontSize: 14}}>{`Picked: ${option}`}</Text>}
@@ -107,7 +113,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {flexDirection: 'row',justifyContent: 'space-between'},
   image: {
-    maxWidth: width / 5,
+    width: width / 5,
     height: height / 10,
     borderRadius: 50,
   },

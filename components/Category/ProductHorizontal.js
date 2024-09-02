@@ -6,10 +6,12 @@ const { width, height } = Dimensions.get("window");
 
 
 function ProductHorizontal({items, onPress}){
+    // if (items[1].category == "Food"){
+    // console.log('Category', items)}
 
     return <ScrollView showsHorizontalScrollIndicator={false} style={styles.container} horizontal={true}>
-        {items.map(({title, oldPrice, image, reviews, category, nutrient, instructions, description, addOn, options, extras}, index) =><View  key={index}  style={{width: width / 3}} >
-                <Product reviews={reviews} options={options} nutrient ={nutrient} addOn={addOn} category={category} description={description} extras ={extras} instructions={instructions}  widths={width} title={title} oldPrice={oldPrice} image={image} onAdd = {onPress}/>
+        {items?.map(({title, oldPrice, images, reviews, category, nutrient, instructions, description, addOn, options, extras}, index) =><View  key={index}  style={{width: width / 3}} >
+                <Product reviews={reviews} options={options} nutrient ={nutrient} addOn={addOn} category={category} description={description} extras ={extras} instructions={instructions}  widths={width} title={title} oldPrice={oldPrice} image={images[0]} onAdd = {onPress}/>
                 </View>)}
     </ScrollView>
 }

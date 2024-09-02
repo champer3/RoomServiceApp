@@ -60,7 +60,7 @@ function ProductDisplay() {
   if((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
     background = "#283618";
 }else if(!route.params.extras && !route.params.options){ background = '#283618'}
-  const image = route.params.image;
+  const images = route.params.images;
   const [index, setIndex] = useState(0);
   console.log(index)
   const [selected, setSelected] = useState([]);
@@ -295,14 +295,7 @@ function createFoodDictionary(foodArray) {
         <View style={{ marginBottom: 120 }}>
           <View style={{ backgroundColor: "#FAFAFA", paddingTop: 0 }}>
             <CarouselCards
-              data={[
-                { image: image },
-                { image: image },
-                { image: image },
-                { image: image },
-                { image: image },
-                { image: image },
-              ]}
+              data={images}
               index={index}
               handleIndex={setIndex}
               onView={() => setDisplay(true)}
@@ -753,14 +746,7 @@ function createFoodDictionary(foodArray) {
             <AntDesign name="closecircle" size={34} color="white" />
           </Pressable>
           <ProductPreview
-            data={[
-              { image: image },
-              { image: image },
-              { image: image },
-              { image: image },
-              { image: image },
-              { image: image },
-            ]}
+            data={images}
             index={index}
             handleIndex={setIndex}
           />

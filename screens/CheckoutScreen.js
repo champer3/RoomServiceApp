@@ -473,12 +473,12 @@ function CheckoutScreen() {
         <View style={styles.recommendedView}>
           <Text style={styles.text}>Order Items</Text>
           <View style={{ gap: 20 }}>
-            {newList.map(({ title, image, quantity, oldPrice }, idx) => (
+            {newList.map(({ title, images, quantity, oldPrice }, idx) => (
               <ProductAction
                 key={idx}
                 price={oldPrice}
                 title={title}
-                image={image}
+                image={images[0]}
                 onTap={() => {
                   ref2?.current?.scrollTo(-570);
                   handleChoose(newList[idx].title);
@@ -586,7 +586,7 @@ function CheckoutScreen() {
           <View style={{ marginBottom: 590, gap: 30 }}>
             {display.map(
               (
-                { Flavour, instruction, Sides, Picked, title, image, oldPrice },
+                { Flavour, instruction, Sides, Picked, title, images, oldPrice },
                 idx
               ) => (
                 <View key={idx}>
@@ -596,7 +596,7 @@ function CheckoutScreen() {
                     flavour={getFlavors(Flavour)}
                     side={Sides}
                     price={oldPrice}
-                    image={image}
+                    image={images[0]}
                     title={title}
                   />
                 </View>
