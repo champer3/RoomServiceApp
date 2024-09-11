@@ -41,6 +41,7 @@ import AddPin from "./screens/AddPin";
 import { useEffect, useState, useRef } from "react";
 import CategoryAll from "./screens/category/CategoryAll";
 import ProfileDisplay from "./screens/ProfileDisplay";
+import Settings from "./screens/Settings";
 import OrderDisplay from "./screens/OrderDisplay";
 import AddressDisplay from "./screens/AddressDisplay";
 import PaymentsDisplay from "./screens/PaymentsDisplay";
@@ -97,42 +98,42 @@ function Authentication() {
       <Stack.Screen
         name="StartScreen"
         component={StartScreen}
-        options={{ headerShown: false, headerBackTitle: ''  }}
+        options={{ headerShown: false, headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="NumberLogin"
         component={NumberLogin}
-        options={{ headerShown: false, headerBackTitle: ''  }}
+        options={{ headerShown: false, headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="PinLogin"
         component={PinLogin}
-        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="EmailLogin"
         component={EmailLogin}
-        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="EmailSignUp"
         component={EmailSignUp}
-        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="AddNumber"
         component={AddNumber}
-        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="AddPin"
         component={AddPin}
-        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="CreatePassword"
         component={CreatePassword}
-        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: '', headerBackTitleVisible: false  }}
       />
     </Stack.Navigator>
   );
@@ -144,22 +145,22 @@ function Home2() {
       <Stack.Screen
         name="HomeDefault"
         component={Home}
-        options={{ headerShown: false, headerBackTitle: ''  }}
+        options={{ headerShown: false, headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="Category"
         component={CategorySearch}
-        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="All Categories"
         component={CategoryAll}
-        options={{ headerShown: false, headerBackTitle: ''  }}
+        options={{ headerShown: false, headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="All Deals"
         component={DealsScreen}
-        options={{ headerShown: false, headerBackTitle: ''  }}
+        options={{ headerShown: false, headerBackTitle: '', headerBackTitleVisible: false  }}
       />
     </Stack.Navigator>
   );
@@ -170,12 +171,12 @@ function Search() {
       <Stack.Screen
         name="SearchDefault"
         component={Category}
-        options={{ headerShown: false, headerBackTitle: ''  }}
+        options={{ headerShown: false, headerBackTitle: '', headerBackTitleVisible: false  }}
       />
       <Stack.Screen
         name="CategorySearch"
         component={CategorySearch}
-        options={{ headerShadowVisible: false, title: "", headerBackTitle: ''  }}
+        options={{ headerShadowVisible: false, title: "", headerBackTitle: '', headerBackTitleVisible: false  }}
       />
     </Stack.Navigator>
   );
@@ -186,22 +187,22 @@ function Account() {
       <Stack.Screen
         name="Profile"
         component={{ ProfileDisplay }}
-        options={{ headerShadowVisible: false, title: "My Profile", headerBackTitle: ''}}
+        options={{ headerShadowVisible: false, title: "My Profile", headerBackTitle: '', headerBackTitleVisible: false}}
       />
       <Stack.Screen
         name="Payment"
         component={{ PaymentsDisplay }}
-        options={{ headerShadowVisible: false, title: "Payments", headerBackTitle: ''}}
+        options={{ headerShadowVisible: false, title: "Payments", headerBackTitle: '', headerBackTitleVisible: false}}
       />
       <Stack.Screen
         name="Order History"
         component={{ OrderDisplay }}
-        options={{ headerShadowVisible: false, title: "Orders", headerBackTitle: ''}}
+        options={{ headerShadowVisible: false, title: "Orders", headerBackTitle: '', headerBackTitleVisible: false}}
       />
       <Stack.Screen
         name="Address"
         component={{ AddressDisplay }}
-        options={{ headerShadowVisible: false, title: "Address", headerBackTitle: ''}}
+        options={{ headerShadowVisible: false, title: "Address", headerBackTitle: '', headerBackTitleVisible: false}}
       />
     </Stack.Navigator>
   );
@@ -325,43 +326,48 @@ export default function App() {
             <Stack.Screen
               name="Product"
               component={ProductDisplay}
-              options={{ headerShadowVisible: false, title: "" }}
+              options={{ headerShadowVisible: false, title: "",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Review"
               component={ReviewScreen}
-              options={{ headerShadowVisible: false, title: "" }}
+              options={{ headerShadowVisible: false, title: "",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
 
             <Stack.Screen
               name="Cart"
               component={CartDisplay}
-              options={{ headerShadowVisible: false, title: "Cart" }}
+              options={{ headerShadowVisible: false, title: "Cart",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Profile"
               component={ProfileDisplay}
-              options={{ headerShadowVisible: false, title: "My Profile" }}
+              options={{ headerShadowVisible: false, title: "My Profile",  headerBackTitle: '', headerBackTitleVisible: false }}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={Settings}
+              options={{ headerShadowVisible: false, title: "My Settings",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Payment"
               component={PaymentsDisplay}
-              options={{ headerShadowVisible: false, title: "Payments" }}
+              options={{ headerShadowVisible: false, title: "Payments",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Order History"
               component={OrderDisplay}
-              options={{ headerShadowVisible: false, title: "Orders" }}
+              options={{ headerShadowVisible: false, title: "Orders",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Address"
               component={AddressDisplay}
-              options={{ headerShadowVisible: false, title: "Address" }}
+              options={{ headerShadowVisible: false, title: "Address",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Checkout"
               component={CheckoutScreen}
-              options={{ headerShadowVisible: false, title: "Checkout" }}
+              options={{ headerShadowVisible: false, title: "Checkout",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Confirm Address"
@@ -369,37 +375,38 @@ export default function App() {
               options={{
                 headerShadowVisible: false,
                 title: "Shipping Address",
+                headerBackTitle: '', headerBackTitleVisible: false
               }}
             />
             <Stack.Screen
               name="Make Payment"
               component={PaymentScreen}
-              options={{ headerShadowVisible: false, title: "Make Payment" }}
+              options={{ headerShadowVisible: false, title: "Make Payment",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Manage Payment"
               component={ConfirmPaymentMethod}
-              options={{ headerShadowVisible: false, title: "Manage Payment" }}
+              options={{ headerShadowVisible: false, title: "Manage Payment",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Order Receipt"
               component={RecieptScreen}
-              options={{ headerShadowVisible: false, title: "Order Receipt" }}
+              options={{ headerShadowVisible: false, title: "Order Receipt",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Map"
               component={MapScreen}
-              options={{ headerShadowVisible: false, title: "Address" }}
+              options={{ headerShadowVisible: false, title: "Address",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Add Address"
               component={AddAddressScreen}
-              options={{ headerShadowVisible: false, title: "New Address" }}
+              options={{ headerShadowVisible: false, title: "New Address",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Delivery Status"
               component={Delivery}
-              options={{ headerShadowVisible: false, title: "Status" }}
+              options={{ headerShadowVisible: false, title: "Status",  headerBackTitle: '', headerBackTitleVisible: false }}
             />
             <Stack.Screen
               name="Loader"
