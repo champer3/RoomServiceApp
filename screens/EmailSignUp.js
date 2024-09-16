@@ -25,10 +25,11 @@ import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
-function EmailSignUp() {
+function EmailSignUp({route}) {
   function handleScreenPress() {
     Keyboard.dismiss();
   }
+  const {promptAsync} = route.params
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
   
@@ -227,7 +228,7 @@ function EmailSignUp() {
     backgroundColor: "#EEEEEE",
     width: "90%",}}></View>
             </View>
-            {/* <View
+            <View
               style={[
                 styles.buttonContainer,
                 {
@@ -244,14 +245,14 @@ function EmailSignUp() {
               </BareButton>
             </View>
             <View style={[styles.buttonContainer]}>
-              <BareButton borderRadius={24} color="#EEEEEE">
+              <BareButton onPress={()=>promptAsync()} borderRadius={24} color="#EEEEEE">
                 <Image
                   style={styles.facebook}
                   source={require("../assets/google.png")}
                 />
                 <Text> Continue with Google</Text>
               </BareButton>
-            </View> */}
+            </View>
             <View style={styles.textContainer}>
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 Already have an account?

@@ -248,7 +248,7 @@ function EmailLogin() {
               //   borderColor: "black",
             }}
           >
-            {/* <View style={styles.threeContainer}>
+            <View style={styles.threeContainer}>
               <View style={styles.line}></View>
               <Text>or continue with</Text>
               <View style={styles.line}></View>
@@ -275,14 +275,14 @@ function EmailLogin() {
                 },
               ]}
             >
-              <BareButton borderRadius={24} color="#EEEEEE">
+              <BareButton onPress={()=> promptAsync()} borderRadius={24} color="#EEEEEE">
                 <Image
                   style={styles.facebook}
                   source={require("../assets/google.png")}
                 />
                 <Text> Continue with Google</Text>
               </BareButton>
-            </View> */}
+            </View>
             <View style={styles.textContainer}>
               <Text style={{ color: "#333333", opacity: 0.5 }}>
                 New to RoomService?

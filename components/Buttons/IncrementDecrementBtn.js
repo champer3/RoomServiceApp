@@ -26,14 +26,14 @@ function IncrementDecrementBtn({ minValue = 0, maxValue = 100, onIncrease, onDec
       <Pressable onPress={
           handleDecrementCounter
         } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50 }}>
-        <View style={{alignItems: 'center', justifyContent: 'center' }}><Feather name="minus" size={20} color="black" /></View>
+        <View style={{alignItems: 'center', justifyContent: 'center' }}><Feather name="minus" size={18} color="black" /></View>
         
       </Pressable>
       <Text>{minValue}</Text>
       <Pressable onPress={
           handleIncrementCounter
         } style={({ pressed }) => pressed && { opacity: 0.5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{alignItems: 'center', justifyContent: 'center' }}><MaterialIcons name="add" size={20} color="black" /></View>
+        <View style={{alignItems: 'center', justifyContent: 'center' }}><MaterialIcons name="add" size={18} color="black" /></View>
       </Pressable>
     </View>
   );
@@ -43,16 +43,14 @@ export default IncrementDecrementBtn;
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    flex: 1,
     // marginVertical: 20,
     // marginHorizontal: 15,
-    backgroundColor: "#F9F9F9",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    backgroundColor: "#BC6C25",
+    paddingHorizontal: 7,
     borderRadius: 24,
     alignItems: "center",
     flexDirection: "row",
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
   },
   buttonText: {
     

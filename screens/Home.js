@@ -15,6 +15,8 @@ import { Feather, EvilIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import ItemCategory from "../components/Category/ItemCategory";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import Svg, {Path} from 'react-native-svg';
 import {
   GestureHandlerRootView,
   ScrollView,
@@ -38,6 +40,7 @@ import axios from "axios";
 import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
 import { current } from "@reduxjs/toolkit";
 import {fetchProducts} from "../Data/Items"
+import ItemSmallCategory from "../components/Category/ItemSmallCategory";
 // const SERVER_URL = 'ws://192.168.179.1:3000';
 // const SERVER_URL = 'http://10.0.0.173:3000';
  const SERVER_URL="https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
@@ -215,11 +218,11 @@ function Home() {
     var hours = currentTime.getHours();
 
     if (hours < 12) {
-      return "Good Morning!";
+      return "Good Morning";
     } else if (hours < 18) {
-      return "Good Afternoon!";
+      return "Good Afternoon";
     } else {
-      return "Good Evening!";
+      return "Good Evening";
     }
   }
   const orders = useSelector((state) => state.cartItems.order)
@@ -334,6 +337,7 @@ function Home() {
       categoryObject[category].push(item);
     }
   });
+  // console.log(categoryObject)
   const [selected, setSelected] = useState([])
   function toggleNumberInArray(number) {
     setSelected((prev) => {
@@ -409,7 +413,7 @@ function Home() {
       }
       setCurrentIndex(nextIndex);
       Animated.spring(animatedValue, {
-        toValue: nextIndex * (width  ),
+        toValue: nextIndex * (width+5) ,
         useNativeDriver: true,
       }).start();
     }, 5000);
@@ -420,7 +424,7 @@ function Home() {
   useEffect(() => {
     animatedValue.addListener(({ value }) => {
       if (scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({ x: value, animated: false });
+        scrollViewRef.current.scrollTo({ x: value, animated: true });
       }
     });
   }, [animatedValue]);
@@ -515,21 +519,28 @@ function Home() {
     }
   }
   function handleScroll(event) {
-    setIsVisible(event.nativeEvent.contentOffset.y > 103);
+    setIsVisible(event.nativeEvent.contentOffset.y > 223);
   }
   reg?.current?.scrollTo(-1 * height / 4.7)
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={{}}><LinearGradient
+      <GestureHandlerRootView style={{ flex: 1 , }}>
+        <LinearGradient
           // colors={["#19171A", "#01418D", "#2873CC"]}
           // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-          colors={["#4F6B30", "#425928", "#354820", '#283618']}
+          style= {{flex: 1,}}
+          locations={[0.05, 0.1, 0.15, 0.2,  0.6,]}
+          colors={['#283618',"#354820", "#425928","#4F6B30" ,  '#F0F0F0'   ]}><View
+          // colors={["#19171A", "#01418D", "#2873CC"]}
+          // colors={["#19171A", "#2F5A8C", "#2873CC"]}
+          // locations={[0.1375, 0.275, 0.3125, 0.80, 1]}
+          // colors={[]}
+          style={{justifyContent: 'flex-end'}}
         // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
         >
           <SafeAreaView onTouchStart={() => { ref?.current?.scrollTo(0); setBlink(true) }} style={styles.top}>
-            <View
+            {!isVisible && <View
               style={[styles.top, {
                 flexDirection: "row",
                 justifyContent: "space-between",
@@ -538,29 +549,36 @@ function Home() {
                 paddingTop: "3%",
               }]}
             >
-              {<View style={{ gap: 6, justifyContent: 'center', }}>
-                <Text
+             
+              {<View style={{  justifyContent: 'center', }}>
+              <Text style={{color: 'white', fontSize: 15}}>{greeting} {data.firstName}</Text>
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
+                 
+                </View>
+                <View style={{ justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
+                  <View>
+               { <Text
                   style={{
                     color: "white",
-                    fontSize: 16,
-                    letterSpacing: 0.4,
-                    // fontWeight: 900,
-                  }}
-                >
-                  {greeting}
-                </Text>
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 16,
-                    // fontWeight: 800,
+                    fontSize: 14,
                     letterSpacing: 1,
                   }}
-                >{`${data.firstName} `}</Text>
+                >
+                  {"6700 Cabot Dr"}
+                </Text>}
+                {<Text
+                  style={{
+                    color: "white",
+                    fontSize: 9,
+                  }}
+                >{"Nashville, Tennessee"}</Text>}
+                </View>
+                
+                </View>
                 {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
               </View>}
-
-              <View style={[styles.cart, { width: 60, height: 45, 
+                  <View style={{flexDirection: 'row',gap: 12}}>
+                  <View style={[styles.cart, { width: 40, height: 40, 
               shadowColor: '#000',
               shadowOffset: { width: 10, height: 7 },
               shadowOpacity: 0.8,
@@ -571,7 +589,7 @@ function Home() {
                   onPress={cartHandler}
                 >
                   <View>
-                    <Feather name="shopping-cart" size={24} color="#425928" />
+                  <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><Path fill={"#425928"} d="M282.6 40.1C214 15.1 138 50.4 112.8 119L98.2 159C84 197.8 57.6 231 23 253.7L14.9 259C4.7 265.7-.8 277.5 .6 289.5s9.4 22.2 20.8 26.3l230.5 83.9 1.1-3.9c2.6-9.1 4.4-18.4 5.4-27.7l-226-82.3 8.2-5.4c40.3-26.5 71.1-65.2 87.7-110.4l14.7-40c18.7-51 74.5-77.7 125.7-60.9c8.4-8.6 17.7-16.3 27.9-23c-4.5-2.2-9.1-4.2-13.9-6zm71.1 48.4c54.8-19.9 115.4 8.3 135.5 63L508 202.6c16.3 44.6 46.4 82.8 85.9 109.2l13.7 9.2s0 0 0 0L310.1 429.3l4.6-15.8c13.1-45.6 11.3-94.1-5-138.7l-18.8-51.2c-20.1-54.7 8.1-115.2 62.8-135.2zm165.5 52C493.2 69.2 414.1 32.5 342.8 58.4s-108 104.8-81.9 176.2l18.8 51.2c14 38.2 15.5 79.8 4.3 118.9l-4.6 15.8c-3.3 11.6 .1 24 9 32.2s21.5 10.8 32.8 6.7L618.6 351.1c11.3-4.1 19.4-14.2 20.8-26.2s-4-23.7-14-30.4l-13.7-9.2c-33.8-22.7-59.6-55.4-73.6-93.6l-18.8-51.2zM434.8 437.6c-6.7 5.8-7.4 15.9-1.6 22.6C450.5 480.1 479 488 505 477.8s41.5-35.5 40.5-61.8c-.3-8.8-7.7-15.7-16.6-15.4s-15.7 7.7-15.4 16.6c.5 13.2-7.3 25.8-20.3 30.9s-27.2 1.2-35.9-8.8c-5.8-6.7-15.9-7.4-22.6-1.6zM179.9 406.7c-8.7 10-23 13.9-35.9 8.8s-20.7-17.7-20.3-30.9c.3-8.8-6.6-16.2-15.4-16.6s-16.2 6.6-16.6 15.4c-.9 26.3 14.6 51.6 40.5 61.8s54.5 2.3 71.8-17.6c5.8-6.7 5.1-16.8-1.6-22.6s-16.8-5.1-22.6 1.6z"/></Svg>
                   </View>
 
                   {cartItems.length > 0 && (
@@ -602,7 +620,50 @@ function Home() {
                   )}
                 </Pressable>
               </View>
-            </View>
+              <View style={[styles.cart, { width: 40, height: 40, 
+              shadowColor: '#000',
+              shadowOffset: { width: 10, height: 7 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,
+              elevation: 5, // Ad
+              }]}>
+                <Pressable
+                  onPress={cartHandler}
+                >
+                  <View>
+                  <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><Path fill={"#425928"} d="M16 0C7.2 0 0 7.2 0 16s7.2 16 16 16l37.9 0c7.6 0 14.2 5.3 15.7 12.8l58.9 288c6.1 29.8 32.3 51.2 62.7 51.2L496 384c8.8 0 16-7.2 16-16s-7.2-16-16-16l-304.8 0c-15.2 0-28.3-10.7-31.4-25.6L152 288l314.6 0c29.4 0 55-20 62.1-48.5L570.6 71.8c5-20.2-10.2-39.8-31-39.8L99.1 32C92.5 13 74.4 0 53.9 0L16 0zm90.1 64l433.4 0L497.6 231.8C494 246 481.2 256 466.5 256l-321.1 0L106.1 64zM168 456a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zm80 0a56 56 0 1 0 -112 0 56 56 0 1 0 112 0zm200-24a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm0 80a56 56 0 1 0 0-112 56 56 0 1 0 0 112z"/></Svg>
+                  </View>
+
+                  {cartItems.length > 0 && (
+                    <View
+                      style={{
+                        height: "85%",
+                        minWidth: "35%",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        position: "absolute",
+                        zIndex: 2,
+                        top: -10,
+                        rigth: -90,
+                        borderRadius: 100,
+                        backgroundColor: "#425928",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "white",
+                          fontSize: 12,
+                          fontWeight: 900,
+                        }}
+                      >
+                        {cartItems.length}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+              </View>
+             </View>
+            </View>}
             <Pressable
               style={[styles.search, { marginTop: 10 }]}
               onPress={() => navigation.navigate("Search")}
@@ -613,78 +674,95 @@ function Home() {
                   gap: 10,
                   borderColor: "white",
                   borderWidth: 1,
-                  borderRadius: 20,
+                  borderRadius: 25,
                   backgroundColor: "white",
                   alignItems: "center",
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
                 }}
               >
-                <EvilIcons name="search" size={24} color="black" />
+                <EvilIcons name="search" size={24} color="#aaa" />
                 <Text
-                  style={{ color: "black", fontSize: 16, fontWeight: 500 }}
+                  style={{ color: "#aaa", fontSize: 16, fontWeight: 500 }}
+
                 >
-                  Search RoomService
+                  What would you like??
                 </Text>
               </View>
-
-              {/* <Input
-            onInteract={()=> navigation.navigate('Search')}
-            color={"white"}
-            icon={<EvilIcons name="search" size={24} color="white" />}
-            text={"Search items"}
-          ></Input> */}
             </Pressable>
-            <View style={{ marginTop: 0, paddingBottom: 1, height: height / 30 }}>
+            
+            <View style={{ marginTop: 0, paddingBottom: 1 }}>
               {isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
-          <FadeInView style={{  flexDirection: 'row',
-        gap: 35,paddingLeft: 17 }}>
-        {[
-                  { text: "Alcohol", image: require("../assets/Alcohol.png") },
-                  { text: "Frozen", image: require("../assets/frozen.png") },
-                  {
-                    text: "Ice Cream",
-                    image: require("../assets/icecream.png"),
-                  },
-                  { text: "Food", image: require("../assets/food.png") },
-                  { text: "Snacks", image: require("../assets/snack.png") },
-                ].map(({text, image},index) => <Pressable onPress={()=> {navigation.navigate('Category', {cat: text})}} key={index}><Text style={{fontWeight: "bold", fontSize: 13, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
+          <FadeInView style={{marginVertical: 5, marginTop: 8}}>
+       <ItemSmallCategory
+                  items={[
+                    { text: "Alcohol", image: require("../assets/Alcohol.png") },
+                    {
+                      text: "Ice Cream",
+                      image: require("../assets/icecream.png"),
+                    },
+                    { text: "Food", image: require("../assets/food.png") },
+                    { text: "Frozen", image: require("../assets/frozen.png") },
+                    { text: "Snacks", image: require("../assets/snack.png") },
+                  ]}
+                  color="white"
+                  show={!isVisible}
+                />
       </FadeInView>
     </ScrollView>}
               {!isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
-          <FadeOutView style={{  flexDirection: 'row',
-        gap: 35,paddingLeft: 17 }}>
-        {[
-                  { text: "Alcohol", image: require("../assets/Alcohol.png") },
-                  { text: "Frozen", image: require("../assets/frozen.png") },
-                  {
-                    text: "Ice Cream",
-                    image: require("../assets/icecream.png"),
-                  },
-                  { text: "Food", image: require("../assets/food.png") },
-                  { text: "Snacks", image: require("../assets/snack.png") },
-                ].map(({text, image},index) => <Pressable onPress={()=> {navigation.navigate('Category', {cat: text})}} key={index}><Text style={{fontWeight: "bold", fontSize: 13, textAlign: "center" , color: 'white'}}>{text}</Text></Pressable>)}
+          <FadeOutView style={{ marginVertical: 12  }}>
+       
       </FadeOutView>
     </ScrollView>}
               </View>
+          
             </SafeAreaView>
-          </LinearGradient>
+          </View>
+          <View style={{  flex: 1 ,}}>
           <ScrollView
             scrollEventThrottle={16}
             onScroll={(e) => handleScroll(e)}
             bounces={false}
+            style={{}}
             onTouchStart={() => { ref?.current?.scrollTo(0) }}
-            style={{ backgroundColor: "white" }}>
-            {<LinearGradient
-              // colors={["#19171A", "#01418D", "#2873CC"]}
-              // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-              colors={['#283618', '#283618']}
-            // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
-            ><View style={{marginBottom: 5  }}>
+            >
+
+           <View style={{  backgroundColor: '#F0F0F0',  }}>
+  <ScrollView
+    ref={scrollViewRef}
+    horizontal
+    pagingEnabled
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.scrollViewContent}
+  >
+    <View style={{flexDirection: "row", flexWrap: "nowrap", gap: 5}}>
+      {[
+  require('../assets/deal1.png'),
+  require('../assets/deal3.png'),
+  require('../assets/deal2.png'),
+  require('../assets/deal4.png'),
+  require('../assets/deal5.png'),
+  require('../assets/deal1.png'),
+].map((image, index) => (
+        <Pressable key={index}>
+          <View style={styles.imageContainer}>
+            <Image
+              style={styles.image}
+              source={image}
+              resizeMode="contain"  // or "contain", depending on the effect you want
+            />
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  </ScrollView>
+</View>
+
+            <View style={{marginBottom: 10  }}>
                 <ItemCategory
                   items={[
                     { text: "Alcohol", image: require("../assets/Alcohol.png") },
-                    { text: "Frozen", image: require("../assets/frozen.png") },
                     {
                       text: "Ice Cream",
                       image: require("../assets/icecream.png"),
@@ -695,332 +773,21 @@ function Home() {
                   color="white"
                   show={!isVisible}
                 />
-              </View></LinearGradient>}
-            <View style={[styles.horizontalCat,]}>
-              {/* <View style={styles.catHead}>
-                <Text style={styles.text}>Popular Categories</Text>
-                <Pressable onPress={chooseHandler}>
-                  <Text style={{ color: "#BC6C25", fontSize: 12 }}>
-                    See All
-                  </Text>
-                </Pressable>
-              </View> */}
-
-              {/* <ScrollView style={{borderWidth: 1}} horizontal={true}>
-              <View style={{flex: 1}}>
-            <Pressable onPress={dealHandler} stylye ={{borderWidth: 1}}>
-              <Image
-                style={styles.image}
-                source={require("../assets/deals.png")}
-              />
-
-            </Pressable>
-            </View>
-            <Pressable onPress={dealHandler}>
-              <Image
-                style={styles.image}
-                source={require("../assets/deals.png")}
-              />
-            </Pressable>
-            <Pressable onPress={dealHandler}>
-              <Image
-                style={styles.image}
-                source={require("../assets/image 16.png")}
-              />
-            </Pressable>
-          </ScrollView> */}
-              <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        scrollEventThrottle={16}
-        contentContainerStyle={styles.scrollViewContent}
-      >
-                <View
-                  style={{ flexDirection: "row", flexWrap: "nowrap"}}
-                >
-                  <Pressable >
-                    <View style={styles.imageContainer}>
-                      <Image
-                        style={styles.image}
-                        source={require("../assets/deal1.png")}
-                      />
-                    </View>
-                  </Pressable>
-                  <Pressable>
-                    <View style={styles.imageContainer}>
-                      <Image
-                        style={styles.image}
-                        source={require("../assets/deal3.png")}
-                      />
-                    </View>
-                  </Pressable>
-                  <Pressable>
-                    <View style={styles.imageContainer}>
-                      <Image
-                        style={styles.image}
-                        source={require("../assets/deal2.png")}
-                      />
-                    </View>
-                  </Pressable>
-                  <Pressable >
-                    <View style={styles.imageContainer}>
-                      <Image
-                        style={styles.image}
-                        source={require("../assets/deal4.png")}
-                      />
-                    </View>
-                  </Pressable>
-                  <Pressable>
-                    <View style={styles.imageContainer}>
-                      <Image
-                        style={styles.image}
-                        source={require("../assets/deal5.png")}
-                      />
-                    </View>
-                  </Pressable>
-                  <Pressable >
-                    <View style={styles.imageContainer}>
-                      <Image
-                        style={styles.image}
-                        source={require("../assets/deal1.png")}
-                      />
-                    </View>
-                  </Pressable>
-                </View>
-              </ScrollView>
-            </View>
-
-             <View style={{marginTop: 16}}>
-              <Text style={[styles.text, {paddingLeft: '3%' }]}>Recommended Foods</Text>
-              <ProductHorizontal
-                items={categoryObject["Food"]}
-                onPress={handleAddToCart}
-              />
-            </View>
-
-
-            <View style={[styles.recommendedView, { alignItems: "center" }]}>
-              <Deal
-                text={"Surf and Turf Fusion"}
-                onPress={dealHandler}
-                onAdd={handleAddToCart}
-                item={[
-                  { title: 'Cajun Catfish', oldPrice: 30.00, image: require('../assets/catfish.png'), reviews: [], category: 'food', related: ["catfish", "dinner", "recipe", "fried", "blackened", "grilled", "fillets", "sauce", "cornmeal", "baked", "southern", "seasoning", "cajun", "pond", "aquaculture", "fishing", "farm-raised", "restaurant", 'fish'], nutrient: 'protein', extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, description: 'Golden-fried Cajun Catfish, a culinary delight that takes your taste buds on a flavorful journey. Crispy on the outside, tender and flaky on the inside, each bite bursts with a symphony of Cajun spices, delivering a perfect balance of heat and zest. Served alongside a medley of delectable sides, this dish promises a feast for the senses. Whether paired with buttery cornbread, creamy coleslaw, or tangy tartar sauce, every element harmonizes to create a mouthwatering experience.' },
-                  { title: 'Dirty Rice', oldPrice: 6, image: require('../assets/rice.png'), reviews: [], category: 'food', related: ["Rice", "Cajun", "Side dish", "Sausage", "Vegetables", "Spices", "Spicy", "Flavorful", "Pork", "Chicken liver", "Giblets", "Southern", "Louisiana", "Comfort food", "Pairings: fried chicken", "grilled fish"], description: 'Savory Cajun-style rice dish packed with flavorful sausage, vegetables, and spices. The "dirty" comes from the bits of cooked pork or chicken liver and giblets traditionally used, adding a rich depth of flavor. Enjoy this flavorful side dish alongside fried chicken, grilled fish, or anything else that needs a spicy kick.' },
-
-
-                ]}
-                color='#283618'
-              />
-            </View>
-            <View style={{marginTop: 16}}>
-              <Text style={[styles.text, {paddingLeft: '3%' }]}>Snacks For You</Text>
-              <ProductHorizontal
-                items={categoryObject["Snacks"]}
-                onPress={handleAddToCart}
-              />
-            </View>
-            <Deal
-              text={"Best Grocery Deals"}
-              onPress={dealHandler}
-              onAdd={handleAddToCart}
-              item={[
-                { title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', newPrice: 4.99, oldPrice: 1.99, image: require('../assets/snacks1.png'), reviews: [], category: 'snacks' },
-                { title: 'Kit Kat Candy Bar King Size 3oz', newPrice: 3.69, oldPrice: 1.99, image: require('../assets/snacks3.png'), reviews: [], category: 'snacks' },
-                { title: 'Tiger Eye Iced Coconut Latte 8.5oz', newPrice: 3.79, oldPrice: 1.99, image: require('../assets/drink4.png'), reviews: [], category: 'drink' },
-                { title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', newPrice: 4.99, oldPrice: 1.99, image: require('../assets/snacks6.png'), reviews: [], category: 'snacks' },
-                { title: 'White Claw Seltzer Flavor No. 3 Variety 12pk 12oz Can 5.0% ABV $22.99', newPrice: 7.99, oldPrice: 1.99, image: require('../assets/alcohol1.png'), reviews: [], category: 'alcohol' },
-
-              ]}
-              color='#283618'
-            />
-             <View style={{marginTop: 16}}>
-              <Text style={[styles.text, {paddingLeft: '3%' }]}>Alcohol</Text>
-              <ProductHorizontal
-                items={categoryObject["Alcohol"]}
-                onPress={handleAddToCart}
-              />
-            </View>
-            <View style={[styles.recommendedView, { alignItems: "center" }]}>
-              <Deal
-                text={"Gourmet Takes on Comfort Food"}
-                onPress={dealHandler}
-                onAdd={handleAddToCart}
-                item={[
-                  { title: 'Stuffed Salmon', oldPrice: 45, image: require('../assets/stuffed_salmon.png'), related: ["Salmon", "Seafood", "Stuffed", "Healthy", "Flavorful", "Protein", "Lunch", "Dinner", "Entrees", "Special occasion", "Crabmeat", "Shrimp", "Vegetables", "Herbs", "Spices"], description: "Salmon fillet generously filled with a flavorful blend of herbs, spices, and your choice of ingredients like crabmeat, shrimp, or vegetables. Baked to perfection, this dish is both decadent and healthy.", reviews: [], category: 'food', nutrient: 'protein', extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, },
-
-                  { title: 'Smoked Gouda Mac & Cheese', oldPrice: 6.00, image: require('../assets/mac.png'), reviews: [], category: 'food', related: ["side dish", "mac and cheese", "pasta", "cheese", "smoked Gouda", "creamy", "comfort food", "casserole", "baked", "cheesy", "vegetarian option", "lunch", "dinner", "kid-friendly", "crowd-pleaser"], description: "Creamy and decadent mac and cheese made with smoked Gouda cheese for a rich and flavorful twist. A cheesy comfort food favorite." },
-
-                ]}
-                color='#283618'
-              />
-            </View>
-            <View style={[styles.recommendedView, { alignItems: "center" }]}>
-              <Deal
-                text={"Decadent Twists"}
-                onPress={dealHandler}
-                onAdd={handleAddToCart}
-                item={[
-                  { title: 'Oysters', oldPrice: 18, image: require('../assets/oyster.png'), reviews: [], category: 'food', nutrient: 'protein', related: ["appetizer", "seafood", "oysters", "raw", "on the half shell", "mignonette sauce", "cocktail sauce", "horseradish", "lemon wedges", "tabasco sauce", "protein", "aphrodisiac", "luxury", "gourmet", "special occasion", "date night", "seafood platter"], description: "Fresh and flavorful oysters, served on the half shell with your choice of toppings like mignonette sauce, cocktail sauce, or horseradish. A seafood appetizer that's both elegant and delicious.", extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, },
-
-                  { title: 'Grilled Chicken', oldPrice: 30.00, image: require('../assets/chicken.png'), reviews: [], category: 'food', nutrient: 'protein', extras: [['Broccoli', 6], ['Cajun Cabbage', 6], ['Candy Yams', 0], ['Collard Greens', 6], ['French Fries', 0], ['Smoked Gouda Mac & Cheese', 6], ['Spinach & Mushrooms', 0], ['Loaded Mashed Potatoes', 7.5]], instructions: true, description: 'Succulent and juicy grilled chicken breasts, seasoned to perfection and cooked over an open flame. Enjoy the smoky flavor and tender texture, perfect for a satisfying and healthy meal.', related: ["grilled", "chicken", "breasts", "healthy", "protein", "barbecue", "poultry", "marinade", "grilled vegetables", "salad", "sandwich", "entree", "main course", "summer cookout"] },
-
-                ]}
-                color='#283618'
-              />
-            </View>
-            <View style={{marginTop: 16}}>
-              <Text style={[styles.text, {paddingLeft: '3%' }]}>Drinks</Text>
-              <ProductHorizontal
-                items={categoryObject["Drink"]}
-                onPress={handleAddToCart}
-              />
-            </View>
-            <View style={[{ alignItems: "center" }]}>
-              <Deal
-                text={"Pantry Deals"}
-                onPress={dealHandler}
-                onAdd={handleAddToCart}
-                item={[
-                  { title: 'Trolli Very Berry Sour Brite Crawlers Gummy Candy 5oz', oldPrice: 3.69, image: require('../assets/snacks1.png'), reviews: [], category: 'snacks' },
-                  { title: 'Hostess Donettes Chocolate Mini Donuts Bag 10.75oz', oldPrice: 3.69, image: require('../assets/snacks2.png'), reviews: [], category: 'snacks' },
-                  { title: 'Kit Kat Candy Bar King Size 3oz', oldPrice: 3.69, image: require('../assets/snacks3.png'), reviews: [], category: 'snacks' },
-                  { title: 'Basically, Sour Rainbow Bites 5oz', oldPrice: 3.69, image: require('../assets/snacks4.png'), reviews: [], category: 'snacks' },
-                  { title: 'OREO Original Chocolate Sandwich Cookies 13.29oz $5.49', oldPrice: 3.69, image: require('../assets/snacks6.png'), reviews: [], category: 'snacks' },
-
-                ]}
-                color='#283618'
-              />
-            </View>
-            <View style={{marginTop: 16}}>
-              <Text style={[styles.text, {paddingLeft: '3%' }]}>Home</Text>
-              <ProductHorizontal
-                items={categoryObject["Home"]}
-                onPress={handleAddToCart}
-              />
-            </View>
-            <View style={{}}>
-              <Deal
-                text={'Lighter Options'}
-                onPress={dealHandler}
-                onAdd={handleAddToCart}
-                item={[
-                  { title: 'Grits', oldPrice: 6.00, image: require('../assets/grits.png'), reviews: [], category: 'food', description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"] },
-                  { title: 'Collard Greens', oldPrice: 6.00, image: require('../assets/greens.png'), reviews: [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"] },
-
-                  { title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"], description: "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image: require('../assets/shrimp.png'), reviews: [], category: 'food' },
-
-                ]}
-                color='#283618'
-              />
-            </View>
-            <View style={{ marginTop: 40 }}>
-              <Deal
-                text={'Unexpected Pairings'}
-                onPress={dealHandler}
-                onAdd={handleAddToCart}
-                item={[
-                  { title: 'Grits', oldPrice: 6.00, image: require('../assets/grits.png'), reviews: [], category: 'food', description: 'Creamy and comforting grits, cooked to a smooth and delicious texture. Enjoy them plain, with cheese, or topped with your favorite savory ingredients.', related: ["side dish", "Southern cuisine", "breakfast", "porridge", "grits", "cheese", "butter", "milk", "cream", "grits and gravy", "shrimp and grits", "creamy", "savory", "comfort food", "versatile", "breakfast food", "lunch", "dinner"] },
-                  { title: 'Collard Greens', oldPrice: 6.00, image: require('../assets/greens.png'), reviews: [], category: 'food', description: "Hearty and flavorful collard greens, simmered to perfection with savory spices. A classic Southern side dish that's both delicious and nutritious.", related: ["side dish", "Southern cuisine", "vegetables", "greens", "healthy", "nutritious", "vegan", "soul food", "pork", "ham hock", "smoked turkey", "bacon", "black-eyed peas", "cornbread", "rice", "hot sauce", "vinegar", "pepper flakes"] },
-
-                  { title: 'Bang Bang (8pcs) Fried Shrimp', oldPrice: 17, related: ["Shrimp", "Seafood", "Fried", "Bang Bang sauce", "Spicy", "Sweet", "Appetizer", "Snack", "Protein", "Lunch", "Dinner", "Party food", "Sharing plates"], description: "Eight pieces of crispy fried shrimp tossed in our signature sweet and spicy Bang Bang sauce. This addictively flavorful dish is sure to be a crowd-pleaser.", image: require('../assets/shrimp.png'), reviews: [], category: 'food' },
-
-                ]}
-                color='#283618'
-              />
-            </View>
-            <View style={[styles.recommendedView, { alignItems: "center" }]}>
-              <View
-                style={{ flexDirection: "row", flexWrap: "nowrap", gap: 15 }}
-              >
-                <Pressable onPress={dealHandler}>
-                  <View style={[styles.imageContainer, { width: width - 30 }]}>
-                    <Image
-                      style={styles.image}
-                      source={require("../assets/deals.png")}
-                    />
-                  </View>
-                </Pressable>
               </View>
-            </View>
-
+              <View style={{ gap: 10, marginBottom: 50}}>
+  {Object.keys(categoryObject).map((categoryKey) => (
+    <ProductHorizontal
+      key={categoryKey}
+      categoryName={categoryKey}
+      items={categoryObject[categoryKey]}
+      onPress={handleAddToCart}
+    />
+  ))}
+</View>
           </ScrollView>
-          <BottomSheet ref={ref}>
-            <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
-              <View style={{ marginBottom: 400 }}>
-                {pro.addOn && <View style={{ gap: 25, paddingTop: 30, marginBottom: 50 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Choose Exotic Flavor'}</Text>
-                    {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
-                  </View>
-                  <Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>{`Choose up to ${2}`}</Text>
-                  {pro.extras.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15 }}>
-                    <View>
-                      <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item}</Text>
-                    </View>
-                    <Pressable onPress={() => toggleNumberInArray(idx)}>
-                      <MaterialCommunityIcons name={`${selected.indexOf(idx) === - 1 ? "checkbox-blank-outline" : "checkbox-marked"}`} size={24} color={`${selected.length < 2 || selected.indexOf(idx) !== - 1 ? 'black' : 'rgba(0,0,0,0.05)'}`} />
-                    </Pressable>
-                  </View>)}
-
-                </View>}
-                {pro.options && <View><View style={{ flexDirection: 'row', justifyContent: 'space-between', borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 15, alignItems: 'center' }}>
-                  <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Choose One'}</Text>
-                  {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
-                  <View style={{ width: width / 3.7, height: '170%' }}>
-                    <FlexButton onPress={option >= 0 ? handleUpdate : () => { }} background={option == undefined ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Add</Text></FlexButton>
-                  </View>
-                  <View style={{ width: width / 3.7, height: '170%' }}>
-                    <FlexButton onPress={option >= 0 ? handleBuy : () => { }} background={option == undefined ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Buy now</Text></FlexButton>
-                  </View>
-                </View>
-                  <View style={{ padding: 6, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.1)', width: width / 5, alignItems: 'center' }}><Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>Required</Text></View>
-                  {pro.options.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 13, }}>
-                    <View>
-                      <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item}</Text>
-                    </View>
-                    <Pressable onPress={() => { setOption(idx) }}>
-                      <Ionicons name={`${idx == option ? "radio-button-on" : "radio-button-off"}`} size={24} color="black" />
-                    </Pressable>
-                  </View>)}</View>}
-                {pro.nutrient && pro.nutrient == 'protein' && <View style={{ gap: 25, paddingTop: 30 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Pick Your Sides'}</Text>
-                    <View style={{ width: width / 4.7, height: '170%' }}>
-                      <FlexButton onPress={plus.length == 2 ? handleUpdate : () => { }} background={plus.length < 2 ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Add</Text></FlexButton>
-                    </View>
-                    <View style={{ width: width / 3.8, height: '170%' }}>
-                      <FlexButton onPress={plus.length == 2 ? handleBuy : () => { }} background={plus.length < 2 ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Buy now</Text></FlexButton>
-                    </View>
-
-                  </View>
-                  <Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>{`Choose ${2}`}</Text>
-                  <View style={{ padding: 6, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.1)', width: width / 5, alignItems: 'center' }}><Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>Required</Text></View>
-                  {pro.extras.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15 }}>
-                    <View>
-                      <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item[0]}</Text>
-                      <Text>{item[1] ? `+ $${item[1]}` : ''}</Text>
-                    </View>
-                    {(plus.length < 2 || (plus.length && plus.indexOf(item[0]) !== -1)) && <View>
-                      <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={() => { if (plus.length < 2) { setFoodDictionary((prev) => { return { ...prev, [item[0]]: foodDictionary[item[0]] + 1 } }); setPlus((prev) => { const arr = [...prev]; arr.push(item[0]); return arr }) } }} onDecrease={() => { if (plus.length > 0) { setFoodDictionary((prev) => { return { ...prev, [item[0]]: (foodDictionary[item[0]] ? foodDictionary[item[0]] : 1) - 1 } }); setPlus((prev) => { const arr = [...prev]; const index = prev.indexOf(item[0]); if (index != -1) { arr.splice(index, 1) }; return arr }) } }} />
-                    </View>}
-                  </View>)}
-
-                </View>}
-                {pro.instructions && <View
-                  style={{ color: 'white', backgroundColor: 'white' }}><TextInput
-                    multiline
-                    placeholder="Special Instructions?"
-                    cursorColor={'#aaa'}
-                    numberOfLines={6}
-                    clearButtonMode="always"
-                    style={{ paddingHorizontal: 10 }}
-                  /></View>
-                }</View>
-            </ScrollView>
-          </BottomSheet>
+          </View>
+          
+        
           {blink && deliveringOrdersCount > 0 && <TransparentSheet ref={reg}>
             <LinearGradient locations={[0.2, 0.7, 0.9, 0.6]} colors={["#4F6B30", "#425928", "#354820", '#283618']} style={{ borderTopLeftRadius: width * 3, borderTopRightRadius: width * 3, alignItems: 'center', justifyContent: 'start', paddingTop: height / 13, height: height, width: width * 2, alignSelf: 'center' }}>{deliveringOrdersCount >= 1 && <Pressable onPress={orderHandler} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
 
@@ -1034,7 +801,7 @@ function Home() {
             </Pressable>}</LinearGradient>
 
           </TransparentSheet>}
-        </View>
+        </LinearGradient>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
@@ -1056,7 +823,7 @@ const styles = StyleSheet.create({
   search: {
     justifyContent: "space-between",
     paddingHorizontal: "3%",
-    paddingBottom: 5,
+    // paddingBottom: 5,
   },
   input: {
     flexDirection: "row",
@@ -1077,15 +844,22 @@ const styles = StyleSheet.create({
     // backgroundColor: "#023C72",
     borderColor: "white",
     // borderWidth: 1
+  }, imageContainer: {
+    width: width,
+    
+    maxHeight: 150, // Set a fixed height
+    // Optional: Add border radius if desired
+    overflow: 'hidden', // Ensures the image stays within the container
   },
   image: {
-    height: height/6,
-    maxWidth: width,
-    alignSelf: "center",
-    borderRadius: 20,
+    width: '100%',
+    borderRadius: 10,
+    maxHeight: 150, 
   },
-  imageContainer: {
-    marginTop: 0,
+  scrollViewContent: {
+    borderRadius: 10,
+    
+    alignItems: 'center',
   },
   deals: {
     marginVertical: 16,
@@ -1108,3 +882,78 @@ const styles = StyleSheet.create({
     marginHorizontal: "2%",
   },
 });
+
+// <BottomSheet ref={ref}>
+// <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
+//   <View style={{ marginBottom: 400 }}>
+//     {pro.addOn && <View style={{ gap: 25, paddingTop: 30, marginBottom: 50 }}>
+//       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+//         <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Choose Exotic Flavor'}</Text>
+//         {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
+//       </View>
+//       <Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>{`Choose up to ${2}`}</Text>
+//       {pro.extras.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15 }}>
+//         <View>
+//           <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item}</Text>
+//         </View>
+//         <Pressable onPress={() => toggleNumberInArray(idx)}>
+//           <MaterialCommunityIcons name={`${selected.indexOf(idx) === - 1 ? "checkbox-blank-outline" : "checkbox-marked"}`} size={24} color={`${selected.length < 2 || selected.indexOf(idx) !== - 1 ? 'black' : 'rgba(0,0,0,0.05)'}`} />
+//         </Pressable>
+//       </View>)}
+
+//     </View>}
+//     {pro.options && <View><View style={{ flexDirection: 'row', justifyContent: 'space-between', borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 15, alignItems: 'center' }}>
+//       <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Choose One'}</Text>
+//       {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
+//       <View style={{ width: width / 3.7, height: '170%' }}>
+//         <FlexButton onPress={option >= 0 ? handleUpdate : () => { }} background={option == undefined ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Add</Text></FlexButton>
+//       </View>
+//       <View style={{ width: width / 3.7, height: '170%' }}>
+//         <FlexButton onPress={option >= 0 ? handleBuy : () => { }} background={option == undefined ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Buy now</Text></FlexButton>
+//       </View>
+//     </View>
+//       <View style={{ padding: 6, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.1)', width: width / 5, alignItems: 'center' }}><Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>Required</Text></View>
+//       {pro.options.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingVertical: 13, }}>
+//         <View>
+//           <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item}</Text>
+//         </View>
+//         <Pressable onPress={() => { setOption(idx) }}>
+//           <Ionicons name={`${idx == option ? "radio-button-on" : "radio-button-off"}`} size={24} color="black" />
+//         </Pressable>
+//       </View>)}</View>}
+//     {pro.nutrient && pro.nutrient == 'protein' && <View style={{ gap: 25, paddingTop: 30 }}>
+//       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+//         <Text style={{ color: "black", fontWeight: "900", fontSize: 19, }}>{'Pick Your Sides'}</Text>
+//         <View style={{ width: width / 4.7, height: '170%' }}>
+//           <FlexButton onPress={plus.length == 2 ? handleUpdate : () => { }} background={plus.length < 2 ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Add</Text></FlexButton>
+//         </View>
+//         <View style={{ width: width / 3.8, height: '170%' }}>
+//           <FlexButton onPress={plus.length == 2 ? handleBuy : () => { }} background={plus.length < 2 ? "rgba(0,0,0,0.5)" : '#283618'}><Text style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>Buy now</Text></FlexButton>
+//         </View>
+
+//       </View>
+//       <Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>{`Choose ${2}`}</Text>
+//       <View style={{ padding: 6, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.1)', width: width / 5, alignItems: 'center' }}><Text style={{ color: "black", fontWeight: "bold", fontSize: 13, }}>Required</Text></View>
+//       {pro.extras.map((item, idx) => <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'rgba(0,0,0,0.05)', paddingBottom: 15 }}>
+//         <View>
+//           <Text style={{ color: "black", fontWeight: "900", fontSize: 16, }}>{item[0]}</Text>
+//           <Text>{item[1] ? `+ $${item[1]}` : ''}</Text>
+//         </View>
+//         {(plus.length < 2 || (plus.length && plus.indexOf(item[0]) !== -1)) && <View>
+//           <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={() => { if (plus.length < 2) { setFoodDictionary((prev) => { return { ...prev, [item[0]]: foodDictionary[item[0]] + 1 } }); setPlus((prev) => { const arr = [...prev]; arr.push(item[0]); return arr }) } }} onDecrease={() => { if (plus.length > 0) { setFoodDictionary((prev) => { return { ...prev, [item[0]]: (foodDictionary[item[0]] ? foodDictionary[item[0]] : 1) - 1 } }); setPlus((prev) => { const arr = [...prev]; const index = prev.indexOf(item[0]); if (index != -1) { arr.splice(index, 1) }; return arr }) } }} />
+//         </View>}
+//       </View>)}
+
+//     </View>}
+//     {pro.instructions && <View
+//       style={{ color: 'white', backgroundColor: 'white' }}><TextInput
+//         multiline
+//         placeholder="Special Instructions?"
+//         cursorColor={'#aaa'}
+//         numberOfLines={6}
+//         clearButtonMode="always"
+//         style={{ paddingHorizontal: 10 }}
+//       /></View>
+//     }</View>
+// </ScrollView>
+// </BottomSheet>
