@@ -9,7 +9,7 @@ function NavBar(){
   const handleSelect = (selectedIndex) => {
     setIndex(selectedIndex);
   };
-    return <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: '5%'}}>
+    return <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: '5%'}}>
             <Pressable onPressIn={() => handleSelect(0)}>
             <View style= {{alignItems: 'center', height: '100%', justifyContent: 'space-between'}}>
                 <Octicons name="home" size={30} color={`${index == 0 ? '#BC6C25': 'black'}`} />

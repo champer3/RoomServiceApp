@@ -1,28 +1,23 @@
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View,Pressable } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import Text from "./Text";
 import { Feather } from '@expo/vector-icons';
 
 function AddressEditable({ title, address, onPress }) {
   return (
     <Pressable onPress={onPress} style={styles.container}>
       <View style={styles.icon}>
-        <View style ={{ backgroundColor: "#FAFAFA",
-            padding: 10,
-            borderRadius: 50,
+        <View style ={{ 
+            padding: 0,
             justifyContent: "center",
             alignItems: "center",}}>
-        <MaterialIcons name="location-on" size={30} color="grey" />
+        <MaterialIcons name="location-on" size={30} color="black" />
         </View>
         <View style={styles.textContainer}>
-        
-        <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 5 }}>
-          {title}
-        </Text>
         <Text
           style={{
-            fontWeight: "400",
             fontSize: 14,
-            color: "grey",
+            color: "black",
             marginTop: 5,
           }}
         >
@@ -30,10 +25,6 @@ function AddressEditable({ title, address, onPress }) {
         </Text>
       </View>
       </View>
-      
-      <Pressable onPress={onPress} style={styles.radio}>
-      <Feather name="edit-3" size={30} color="#BC6C25" />
-      </Pressable>
     </Pressable>
   );
 }
@@ -45,7 +36,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#rgba(0,0,0,0.05)",
     borderRadius: 15,
-    padding: 20,
+    padding: 10,
     paddingHorizontal: 15,
     flexDirection: "row",
     justifyContent: 'space-between',

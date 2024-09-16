@@ -9,44 +9,32 @@ export const cart = createSlice({
     },
     reducers: {
         addToCart : (state, action) => {
-            // state.ids.push(action.payload.id)
-            const title = action.payload.id.title;
-            const index = state.ids.findIndex(item => Object.keys(item)[0] === title);
-            if (index !== -1){
-                state.ids[index][title].push(action.payload.id)
-            }else{
-                const newItem = {};
-                newItem[title] = [action.payload.id];
-                state.ids.push(newItem)
-            }
+            state.ids.push(action.payload.id)
+            // const title = action.payload.id.title;
+            // const index = state.ids.findIndex(item => Object.keys(item)[0] === title);
+            // if (index !== -1){
+            //     state.ids[index][title].push(action.payload.id)
+            // }else{
+            //     const newItem = {};
+            //     newItem[title] = [action.payload.id];
+            //     state.ids.push(newItem)
+            // }
         },
-        deleteItem : (state, action) => {
-            const title = action.payload.id.title;
-            const index =state.ids.findIndex(obj => Object.keys(obj)[0] === title);
+        addItem : (state, action) => {;
+            const index =action.payload.id.index
             if (index !== -1) {
-                const titleArray = state.ids[index][title];
-                titleArray.splice(action.payload.id.index, 1);
-                if (titleArray.length === 0) {
-                    state.ids.splice(index, 1);
-                }
+                state.ids[index].products.push(state.ids[index].products[0])
     }
         },
         removeFromCart : (state, action) => {
-            
-            const titleName = action.payload.id.title;
-
-            const index = state.ids.findIndex(obj => Object.keys(obj)[0] === titleName);
-
+            const index = action.payload.id.index
+            console.log(index, state.ids[index].products)
             if (index !== -1) {
-                const objectsArray = state.ids[index][titleName];
-                
-                if (objectsArray.length > 0) {
-                    objectsArray.pop();
-                }
-                if (objectsArray.length === 0) {
-                    state.ids.splice(index, 1);
-                }
-            }},
+                state.ids[index].products.pop();
+            } if (state.ids[index].products.length == 0){
+                state.ids.splice(index, 1);
+            }
+        },
         updateCart : (state, action)=>{
             const titleName = action.payload.id.title;
             const index = state.ids.findIndex(obj => Object.keys(obj)[0] === titleName);
@@ -66,9 +54,7 @@ export const cart = createSlice({
                 }
         },
         deleteFromCart : (state, action) => {
-            const titleName = action.payload.id.title;
-            
-            const indexToRemove = state.ids.findIndex(obj => Object.keys(obj)[0] === titleName);
+            const indexToRemove = action.payload.id.index
             if (indexToRemove !== -1) {
                 state.ids.splice(indexToRemove, 1);
             }},
@@ -87,7 +73,7 @@ export const cart = createSlice({
 export const addToCart = cart.actions.addToCart
 export const updateCart = cart.actions.updateCart
 export const updateOrder = cart.actions.updateOrder
-export const deleteItem = cart.actions.deleteItem
+export const addItem = cart.actions.addItem
 export const removeFromCart = cart.actions.removeFromCart
 export const deleteFromCart = cart.actions.deleteFromCart
 export const addOptions = cart.actions.addOptions

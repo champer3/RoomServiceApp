@@ -7,64 +7,109 @@ import {
   ScrollView,
   RefreshControl,
   TextInput,
-  Animated
+  ImageBackground,
+  Animated, TouchableOpacity,FlatList
 } from "react-native";
 import Text from '../components/Text';
-import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Pill from "../components/Pills/Pills";
+import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
-import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
-import ProductCategory from "../components/Category/ProductCategory";
-import FlexButton from "../components/Buttons/FlexButton";
-import Deal from "../components/Category/Deal";
 import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { addToCart, removeFromCart, deleteFromCart } from "../Data/cart";
-import CartModal from "../components/Cart/CartModal";
-import CarouselCards from "../components/CarouselCards";
-import OrderSuccess from "../components/Modals/OrderSuccess";
-import ProductPreview from "../components/Product/ProductPreview";
-import FancyTextInput from "../components/Inputs/FancyTextInput";
-import ErrorMessage from "../components/ErrorMessage";
-import CartButton from "../components/Buttons/CartButton";
 import IncrementDecrementBton from "../components/Buttons/IncrementDecrementBtn copy";
-
+import { LinearGradient } from "expo-linear-gradient";
+const {width:screenWidth, height} = Dimensions.get('window');
 function ProductDisplay() {
   const route = useRoute();
+  const {product, productData} = route.params
+  const [formObject, setFormObject] = useState({...productData})
+  const dummyData = {
+    id: 1,
+    title: "Classic Cheese Burger",
+    image: "https://example.com/cheese-burger.jpg", // Replace with your own image URL
+    description: "Juicy beef patty topped with melted cheese, fresh lettuce, tomato, pickles, and our special sauce, all nestled in a toasted bun.",
+    price: 15.50,
+    rating: 4.8,
+    time: 12, // in minutes
+    calories: 145, // in kcal
+    extras: [
+      {
+        name: "More Ham",
+        price: 4.50,
+      },
+      {
+        name: "Spicy",
+        price: 0.50,
+      },
+      {
+        name: "Add Egg",
+        price: 2.00,
+      },
+    ],
+    options: [{'name': 'Flavors', 'value': [
+      {
+        name: 'Barbeque',
+        price: 0
+      },
+      {
+        name: 'Lemon Hot',
+        price: 0
+      },
+      {
+        name: 'Hot',
+        price: 0
+      },
+      {
+        name: 'Mild Hot',
+        price: 0
+      },
+    ] ,  'required': false,
+    'quantity': 2
+  },{'name': 'Drinks', 'value': [
+      {
+        name: 'Coca Cola',
+        price: 2,
+        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
+      },
+      {
+        name: 'Smirnoff',
+        price: 1,
+        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
+      },
+      {
+        name: 'Pepsi',
+        price: 2,
+        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
+      },
+      {
+        name: 'Lemonade',
+        price: 3,
+        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
+      },
+    ],
+    'required': false,
+    'quantity': 4
+  }]
+  };
+  
   const title = route.params.title;
   const [animatedValue] = useState(new Animated.Value(0));
-  const [visible, setVisible] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [option, setOption] = useState();
   const { width, height } = Dimensions.get("window");
   const [textShown, setTextShown] = useState(false); //To show ur remaining Text
   const [lengthMore, setLengthMore] = useState(false); //to show the "Read more & Less Line"
   const toggleNumberOfLines = () => {
-    //To toggle the show text or hide it
     setTextShown(!textShown);
   };
 
   const onTextLayout = useCallback((e) => {
-    setLengthMore(e.nativeEvent.lines.length >= 4); //to check the text is more than 4 lines or not
-    // console.log(e.nativeEvent);
+    setLengthMore(e.nativeEvent.lines.length >= 4); 
   }, []);
   const [plus, setPlus] = useState([]);
-  console.log(route.params)
-  const timer = useRef();
-  let background = '#aaa'
-  if((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
-    background = "#283618";
-}else if(!route.params.extras && !route.params.options){ background = '#283618'}
-  const images = route.params.images;
-  const [index, setIndex] = useState(0);
-  console.log(index)
   const [selected, setSelected] = useState([]);
-  const [display, setDisplay] = useState(false);
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids);
   const productItems = useSelector((state) => state.productItems.ids);
@@ -77,695 +122,885 @@ function ProductDisplay() {
     }
     return "Item not found in the menu";
   }
-  const getAverageRatingByTitle = (title) => {
-    const item = productItems.find((item) => item.title === title);
-
-    if (item && item.reviews.length > 0) {
-      const totalRating = item.reviews.reduce(
-        (sum, review) => sum + review.rating,
-        0
-      );
-      const averageRating = totalRating / item.reviews.length;
-      return averageRating;
-    } else {
-      return 0; // Indicate that there are no reviews or the item is not found
-    }
-  };
-  // useEffect(() => {
-  //   if (plus.length == 2) {
-  //     handleAddToCart(route.params);
-  //     setPlus([]);
-  //     setFoodDictionary(foodStore);
-  //   }
-  // }, [plus]);
   productItems.forEach((item) => {
     const category = item.category;
 
     if (!categoryObject[category]) {
-      // If the category key doesn't exist, create it with an array containing the current item
       categoryObject[category] = [item];
     } else {
-      // If the category key already exists, push the current item to the existing array
       categoryObject[category].push(item);
     }
   });
-  function handleAddToCart() {
-    let price = 0;
-    let newItem ={}
-    if (plus && plus.length > 0){
-    for (var i = 0; i < plus.length; i ++){
-        price += findPrice(plus[i])
-      }
-      newItem = {...newItem, ...{ 'Sides' : plus}}
-    }
-    if (option != undefined){
-      newItem = {...newItem, ... {'Picked' : route.params.options[option]}}
-    }
-    if (selected && selected.length > 0){
-      newItem = {...newItem, ... {'Flavour' : selected}}
-    }
-    setPlus([])
-    setOption()
-    setSelected([])
-    
-    setFoodDictionary(foodStore)
-    dispatch(addToCart({id : {title: route.params.title, ...{...route.params, ...newItem, ['oldPrice'] : route.params.oldPrice + price} }}))
-
-    Animated.sequence([
-      Animated.timing(animatedValue, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: false,
-      }),
-      Animated.timing(animatedValue, {
-        toValue: 0,
-        duration: 0,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  
-    // if (option >= 0 && route.params.options) {
-    //   dispatch(addToCart({ id: product }));
-    //   setVisible(true);
-    //   setOption();
-    // } else if (!route.params.options) {
-    //   dispatch(addToCart({ id: product }));
-    //   setVisible(true);
-    // }
-  }
-  function handleRemoveFromCart(product){
-    dispatch(removeFromCart({id : product}))
-  }
-const [errorVisible, setErrorVisible] = useState(false);
-
-const showError = () => {
-  setErrorVisible(true);
-  setTimeout(() => {
-    setErrorVisible(false);
-  }, 3000); // Hide the error message after 3 seconds
-};
-
-
-const interpolateRotation = animatedValue.interpolate({
-  inputRange: [0, 1],
-  outputRange: ['0deg', '360deg'],
-});
-
-const animatedStyle = {
-  transform: [
+const [notes, setNotes] = useState('');
+const [price, setPrice] = useState(product.price);
+  const ingredients = [
     {
-      rotateX: interpolateRotation,
+      id: 1,
+      name: 'Mushroom',
+      quantity: '50g',
+      unit: 'g',
+      price: 0.40,
+      selected: false,  // Can be used to track if the ingredient is selected
+      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],  // Add image URL if needed
     },
     {
-      rotateY: interpolateRotation
+      id: 2,
+      name: 'Mayonnaise',
+      quantity: '1/4 cup',
+      unit: 'cup',
+      price: 0.20,
+      selected: false,
+      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
+    },
+    {
+      id: 3,
+      name: 'Peeled boiled egg',
+      quantity: '1 piece',
+      unit: 'piece',
+      price: 0.50,
+      selected: false,
+      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
+    },
+    {
+      id: 4,
+      name: 'Lemon juice',
+      quantity: '1 tbsp',
+      unit: 'tbsp',
+      price: 0.10,
+      selected: false,
+      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
+    },
+    {
+      id: 5,
+      name: 'Cheddar Cheese',
+      quantity: '20g',
+      unit: 'g',
+      price: 0.75,
+      selected: false,
+      images: ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
+    },
+    {
+      id: 6,
+      name: 'Tomato Sauce',
+      quantity: '2 tbsp',
+      unit: 'tbsp',
+      price: 0.30,
+      selected: false,
+      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
+    },
+    {
+      id: 7,
+      name: 'Bacon Bits',
+      quantity: '30g',
+      unit: 'g',
+      price: 1.00,
+      selected: false,
+      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
     }
-  ],
-};
-function cartHandler() {
-  navigation.navigate("Cart");
-}
-
-// useEffect(() => {
-//   let timer;
-//   if (modalVisible) {
-//     timer = setTimeout(() => {
-//       setModalVisible(false);
-//     }, 1000); // Hide the modal after 3 seconds
-//   }
-//   return () => clearTimeout(timer); // Clear the timeout if the component unmounts or the modal is closed manually
-// }, [modalVisible]);
-const cost = {}
-function addQuantityToObjects(inputList) {
-    const titleCountMap = {};
-
-    const result = {};
-  inputList.forEach(obj => {
-      const title = Object.keys(obj)[0];
-      const arrayLength = obj[title].length;
-      result[title] = arrayLength;
-  });
-    // Loop through the inputList to count occurrences of each title
-    inputList.forEach((obj) => {
-        const title = obj.title;
-
-        // Increment the count for the title or initialize to 1 if it doesn't exist
-        titleCountMap[title] = (titleCountMap[title] || 0) + 1;
-    });
-    
-    
-  inputList.forEach(obj => {
-    var totalPrice = 0;
-    const title = Object.keys(obj)[0];
-      const titleArray = Object.values(obj)[0];
-      
-      titleArray.forEach(item => {
-          totalPrice += item.oldPrice;
-      });
-      cost[title] = totalPrice
-  });
-    // Loop through the inputList again to create a new list with quantity key
-    const newList = inputList.map((obj) => {
-        const title = Object.keys(obj)[0];
-        const quantity = result[title];
-
-        // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
-        titleCountMap[title] = 0;
-
-        return { ...obj[title][0], ['oldPrice'] : cost[title], quantity };
-    });
-    const filteredList = newList.filter((obj) => obj.quantity !== 0);
-
-    return result;
-}
-function createFoodDictionary(foodArray) {
-    let foodDictionary = {};
-    for (let i = 0; i < foodArray.length; i++) {
-      foodDictionary[foodArray[i][0]] = 0;
-    }
-    return foodDictionary;
-  }
-
-  // Example usage:
-  let foodStore = {};
-  if (route.params.extras) {
-    foodStore = createFoodDictionary(route.params.extras);
-  }
-
-  function toggleNumberInArray(number) {
-    setSelected((prev) => {
-      const array = [...prev];
-      const index = array.indexOf(number);
-      if (index === -1) {
-        // Number is not in the array, so add it
-        array.push(number);
-      } else {
-        // Number is already in the array, so remove it
-        array.splice(index, 1);
-      }
-      return array;
-    });
-  }
-  const [foodDictionary, setFoodDictionary] = useState(foodStore);
-  
-  const newList = addQuantityToObjects(cartItems);
-  console.log(newList);
-  var quantity = 0;
-  if (newList) {
-    quantity = newList[route.params.title];
-  }
+  ];
+  console.log(formObject)
   useEffect(() => {
     const timer = setTimeout(() => setRefresh(false), 1000);
   }, [refresh]);
   const navigation = useNavigation();
-  function pressHandler() {
-    navigation.navigate("Review", { reviews: route.params.reviews });
+  const [activeIndex, setActiveIndex] = useState(0); 
+  const handleScroll = (event) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const index = Math.floor(offsetX / (screenWidth - 50));
+    setActiveIndex(index);
+  };
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [selectedVariation, setSelectedVariation] = useState('');
+  const [quantity, setQuantity] = useState({});
+
+  const handleSelectIngredient = (ingredient) => {
+    if (selectedIngredients.includes(ingredient)) {
+      setSelectedIngredients(selectedIngredients.filter(item => item !== ingredient));
+    } else {
+      setSelectedIngredients([...selectedIngredients, ingredient]);
+    }
+  };
+  const handleSelectVariation = (ingredient) => {
+    if (formObject.components == (ingredient)) {
+      setFormObject(prevForm => ({
+        ...prevForm,
+       components: ''
+      }));
+    } else {
+      setFormObject(prevForm => ({
+        ...prevForm,
+        components: ingredient
+      }));
+    }
+  };
+  function handleIncrement() {
+    const newExtra = [...formObject.products];
+    newExtra.push(product);
+    setFormObject(prevForm => ({
+      ...prevForm,
+      products: newExtra
+    }));
+   }
+   function handleDecrement(product){
+    const newExtra = [...formObject.products];
+    const currentQuantity = newExtra.length; 
+    if (currentQuantity > 1) {
+      newExtra.splice(0, 1);
+    }
+    setFormObject(prevForm => ({
+      ...prevForm,
+      products: newExtra
+    }));
+   }
+  const handleQuantityChange = (item) => {
+    const newExtra = [...formObject.extra];
+    const isSelected = newExtra.findIndex(i => i.name === item.name) !== -1;
+    newValues = isSelected
+     ? newExtra.filter((val) => val.name !== item.name) 
+     : [...newExtra, item]; 
+   
+    setFormObject(prevForm => ({
+      ...prevForm,
+      extra: newValues
+    }));
+  };
+  const renderIngredient = ({ item }) => {
+    const quantity = formObject.extra.filter(i => i.name === item.name).length;
+    return <View style={styles.optionRow}>
+    <View style={{flexDirection: 'row', width: 150, alignItems: 'center'}}>{item?.images?.length > 0 && <ImageBackground style={{height: 30, width: 32, marginRight:12,}} imageStyle={{borderRadius: 6, backgroundColor: '#666'}} source={{uri: item.images[0]}}/>}
+    <Text style={styles.optionName}>{item.name}</Text></View>
+    {item.price > 0 && <Text style={styles.ingredientDetails}>+${item.price.toFixed(2)}</Text>}
+    <Pressable onPress={()=> handleQuantityChange(item)}><Ionicons name={`${ formObject.extra.findIndex((opt) => opt.name === item.name) !== -1 ? "radio-button-on" : "radio-button-off"  }`} size={24} color="black" /></Pressable>
+
+  </View>
+  };
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const calculateTotalPrice = () => {
+    const productQuantity = formObject.products.length; // The quantity of the main product
+    let totalPrice = product.price * productQuantity; // Start with the base product price times the quantity
+  
+    // Calculate the total price of extra items
+    formObject.extra?.forEach((extraItem) => {
+      totalPrice += extraItem.price * productQuantity;
+    });
+  
+    // Calculate the total price of selected options
+    formObject.options.forEach((optionCategory) => {
+      if (optionCategory.required) {
+        // If the option category is required, multiply the price of each selected option by the product quantity
+        optionCategory.values.forEach((selectedOption) => {
+          totalPrice += selectedOption.price * productQuantity;
+      });
+      } else {
+        // If the option category is not required, just add the price of each selected option
+        optionCategory.values.forEach((selectedOption) => {
+            totalPrice += selectedOption.price;
+        });
+      }
+    });
+  
+    return totalPrice;
+  };
+  const scrollViewRef = useRef(null);
+  function fuflfilCart(){
+    if (canAddToCart()){
+    dispatch(addToCart({id : formObject }))
+    setFormObject({...productData})
+    navigation.replace("Cart");
+  }else{
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ x: 500, animated: true });
+      }
+      alert("Choose all required options")
+    }
   }
-  return (
-    <View>
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            onRefresh={() => {
-              setRefresh(true);
-            }}
-            refreshing={refresh}
-          />
+  const handleSelectOption = (category, item, required, change = 0) => {
+    setFormObject((prevForm) => {
+      const updatedOptions = prevForm.options.map((opt) => {
+        if (opt.name === category ) {
+          let newValues = [...opt.values];
+          const currentQuantity = newValues.filter((val) => val.name === item.name).length;
+          if (item.price == 0 || required || change == 0){
+            const isSelected = opt.values.findIndex(i => i.name === item.name) !== -1;
+            if (!(!required && (formObject.options.find((opt) => opt.name === category)?.values.length >= formObject.options.find((opt) => opt.name === category).quantity ))|| isSelected){
+           newValues = isSelected
+            ? opt.values.filter((val) => val.name !== item.name) 
+            : [...opt.values, item]; 
+            }
+          }
+          else if (change > 0) {
+            // Add the item to the array
+            newValues.push(item);
+          } else if (change < 0 && currentQuantity > 0) {
+            // Remove one instance of the item
+            const index = newValues.findIndex(i => i.name === item.name);
+            if (index !== -1) newValues.splice(index, 1);
+          }
+
+          return { ...opt, values: newValues };
         }
-      >
-        <View style={{ marginBottom: 120 }}>
-          <View style={{ backgroundColor: "#FAFAFA", paddingTop: 0 }}>
-            <CarouselCards
-              data={images}
-              index={index}
-              handleIndex={setIndex}
-              onView={() => setDisplay(true)}
-            />
-            <View
-              style={{
-                flexDirection: "row",
-                backgroundColor: "white",
-                padding: 0.5,
-                paddingHorizontal: 6,
-                borderRadius: 30,
-                zIndex: 1,
-                position: "absolute",
-                top: 20,
-                right: "15%",
-              }}
+        return opt;
+      });
+      return { ...prevForm, options: updatedOptions };
+    });
+  };
+
+  const renderOptionItem = ({ item, category, required }) => {
+    const getQuantity = (category, option) => {
+      const optionCategory = formObject.options.find((opt) => opt.name === category);
+      if (!optionCategory) return 0;
+      
+      // Calculate quantity based on how many times the item exists in the values array
+      const quantity = optionCategory.values.filter((val) => val.name === option).length;
+      return quantity;
+    };
+    const quantity = getQuantity(category, item.name);
+    return <View style={styles.optionRow}>
+      <View style={{flexDirection: 'row', alignItems: 'center'}}>{item?.images?.length > 0 && <ImageBackground style={{height: 30, width: 32, marginRight:12,}} imageStyle={{borderRadius: 6, backgroundColor: '#666'}} source={{uri: item.images[0]}}/>}
+      <Text style={styles.optionName}>{item.name}</Text></View>
+      {item.price > 0 && <Text style={styles.ingredientDetails}>+${item.price.toFixed(2)}</Text>}
+      {(item.price > 0  && !required ) &&   <View style={styles.ingredientActions}>{((!required && quantity > 0) || !(formObject.options.find((opt) => opt.name === category)?.values.length >= formObject.options.find((opt) => opt.name === category).quantity )) && <>
+        <TouchableOpacity onPress={()=> handleSelectOption(category, item, required,-1)} disabled={quantity == 0}>
+        <View style={{alignItems: 'center', justifyContent: 'center',  borderRadius: 200, borderWidth: 0 }}><AntDesign name="minuscircleo" size={17} color="#BC6C25" /></View>
+        </TouchableOpacity>
+        <Text style={styles.quantityText}>{quantity}{quantity != 0 && `${'x'}`}</Text>
+        <TouchableOpacity onPress={()=> handleSelectOption(category, item, required,1)} disabled={(!required && (formObject.options.find((opt) => opt.name === category)?.values.length >= formObject.options.find((opt) => opt.name === category).quantity ))}>
+        <View style={{padding: 0, borderRadius: 100, width: 'auto' , alignItems: 'center', justifyContent: 'center', }}><AntDesign name="pluscircleo" size={17} color="#BC6C25" /></View>
+        </TouchableOpacity></>}</View>}
+        {(((item.price == 0 && !formObject.options.find((opt) => opt.name === category).quantity ) || required) || ((!required && quantity > 0) || !(formObject.options.find((opt) => opt.name === category)?.values.length >= formObject.options.find((opt) => opt.name === category).quantity ))) && <Pressable  onPress={()=> handleSelectOption(category, item, required)}><Ionicons name={`${ formObject.options.find((opt) => opt.name === category)?.values.findIndex(i => i.name === item.name) != -1 ? "radio-button-on" : "radio-button-off"  }`} size={24} color="black" /></Pressable>
+    }
+    </View>
+  };
+
+  const renderOptions = ({ items }) => {
+    return <View style={styles.optionSection}>
+        <View style={styles.separator} />
+        <View style={styles.sectionTitle}><Text >{items.name}</Text><Text style={[styles.pill ,{color: formObject.options.find((opt) => opt.name === items.name)?.values.length < items.quantity ? items.required ? '#A52A2A' : '#654321': '#2E6F'}]}> {(!items.required) ? 'Optional' : 'Required' }</Text></View>
+      {items.required && <Text style={{marginBottom: 4}}>{`Pick ${items.quantity} item(s)`}</Text>}
+      {!items.required && items.quantity && <Text style={{marginBottom: 4}}>{`Pick up to ${items.quantity} item(s)`}</Text>}
+      <View style={styles.separator} />
+      <FlatList
+        data={items.value}
+        renderItem={({ item }) => renderOptionItem({ item, category: items.name, required: items.required })}
+        keyExtractor={(option) => option.name}
+      />
+
+      {/* Separator */}
+      {/* <View style={styles.separator} /> */}
+    </View>
+  };
+
+  const renderVariations = ({ item }) => (
+    <View style={styles.ingredientRow}>
+      <Text style={styles.optionName}>{item}</Text>
+      <View style={{}}>
+        {/* Quantity buttons */}
+        <Pressable onPress={()=> handleSelectVariation(item)}><Ionicons name={`${formObject.components == (item)? "radio-button-on" : "radio-button-off"  }`} size={24} color="black" /></Pressable>
+      </View>
+    </View>
+  );
+
+    console.log("testing formObject",formObject)
+  const renderImageCarousel = () => {
+    return (
+      <View style = {{height: height/1.7, }}>
+        <View style = {{height: height/1.5,}}>
+        <FlatList
+          data={[...product.images, ...product.images]}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <ImageBackground
+            style={[styles.productImage, { width: screenWidth  }]}
+            source={{ uri: item }}
+          >
+            {/* Apply LinearGradient as an overlay */}
+            <LinearGradient
+              colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']} // Customize gradient colors
+              style={styles.gradient}
             >
+            {/* <TouchableOpacity style={styles.addButton} onPress={() => onAdd(product)}>
+                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0ZM17 13H13V17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17V13H7C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11H11V7C11 6.44772 11.4477 6 12 6C12.5523 6 13 6.44772 13 7V11H17C17.5523 11 18 11.4477 18 12C18 12.5523 17.5523 13 17 13Z"
+                    fill="#BC6C25"
+                  />
+                </Svg>
+              </TouchableOpacity> */}
              
+              {/* <View style={styles.detailsContainer}>
+            <View style={styles.pill}>
+              <Text style={styles.pillText}>African</Text>
+            </View>
+            <View style={styles.pill}>
+              <Text style={styles.pillText}>Sides</Text>
+            </View>
+            <View style={styles.pill}>
+              <Text style={styles.pillText}>2+</Text>
+            </View>
+          </View> */}
+            </LinearGradient>
+          </ImageBackground>
+          )}
+          onScroll={handleScroll}
+        />
+        </View>
+
+        {/* Dots indicator */}
+        <View style={styles.dotsContainer}>
+          <View style={{ flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 2,
+    borderRadius: 25,
+    marginTop: 10,  backgroundColor: 'rgba(255,255,255,0.8)', }}>
+          {[...product.images, ...product.images].map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                activeIndex === index ? styles.activeDot : styles.inactiveDot
+              ]}
+            />
+          ))}
+        </View>
+        </View>
+      </View>
+    );
+  };
+  console.log(product)
+  const canAddToCart = () => {
+    // Check if there are at least 2 items in the extra array
+    if (formObject.extra?.length < 2) {
+      return false; // Cannot add to cart if there are fewer than 2 extra items
+    } if (formObject.components?.length == 0){
+return false
+    }
+    for (let optionCategory of formObject.options) {
+      if (optionCategory.required) {
+        const selectedCount = optionCategory.values.length;
+  
+        // Check if the selected count meets the required quantity
+        if (selectedCount < optionCategory.quantity) {
+          return false; // Cannot add to cart if any required category doesn't meet the required quantity
+        }
+      }
+    }
+  
+    return true; // All conditions met, can add to cart
+  };
+
+  return (<>
+    <ScrollView  ref={scrollViewRef}  style={styles.container}>
+      {/* Header Section */}
+
+      {/* Product Image Carousel */}
+      <View style={styles.carouselContainer}>
+        {renderImageCarousel()}
+      </View>
+        <View style={styles.detailsContainer}>
+            <View style={styles.pill}>
+              <Text style={styles.pillText}>African</Text>
+            </View>
+            <View style={styles.pill}>
+              <Text style={styles.pillText}>Sides</Text>
+            </View>
+            <View style={styles.pill}>
+              <Text style={styles.pillText}>Seafood</Text>
+            </View>
+            <View style={styles.pill}>
+              <Text style={styles.pillText}>Top Category</Text>
             </View>
           </View>
-          <View style={{ paddingHorizontal: "5%", marginVertical: "4%" }}>
-            <View style={{ width: "100%" }}>
-              <Text
-                style={{
-                  color: "black",
-                  fontWeight: "900",
-                  fontSize: 22,
-                }}
-              >
-                {title}{" "}
-              </Text>
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                alignItems: "center",
-                justifyContent: "space-between",
-                borderBottomWidth: 0.5,
-                borderBottomColor: "#aaa",
-                paddingBottom: "3%",
-              }}
-            >
-              <Text
-                style={{
-                  color: "black",
-                  fontWeight: "900",
-                  fontSize: 24,
-                }}
-              >
-                {`$${route.params.oldPrice}`}
-              </Text>
-              <View>
-                <Pill text="9289 Sold" type="null" />
-              </View>
-            </View>
-            <View style={{ gap: 15, marginVertical: 30 }}>
-              <Text
-                style={{
-                  color: "black",
-                  fontWeight: "bold",
-                  fontSize: 16,
-                }}
-              >
-                Quantity
-              </Text>
-              <View style={{ height: "auto", width: "25%" }}>
-                <IncrementDecrementBton
-                  minValue={quantity}
-                  onIncrease ={() => {
-                    if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
-                      handleAddToCart();
-                  }else if(!route.params.extras && !route.params.options){handleAddToCart();}else{
-                    showError()
-                  }
-                }}
-                  onDecrease={() => handleRemoveFromCart(route.params)}
-                />
-              </View>
-              <View style={{ paddingVertical: 15, gap: 10 }}>
-                <Text
-                  style={{
-                    color: "black",
-                    fontWeight: "bold",
-                    fontSize: 16,
-                  }}
-                >
-                  Description
-                </Text>
-                <Text
+      {/* Product Title and Quantity Selector */}
+      <View style={{  borderTopRightRadius: 25,
+  borderTopLeftRadius: 25,
+  backgroundColor: 'white',
+  padding: 10,
+  // paddingTop: 15,
+  paddingBottom: 60,
+  // iOS shadow properties
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: -2 }, // shadow towards the top
+  shadowOpacity: 0.3,
+  shadowRadius: 6,
+  // Android elevation
+  elevation: 6,}}>
+      <View style={styles.titleSection}>
+        <View>
+        <Text style={styles.productTitle}>{product.title}</Text>
+        </View>
+          {/* Price Section */}
+      <View style={styles.priceSection}>
+        <View style={styles.priceContainer}>
+          <Text style={styles.dollarSign}>$</Text>
+          <Text style={styles.priceInteger}>{product.price.toFixed(2).split('.')[0]}</Text>
+          <Text style={styles.priceDecimal}>.{product.price.toFixed(2).split('.')[1]}</Text>
+        </View>
+      </View>
+      </View>
+      <View style={{flexDirection: 'row',
+    alignItems: 'flex-start', paddingRight: 15,}}>
+      <View style={styles.verticalLine} />
+      <View style={{ flexDirection:'column'}}><Text
                   onTextLayout={onTextLayout}
                   numberOfLines={textShown ? undefined : 4}
-                  style={{ lineHeight: 31, color: "#aaa", fontSize: 15 }}
+                  style={styles.aboutDescription}
                 >
-                  {route.params.description ??
-                    `Rainbow NERDS surround fruity, gummy centers. Those sweet little sparks are fantastic inventors. A poppable cluster, packed with tangy, crunchy NERDS. A candy so tasty, there aren’t even words.
-              NUTRITIONAL INFO`}
-                </Text>
-
-                {lengthMore && (
+                 {product.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam non blandit metus, non posuere elit. Proin vitae vehicula purus. Nullam id dui sodales, elementum sem dictum, pellentesque urna. Nullam mattis efficitur vehicula. Donec mollis eleifend tempus. Morbi rutrum viverra egestas. Etiam ut nisl erat. Proin semper lectus non justo commodo varius. In purus nibh, volutpat gravida scelerisque luctus, pharetra eget ipsum. Donec nibh augue, vulputate quis ipsum lacinia, volutpat sollicitudin massa."}
+      </Text>
+      {lengthMore && (
                   <Text
                     onPress={toggleNumberOfLines}
                     style={{
-                      lineHeight: 21,
-                      marginVertical: 10,
                       textAlign: "right",
                       color: "#BC6C25",
+                      fontSize: 13
                     }}
                   >
                     {textShown ? "Read less..." : "Read more..."}
                   </Text>
-                )}
-                {route.params.addOn && (
-                  <View style={{ gap: 25, paddingTop: 30, marginBottom: 50 }}>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "black",
-                          fontWeight: "900",
-                          fontSize: 19,
-                        }}
-                      >
-                        {"Choose Exotic Flavor"}
-                      </Text>
-                      {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
-                    </View>
-                    <Text
-                      style={{
-                        color: "black",
-                        fontWeight: "bold",
-                        fontSize: 13,
-                      }}
-                    >{`Choose up to ${2}`}</Text>
-                    {route.params.extras.map((item, idx) => (
-                      <View
-                        key={idx}
-                        style={{
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                          borderBottomWidth: 1,
-                          borderColor: "rgba(0,0,0,0.05)",
-                          paddingBottom: 15,
-                        }}
-                      >
-                        <View>
-                          <Text
-                            style={{
-                              color: "black",
-                              fontWeight: "900",
-                              fontSize: 16,
-                            }}
-                          >
-                            {item}
-                          </Text>
-                        </View>
-                        <Pressable onPress={() => {selected.length < 2 || selected.indexOf(idx) !== - 1 ? toggleNumberInArray(idx): {}}}>
-                          <MaterialCommunityIcons
-                            name={`${
-                              selected.indexOf(idx) === -1
-                                ? "checkbox-blank-outline"
-                                : "checkbox-marked"
-                            }`}
-                            size={24}
-                            color={`${
-                              selected.length < 2 ||
-                              selected.indexOf(idx) !== -1
-                                ? "black"
-                                : "rgba(0,0,0,0.05)"
-                            }`}
-                          />
-                        </Pressable>
-                      </View>
-                    ))}
-                  </View>
-                )}
-                {route.params.options && (
-                  <View>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        borderBottomWidth: 1,
-                        borderColor: "rgba(0,0,0,0.05)",
-                        paddingBottom: 15,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "black",
-                          fontWeight: "900",
-                          fontSize: 19,
-                        }}
-                      >
-                        {"Choose One"}
-                      </Text>
-                      {/* <View style={{padding: 6, borderRadius: 15, backgroundColor:'rgba(0,0,0,0.1)'}}><Text  style={{color: "black",fontWeight: "bold",fontSize: 13,}}>Required</Text></View> */}
-                    </View>
-                    {route.params.options.map((item, idx) => (
-                      <View
-                        key={idx}
-                        style={{
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                          borderBottomWidth: 1,
-                          borderColor: "rgba(0,0,0,0.05)",
-                          paddingVertical: 13,
-                        }}
-                      >
-                        <View>
-                          <Text
-                            style={{
-                              color: "black",
-                              fontWeight: "900",
-                              fontSize: 16,
-                            }}
-                          >
-                            {item}
-                          </Text>
-                        </View>
-                        <Pressable onPress={() => setOption(idx)}>
-                          <Ionicons
-                            name={`${
-                              idx == option
-                                ? "radio-button-on"
-                                : "radio-button-off"
-                            }`}
-                            size={24}
-                            color="black"
-                          />
-                        </Pressable>
-                      </View>
-                    ))}
-                  </View>
-                )}
-                {route.params.nutrient &&
-                  route.params.nutrient == "protein" && (
-                    <View style={{ gap: 25, paddingTop: 30 }}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: "black",
-                            fontWeight: "900",
-                            fontSize: 19,
-                          }}
-                        >
-                          {"Pick Your Sides"}
-                        </Text>
-                        <View
-                          style={{
-                            padding: 6,
-                            borderRadius: 15,
-                            backgroundColor: "rgba(0,0,0,0.1)",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: "black",
-                              fontWeight: "bold",
-                              fontSize: 13,
-                            }}
-                          >
-                            Required
-                          </Text>
-                        </View>
-                      </View>
-                      <Text
-                        style={{
-                          color: "black",
-                          fontWeight: "bold",
-                          fontSize: 13,
-                        }}
-                      >{`Choose ${2}`}</Text>
-                      {route.params.extras.map((item, idx) => (
-                        <View
-                          key={idx}
-                          style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            borderBottomWidth: 1,
-                            borderColor: "rgba(0,0,0,0.05)",
-                            paddingBottom: 15,
-                          }}
-                        >
-                          <View>
-                            <Text
-                              style={{
-                                color: "black",
-                                fontWeight: "900",
-                                fontSize: 16,
-                              }}
-                            >
-                              {item[0]}
-                            </Text>
-                            <Text>{item[1] ? `+ $${item[1]}` : ""}</Text>
-                          </View>
-                          <View>
-                          {(plus.length < 2 || (plus.length && plus.indexOf(item[0]) !== -1)) && <View>
-                                  <IncrementDecrementBtn minValue={foodDictionary[item[0]]} onIncrease={()=>{if (plus.length < 2){setFoodDictionary((prev)=>{return {...prev, [item[0]] : foodDictionary[item[0]]+1}});setPlus((prev)=> {const arr = [...prev]; arr.push(item[0]); return arr})}}}  onDecrease={()=>{if (plus.length > 0){setFoodDictionary((prev)=>{return {...prev, [item[0]] : (foodDictionary[item[0]] ?foodDictionary[item[0]] : 1) -1}});setPlus((prev)=>{const arr = [...prev]; const index = prev.indexOf(item[0]); if (index != -1){arr.splice(index, 1)}; return arr}) }}}/>
-                                </View>}
-                          </View>
-                        </View>
-                      ))}
-                    </View>
-                  )}
-                {route.params.instructions && (
-                    <FancyTextInput />
-                )}
-              </View>
-              {/* <View style={styles.catHead}>
-                <Text
-                  style={{
-                    color: "black",
-                    fontWeight: "bold",
-                    fontSize: 16,
-                  }}
-                >
-                  Shop Related Products
-                </Text>
-                <ProductCategory
-                  items={categoryObject[route.params.category]
-                    .slice(0, 7)
-                    .filter((item) => item.title !== route.params.title)}
-                  onPress={handleAddToCart}
-                />
-              </View> */}
-              <View style={styles.catHead}>
-                {/* <Deal text={'Shop Related Products'}/> */}
-              </View>
-            </View>
-            <View></View>
-          </View>
-        </View>
-      </ScrollView>
-      <ErrorMessage visible={errorVisible} message="Please choose an option!" />
-      <View style={styles.animatedItem}>
-      <Animated.View style={[ animatedStyle]} >
-      <CartButton onPress={cartHandler} itemCount={quantity}/>
-      </Animated.View>
-      <View style={{width: '100%', height: 3, backgroundColor: 'black', marginTop:10, borderRadius: 4}}></View>
+                )}</View>
     </View>
-      <View
-        style={{
-          flex: 1,
-          width: "100%",
-          minHeight: "60%",
-          flexWrap: "wrap",
-          paddingVertical: "7%",
-          position: "absolute",
-          bottom: 0,
-          zIndex: 1,
-          backgroundColor: "white",
-          flexDirection: "row",
-          justifyContent: "space-around",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            height: "100%",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Text
-            style={{
-              color: "#aaa",
-              fontWeight: "bold",
-              fontSize: 20,
-            }}
-          >
-            {" "}
-            Total Payment
-          </Text>
-          <Text
-            style={{
-              color: "black",
-              fontWeight: "600",
-              fontSize: 20,
-            }}
-          >
-            {" "}
-            {`$${
-              !quantity ? 0 : cost[route.params.title]
-            }`}
-          </Text>
-        </View>
-        <View style={{ width: "40%", height: 70 }}>
-          <FlexButton
-            onPress={() => {
-              if ((plus.length >= 2 ) || (option >= 0 && plus.length == 0)){
-                handleAddToCart();
-            }else if(!route.params.extras && !route.params.options){handleAddToCart();}else{
-              showError()
-            }}}
-            background={background} 
-          >
-            <FontAwesome name="shopping-bag" size={24} color="white" />
-            <Text style={{ color: "white" }}>Add to cart</Text>
-          </FlexButton>
-        </View>
+    <View style={styles.separator} />
+    <View 
+      horizontal 
+      showsHorizontalScrollIndicator={false} 
+      style={{
+        paddingHorizontal: 10,
+        width: screenWidth,
+        flexDirection: 'row',
+        justifyContent: 'space-around'
+      }}
+    >
+      <View style={styles.nutritionItem}>
+        <Text style={styles.label}>Calories</Text>
+        <Text style={styles.value}>220 kcal</Text>
       </View>
-      {/* {visible && <View style ={{
-    justifyContent: 'flex-end',
-    marginHorizontal: 10,
-    zIndex: 3, position: "absolute",bottom : 0,
-    width: width -20,
-    alignItems: 'center',opacity: 1, backgroundColor: 'rgba(0,0,0,0)'}}>
-        <View style ={{
-    backgroundColor: 'white',
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,}}><CartModal/></View>
-        </View>} */}
-      {display && (
-        <Pressable
-          // onTouchStart={() => setDisplay(false)}
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            justifyContent: "center",
-            zIndex: 3,
-            position: "absolute",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.9)",
-          }}
-        >
-          <Pressable
-            onPress={() => setDisplay(false)}
-            style={{ position: "absolute", top: 5, left: 5, zIndex: 100 }}
-          >
-            <AntDesign name="closecircle" size={34} color="white" />
-          </Pressable>
-          <ProductPreview
-            data={images}
-            index={index}
-            handleIndex={setIndex}
-          />
-        </Pressable>
-      )}
+      <View style={{  borderRightWidth: 1,
+    borderRightColor: 'rgba(0,0,0,0.2)'}} />
+      <View style={styles.nutritionItem}>
+        <Text style={styles.label}>Total Fat</Text>
+        <Text style={styles.value}>12g</Text>
+      </View>
+      <View style={{  borderRightWidth: 1,
+    borderRightColor: 'rgba(0,0,0,0.2)'}} />
+      <View style={styles.nutritionItem}>
+        <Text style={styles.label}>Cholesterol</Text>
+        <Text style={styles.value}>25mg</Text>
+      </View>
     </View>
+    <View style={styles.separator} />
+      {/* Extra Options */}
+      {/* Ingredients List */}
+      {product.components.length > 0 && <><Text style={[styles.sectionTitle, formObject.components.length <= 0 ? { color: '#A52A2A', fontSize: 18 }:{ color : 'black'}]}>Choose one</Text><View style={styles.separator} />
+        <FlatList
+          data={product.components}
+          renderItem={renderVariations}
+          keyExtractor={item => item}
+          scrollEnabled={false} // Disables scroll for FlatList since it's in ScrollView
+        /></>}
+      {product.extra && <><View style={styles.sectionTitle}><Text >Add extra Ingredients</Text><Text style={[styles.pill, {color: formObject.extra.length < 2 ? '#A52A2A': '#2E6F'}]}>Required</Text></View>
+       <Text style={{marginBottom: 4}}>{`Pick 2 item(s)`}</Text>
+       <View style={styles.separator} />
+        <FlatList
+          data={ingredients}
+          renderItem={renderIngredient}
+          keyExtractor={item => item.name}
+          scrollEnabled={false} // Disables scroll for FlatList since it's in ScrollView
+        /></>}
+      {/* {product.extra && <><Text style={styles.extraTitle}>Add Extra Additional</Text>
+       {dummyData.extras.map((extra) => (
+        <TouchableOpacity key={extra.name} onPress={() => handleExtraSelect(extra)} style={styles.extraOption}>
+          <Text>{extra.name}</Text>
+          <Text>${extra.price.toFixed(2)}</Text>
+        </TouchableOpacity>
+      ))}</>} */}
+      {/* Render each category and its options */}
+      <FlatList
+        data={dummyData.options}
+        renderItem={({item})=>renderOptions({items: item})}
+        keyExtractor={(category) => category.name}
+        scrollEnabled={false} 
+      />
+      {/* Notes Section */}
+      {product.instructions && <TextInput
+        style={styles.notesInput}
+        placeholder="Write Notes"
+        value={formObject.instructions}
+        onChangeText={(text) => 
+          setFormObject((prev) => ({ ...prev, instructions: text }))
+        }
+      />}
+        <View style={styles.separator} />
+
+      {/* Bottom CTA (Next Button and Total Price) */}
+  
+      </View>
+    </ScrollView>
+    <View>
+    <View style={styles.cartSection}>
+  <IncrementDecrementBton
+                  minValue={formObject.products.length}
+                  onIncrease ={
+              handleIncrement
+                }
+                  onDecrease={handleDecrement}
+                />
+       <TouchableOpacity onPress={fuflfilCart} >
+      <LinearGradient
+        colors={canAddToCart() ? ['#d9853b','#BC6C25',] : ['#aaa', "#ddd"]} // Example colors, you can change them
+        style={styles.nextButton}
+        start={{ x: 0, y: 0 }} // Top-left corner
+        end={{ x: 1, y: 0 }}   // Top-right corner (horizontal gradient)
+      >
+        <Text style={styles.nextButtonText}>Next</Text>
+        <View style={{  width: 1, height: 30,
+    backgroundColor: 'rgba(0,0,0,0.2)', marginHorizontal: 30}} />
+        <Text style={styles.nextButtonPrice}>${calculateTotalPrice().toFixed(2)}</Text>
+      </LinearGradient>
+    </TouchableOpacity>
+      </View>
+      </View>
+    </>
   );
-}
-export default ProductDisplay;
+};
 
 const styles = StyleSheet.create({
-  catHead: {
-    justifyContent: "space-between",
-    gap: 19,
+  container: {
+    // padding: 20,
+    backgroundColor: '#fff',
   },
-  animatedItem: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  backButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },detailsContainer: {
+    flexDirection: 'row',
+    // position: 'absolute',
+    gap: 3,
+    bottom: 0,
+    paddingHorizontal: 10,
+    marginBottom: 5,
+  },pill: {
+    backgroundColor: '#F0F0F0', // Light background for the pill
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  pillText: {
+    fontSize: 12,
+    color: '#555', // Darker text for contrast
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#FF6347',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  carouselContainer: {
+  },
+  productImage: {
+    height: height/1.5,
+    // resizeMode: 'stretch',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
     position: 'absolute',
+    bottom: 10,
+    width: screenWidth,
+ 
+  },  cartSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 23,
+    position: 'absolute',
+    bottom: 4,
+    borderRadius: 35,
+    width: screenWidth - 10,
+    height: 60,
+    marginHorizontal: 5
+  },
+  dot: {
+    width: 4,
+    height:4,
+    borderRadius: 5,
+    marginHorizontal: 2,
+  },
+  activeDot: {
+    backgroundColor: '#BC6C25',
+    width: 10,
+    height: 4
+  },
+  nutritionItem: {
+    alignItems: 'center',
+    marginRight: 20, // Space between items
+  },
+  label: {
+    fontSize: 14,
+    color: '#777', // Light gray for label
+  },sectionTitle: {
+    width: '100%',
+    justifyContent: 'space-between',
+    flexDirection: "row"
+  },
+  value: {
+    fontSize: 18,
+    color: '#333', // Darker color for value
+  },
+  inactiveDot: {
+    backgroundColor: '#666',
+  },
+  quantitySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  quantityButton: {
+    backgroundColor: '#FF6347',
+    padding: 5,
+    borderRadius: 5,
+  },
+  quantityText: {
+    marginHorizontal: 10,
+    fontSize: 18,
+  }, ingredientRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  ingredientName: {
+    fontSize: 16,
+    width: '468',
+  },
+  ingredientDetails: {
+    fontSize: 14,
+    width: '20%',
+  },
+  ingredientActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    // width: '30%',
+  },
+  priceSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // marginVertical: 5,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  optionCategory: {
+    fontSize: 18,
+    color: '#333',
+  },
+  optionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  optionName: {
+    fontSize: 16,
+    width: 118,
+  },
+  optionPrice: {
+    fontSize: 16,
+    color: '#555',
+    width: '30%',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 15,
+  },
+  dollarSign: {
+    fontSize: 18,
+    color: '#A0A0A0',
+    marginRight: 3,
+  },
+  priceInteger: {
+    fontSize: 28,
+    color: '#000',
+  },
+  priceDecimal: {
+    fontSize: 18,
+    color: '#A0A0A0',
+    marginLeft: 3,
+  },
+  changeQuantityButton: {
+    fontSize: 20,
+    color: '#BC6C25',
+    paddingHorizontal: 10,
+  },
+  quantityText: {
+    fontSize: 16,
+    color:"#BC6C25", 
+    marginHorizontal: 1,
+  },
+  addToCartContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#000',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+  addToCartButton: {
+    backgroundColor: '#000',
+    paddingVertical: 15,
     borderRadius: 10,
-    top: 20, // Adjust as needed
-    right: 20, // Adjust as needed
+    alignItems: 'center',
+  },
+  addToCartButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  notesInput: {
+    marginTop: 15,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+  },
+  nextButton: {
+    flexDirection: 'row',
+    backgroundColor: '#BC6C25',
+    paddingVertical: 10,
+    alignItems: 'center',
+    paddingHorizontal: 30,
+    borderRadius: 10,
+      // iOS shadow properties
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: -2 }, // shadow towards the top
+  shadowOpacity: 0.3,
+  shadowRadius: 6,
+  // Android elevation
+  elevation: 6
+  },
+  nextButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    textAlign: 'center',
+    // width: 80,
+  },
+  nextButtonPrice: {
+    color: '#fff',
+    fontSize: 18,
+  },
+  titleSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  productTitle: {
+    fontSize: 20,
+    width: screenWidth/1.5,
+    color: '#333',
+  },
+  quantitySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  quantityButton: {
+    backgroundColor: '#FF6347',
+    padding: 5,
+    borderRadius: 5,
+  },
+  quantityButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  gradient: {
+    flex: 1,
+    width: screenWidth,
+
+  },
+  quantityText: {
+    marginHorizontal: 10,
+    fontSize: 13,
+  },
+  aboutTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  aboutDescription: {
+    fontSize: 12,
+    color: '#555',
+  },
+  sizeTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  sizeSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  }, verticalLine: {
+    width: 3,
+    height: '100%',
+    backgroundColor: '#BC6C25',   
+     marginRight: 13, // Spacing between the line and text
+    borderRadius: 2, // Rounded edges for the vertical line
+  },
+  sizeOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  selectedSizeOption: {
+    backgroundColor: '#FF6347',
+  },
+  sizeText: {
+    fontSize: 16,
+    color: '#555',
+  },
+  selectedSizeText: {
+    color: '#fff',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  price: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  addToCartButton: {
+    backgroundColor: '#FF6347',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+  },
+  addToCartButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
+
+export default ProductDisplay;
