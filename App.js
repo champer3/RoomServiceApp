@@ -363,7 +363,10 @@ export default function App() {
             <Stack.Screen
               name="Product"
               component={ProductDisplay}
-              options={{ headerShadowVisible: false, title: "",  headerBackTitle: '', headerBackTitleVisible: false }}
+
+
+              options={{ headerShown: false, title: "", headerMode: 'screen',  }}
+
             />
             <Stack.Screen
               name="Review"
