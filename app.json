@@ -44,7 +44,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "Meks",
+    "scheme": "room-service",
     "extra": {
       "eas": {
         "projectId": "53a371fa-dec6-47d3-acec-1d49adae92e3"

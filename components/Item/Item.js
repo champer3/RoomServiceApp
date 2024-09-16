@@ -46,10 +46,10 @@ const FadeInView = (props) => {
 
   return (
     <Animated.View
-      style={{
+      style={[ {
         
         opacity: fadeAnim, // Bind opacity to animated value
-      }}
+      }]}
     >
       {props.children}
     </Animated.View>
@@ -65,12 +65,10 @@ const navigation = useNavigation()
     // console.log(width)
   return (
     <FadeInView>
-      <Pressable onPress={pressHandler} style={ ({ pressed }) => pressed && { opacity: 0.5 }}>
+      <Pressable onPress={pressHandler} style={ [styles.container, ({ pressed }) => pressed && { opacity: 0.5 }]}>
 
-        <View style={styles.imageContainer}>
           <Image style={styles.image} source={image} />
-        </View>
-        {show && <FadeInView><Text style={[styles.text, {color: "white" ? color : "black"}]}>{text}</Text></FadeInView>}
+        {show && <FadeInView><Text style={[styles.text, { color : "black"}]}>{text}</Text></FadeInView>}
         {!show && <FadeOutView><Text style={[styles.text, {color: "white" ? color : "black"}]}>{text}</Text></FadeOutView>}
 
       </Pressable>
@@ -84,10 +82,16 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     // marginHorizontal: 10,
-    height: height/2,
+     alignItems: "center",
+    // marginHorizontal: 10,
+    height: height/10,
     // height: 200,
-    width: width / 3.6,
-
+    width: width/6.2,
+     paddingTop: 10,
+    paddingBottom: 10,
+    // backgroundColor: "rgba(0,0,0,0.05)",
+    borderRadius: 10,
+  
   },
   pressed: {
     // width: "86%",
@@ -95,14 +99,27 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     // backgroundColor: "#f9f3cf59",
-    backgroundColor: "white",
-    borderRadius: 100,
+     height: height/14,
+    // height: 200,
+    width: width/6.5,
+    //  paddingTop: 10,
+     shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.8,
+      shadowRadius: 2,
+      elevation: 5, // Add elevation for Android shadow
+     marginVertical: 10,
+    // paddingBottom: 10,
+    
+   
+   
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
-    height: height/13,
-    width: width/6.2,
+    
+    
   },
-  image: { width: width/5.8, height: height/ 18, resizeMode: 'contain'  },
-  text: {  fontSize: 13, textAlign: "center" },
+  image: { width: width/6.5, height: height/ 16, resizeMode: 'cover' ,
+  borderRadius: 10, paddingVertical: 10,
+ },
+  text: {  fontSize: 10, textAlign: "center" },
 });

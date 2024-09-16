@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Fontisto } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import Text from "./Text";
 
 function DeliveryMode({ mode, time, active= false, special}) {
   return (
@@ -27,12 +28,13 @@ export default DeliveryMode;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     padding: 16,
     borderWidth: 2,
     borderRadius: 16,
-    gap: 10,
-    height: '100%',
+    // gap: 10,
+    // height: 350,
+    marginBottom: 13
   },
   topView: {
     flexDirection: "row",
@@ -41,15 +43,19 @@ const styles = StyleSheet.create({
   },
   downView: {
     flexDirection: "row",
+    borderTopWidth: 1,
     gap: 15,
     alignItems: "center",
+    paddingTop: 5,
+    marginTop: 7,
+    borderColor: '#aaa'
   },
   innerView: {
     overflow: 'hidden',
   },
   text: {
     fontSize: 14,
-    fontWeight: 'bold'
+    // fontWeight: 'bold'
   },
   minitext: {
     fontSize: 12
