@@ -21,7 +21,7 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
     navigation.navigate('Delivery Status', {address: address})
   }
   const encodedAddress = encodeURIComponent('501 Main Street Nashville, TN 37206')
-  console.log(order)
+
   const [time, setTime] = useState();
   
   const [position , setPosition] = useState(null)
@@ -32,7 +32,7 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
     getDuration(`${position.latitude},${position.longitude}`, `${driver.latitude},${driver.longitude}`)
       .then(coords => setTime(coords))
       .catch(err => console.log("Something went wrong"));}
-  }, [time, position,driver]);
+  }, [ position,driver]);
   useEffect(() => {
     (async () => {
 
@@ -107,7 +107,6 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
             rater.push({'rate':'dot', id:i})
         }
     }
-    console.log(rater)
     function addQuantityToObjects(inputList) {
         const titleCountMap = {};
   
@@ -230,7 +229,7 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
                 </View>)
                 }</ScrollView>
          <View style={{height : 1,width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', alignSelf: 'center'}}></View>
-         <View >{time && status == 'Out for Dellivery' && <View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{ fontSize: 14}} >{`Driver is `}</Text><Text style={{ fontSize: 19, color: '#4F6B30'}}>{getTimeLeft(date, time)}</Text><Text style={{ fontSize: 14}}></Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton onPress={()=>press(order, id, price)}><Text style={{ fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
+         <View >{time && status == 'Out for Delivery' && <View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{ fontSize: 14}} >{`Driver is `}</Text><Text style={{ fontSize: 19, color: '#4F6B30'}}>{getTimeLeft(date, time)}</Text><Text style={{ fontSize: 14}}></Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton onPress={()=>press(order, id, price)}><Text style={{ fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
         
      </View>
      

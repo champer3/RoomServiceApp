@@ -25,11 +25,7 @@ import Text from '../components/Text';
 const { width, height } = Dimensions.get("window");
 function OrderDisplay(){
   
-  useEffect(() => {
-    dispatch(fetchOrders());
-  }, [dispatch]);
   const orders = useSelector((state) => state.orders.ids)
-  console.log('order',orders)
 
   const navigation = useNavigation()
     const [index, setIndex] = useState(0);
