@@ -232,36 +232,9 @@ function Category() {
       if (item.title.toLowerCase().includes(searchPhrase.toLowerCase())) {
         // If found, push the title into the result array
         result.push(item);
-      }
-       else if (item.related) {
+      } else if (item.related) {
         // If the item has related keywords, check each related keyword
         item.related.forEach((keyword) => {
-          if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
-            // If found, push the title into the result array
-            result.push(item);
-          }
-        });
-      }
-       else if (item.subCategory) {
-        // If the item has related keywords, check each related keyword
-        item.subCategory.forEach((keyword) => {
-          if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
-            // If found, push the title into the result array
-            result.push(item);
-          }
-        });
-      }
-       else if (item.nutrients) {
-        // If the item has related keywords, check each related keyword
-        item.nutrients.forEach((keyword) => {
-          if (keyword.name.toLowerCase().includes(searchPhrase.toLowerCase())) {
-            // If found, push the title into the result array
-            result.push(item);
-          }
-        });
-      } else if (item.components) {
-        // If the item has related keywords, check each related keyword
-        item.components.forEach((keyword) => {
           if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
             // If found, push the title into the result array
             result.push(item);
@@ -275,8 +248,8 @@ function Category() {
   const result = searchTitles(productItems, value);
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView  style={styles.container}>
-        <SafeAreaView>
+      <GestureHandlerRootView style={{flex:1,    paddingHorizontal: "2%",  backgroundColor: "white"}} >
+        <SafeAreaView style={styles.container}>
         <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.search}>
             <Input
@@ -330,7 +303,7 @@ function Category() {
         <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
       </View> */}
           {value && (
-            <ProductCategory  onTouch={()=>ref2?.current?.scrollTo(0)} items={result} />
+            <ProductCategory  onTouch={()=>ref2?.current?.scrollTo(0)} items={result} onPress={handleAddToCart} />
           )}
           {!result.length && (
             <View style={{ gap: 19, marginBottom: 45 }}>
@@ -427,10 +400,8 @@ export default Category;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: "2%",
     mpaddingTop: "4%",
     flex: 1,
-    backgroundColor: "white"
   },
   search: {
     flexDirection: "row",

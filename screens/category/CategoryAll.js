@@ -192,7 +192,7 @@ const { width, height } = Dimensions.get("window");
         <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
       </View> */}
       {value && <ProductCategory items={result} />}
-      {!result.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>No results found</Text></View>}
+      {/* {!result.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>No results found</Text></View>} */}
           {/* <View style={styles.recentView}>
           <Text style={styles.text}>Recent</Text>
           <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />

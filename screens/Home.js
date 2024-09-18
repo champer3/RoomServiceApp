@@ -194,7 +194,7 @@ function Home() {
     //     // Remove other event listeners as needed
     //   };
       socket.on('Out for Delivery', (data) => {
-        const deliveringOrders = orders.filter(order => order.status === "Delivering");
+        const deliveringOrders = orders.filter(order => order.status === "Ready for Delivery");
 
     if (deliveringOrders.length === 0) {
         return null; // Return null if there are no delivering orders
@@ -304,7 +304,7 @@ function Home() {
     // Iterate through the orders array
     for (let i = 0; i < orders.length; i++) {
       // Check if the status of the order is "Delivering"
-      if (orders[i].status === "Delivering") {
+      if (orders[i].status === "Out for Delivery") {
         // If the status is "Delivering", increment the counter
         count++;
       }
