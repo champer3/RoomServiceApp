@@ -22,7 +22,7 @@ import { Button } from "react-native-paper";
 
 
 
-function Product({product, onAdd}) {
+function Product({product}) {
   function isValidURL(str) {
     if (typeof str !== 'string') {
       str = String(str);
@@ -30,6 +30,27 @@ function Product({product, onAdd}) {
     
     return str.startsWith("http://") || str.startsWith("https://");
   }
+  function handleIncrement() {
+    if (!canAddToCart()){
+      navigation.navigate('Product',{product, productData})
+      return
+    }
+    dispatch(addToCart({id : productData }))
+   }
+  const canAddToCart = () => {
+    // Check if there are at least 2 items in the extra array
+    if (product.extra) {
+      return false; // Cannot add to cart if there are fewer than 2 extra items
+    } if (product.components?.length > 0){
+      return false
+    }
+    for (let optionCategory of product.options) {
+      if (optionCategory?.required) {
+          return false; // Cannot add to cart if any required category doesn't meet the required quantity
+        }
+      }
+    return true; 
+  };
   const dummyData = {
     id: 1,
     title: "Classic Cheese Burger",
@@ -123,8 +144,8 @@ function Product({product, onAdd}) {
   const productData = constructProductFormObject(product);
 //   const [show, setShow] = useState(false)
   const navigation = useNavigation()
-//   const dispatch = useDispatch();
-//   const cartItems = useSelector((state) => state.cartItems.ids)
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cartItems.ids)
 //   const productItems = useSelector((state) => state.productItems.ids);
 //   function handleAddToCart(product){
 //     dispatch(addToCart({id : product}))
@@ -192,7 +213,7 @@ function Product({product, onAdd}) {
           colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']} // Customize gradient colors
           style={styles.gradient}
         >
-        <TouchableOpacity style={styles.addButton} onPress={() => onAdd(product)}>
+        <TouchableOpacity style={styles.addButton} onPress={handleIncrement}>
             <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
               <Path
                 d="M12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0ZM17 13H13V17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17V13H7C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11H11V7C11 6.44772 11.4477 6 12 6C12.5523 6 13 6.44772 13 7V11H17C17.5523 11 18 11.4477 18 12C18 12.5523 17.5523 13 17 13Z"

@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   FlatList, Image, TouchableOpacity
 } from "react-native";
+import Svg, {Path} from 'react-native-svg';
 import Text from '../components/Text';
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useRef, useEffect } from "react";
@@ -27,7 +28,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { EvilIcons } from '@expo/vector-icons';
 import {
   clearCart,
-  completeOrder,
+  
   addToCart,
   removeFromCart,
   deleteFromCart,
@@ -35,6 +36,7 @@ import {
   deleteItem,
   updateCart,
 } from "../Data/cart";
+import {completeOrder} from "../Data/order"
 import OrderSuccess from "../components/Modals/OrderSuccess";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomSheet from "../components/Modals/BottomSheet";
@@ -50,7 +52,7 @@ const { width, height } = Dimensions.get("window");
 function CheckoutScreen() {
   const [visible, setVisible] = useState(false);
 
-  // // const orders = useSelector((state) => state.cartItems.order);
+  // // const orders = useSelector((state) => state.orders.ids);
   // // console.log(orders);
   const mode = [
     { mode: "Faster (+$2)", time: "10-15 Minutes", fastest: true },
@@ -124,7 +126,7 @@ function CheckoutScreen() {
   }
   function press() {
     navigation.navigate("Order Receipt", {
-      total: getTotalSum().toFixed(2),
+      total: total.toFixed(2),
       items: temp,
     });
   }
@@ -144,25 +146,20 @@ function CheckoutScreen() {
     }
   };
 const constructOrderDetails = (formObject) => {
-  const productObject = {
-    productName: formObject.products[0]?.title || '', // Extract product name
-    component: formObject.components || '', // Get the component from formObject
-    sides: formObject.extra?.map((extraItem) => extraItem.name) || [], // Get list of extra names for sides
-    flavor: [], // Initialize flavor as an empty array
-    dressing: [] // Initialize dressing as an empty array
+  console.log('object', formObject)
+  return {
+    productName: formObject.products[0].title,  // Set the product name
+    component: formObject.components || '',  // Set the component or empty string if undefined
+    sides: formObject.extra?.map(item => JSON.stringify(item)),  // Convert each extra item to JSON string
+    flavor: formObject.options?.map(option => JSON.stringify(option)),  // Convert each option item to JSON string
+    dressing: formObject.products?.map(product => 
+      JSON.stringify({
+        title: product.title, 
+        images: product.images, 
+        price: product.price
+      })
+    )  // Extract title, images, and price from each product and convert to JSON string
   };
-
-  // Iterate over options to find 'flavor' and 'dressing'
-  formObject.options?.forEach((option) => {
-    if (option.name === 'flavor') {
-      productObject.flavor = option.values.map((value) => value.name);
-    }
-    if (option.name === 'dressing') {
-      productObject.dressing = option.values.map((value) => value.name);
-    }
-  });
-
-  return productObject;
 };
   useEffect(() => { retrieveTokenFromAsyncStorage() }, [])
   const tryCreateOrder = async () => {
@@ -224,9 +221,10 @@ const constructOrderDetails = (formObject) => {
               id: createOrder.data.data.order.id,
               order: row,
               date: date,
-              status: "Delivering",
+              status: "Ordered",
               address: address[0].address,
               price: `$${total}`,
+              driver : ''
             },
           })
         );
@@ -265,66 +263,57 @@ const constructOrderDetails = (formObject) => {
   };
   const id = generateRandomId(8);
   const checkOut = async () => {
-    const token = await retrieveTokenFromAsyncStorage();
-    const response = await axios.post(
-      "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/checkout-session",
-      {
-        amount: total,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
+    try {
+      // Retrieve token from async storage
+      const token = await retrieveTokenFromAsyncStorage();
+  
+      // Make API request to create checkout session
+      const response = await axios.post(
+        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/checkout-session",
+        {
+          amount: total, // Ensure total is correctly calculated
         },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Use the retrieved token
+          },
+        }
+      );
+  
+      // Initialize the payment sheet with the response data
+      const initPayment = await initPaymentSheet({
+        merchantDisplayName: "RoomService",
+        paymentIntentClientSecret: response.data.clientSecret,
+        customerEphemeralKeySecret: response.data.ephemeralKey,
+        customerId: response.data.customer,
+        returnURL: 'yourapp://payment-completed',
+      });
+  
+      // Start the loading indicator
+      setIsLoading(true);
+  
+      // Present the payment sheet
+      const { error } = await presentPaymentSheet();
+  
+      // Handle any errors from the payment sheet
+      if (error) {
+        // Stop loading and return, because an error occurred
+        setIsLoading(false);
+        return;
       }
-    );
-    const initPayment = await initPaymentSheet({
-      merchantDisplayName: "RoomService",
-      paymentIntentClientSecret: response.data.clientSecret,
-      customerEphemeralKeySecret: response.data.ephemeralKey,
-      customerId: response.data.customer,
-      returnURL: 'yourapp://payment-completed'
-    });
-    setIsLoading(true)
-    const { error } = await presentPaymentSheet();
-
-    if (error) {
-      setIsLoading(false)
-    } else {
-
-   
-      // try{
-      //   await AsyncStorage.removeItem('essential')
-      // } catch(error){
-      //   console.error('Error deleting item:', error);
-      // }
-      // const newOrder = useSelector((state) => state.cartItems.order);
-      // try {
-      //   await AsyncStorage.setItem("essential", JSON.stringify({address: address, orders: newOrder,}));
-      //   console.log("Essential saved successfully.");
-      // } catch (error) {
-      //   console.error("Error saving token:", error);
-      // } 
-      setVisible(true);
-      setIsLoading(false)
-
-      console.log("ARE WE HERE????");
-      // const paymentMethods = await axios.post(
-      //   "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-methods",
-      //   null,
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //       "Content-Type": "application/json", // adjust the content type based on your API requirements
-      //     },
-      //   }
-      // );
-      tryCreateOrder();
-      
-      // Alert.alert("Success", "Your order is confirmed!");
-      // navigation.navigate("Home");
+  
+      // Payment succeeded, proceed with creating the order
+      setIsLoading(false); // Stop loading after success
+      setVisible(true); // Show success or confirmation modal
+      tryCreateOrder(); // Call the function to create the order
+  
+    } catch (error) {
+      // Handle API request errors
+      console.error("API request error:", error);
+      setIsLoading(false); // Stop loading if an error occurs
     }
-  }
+  };
+  
 
 
   function addressHandler() {
@@ -420,7 +409,7 @@ const constructOrderDetails = (formObject) => {
   // const [addOn1, setAddOn] = useState([]);
   // const [option1, setOption1] = useState(null);
   const [num, setNum] = useState(0);
-
+const [instruct, setInstruct] = useState(false)
 function handleProductClick(item, index){
   let product = item.products[0]
   dispatch(deleteFromCart({ id: {'index': index} }));
@@ -491,7 +480,7 @@ function handleProductClick(item, index){
   const renderCartItem = ({ item, index }) => {
     const product = item.products[0]; // Assuming only one product per cart entry
     return (
-      <ProductAction component={item.components} instruction={item.instructions} onTap={()=> handleProductClick(item, index)} title={product.title} options={item.options} side={item.extra} image={product.images[0]} quantity={item.products.length} price={calculateTotalPrice(item)} action={<Pressable onPress={()=>handleDeleteFromCart(index)} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={35} color="#B22334" /></Pressable>}><View
+      <ProductAction component={item.components} instruction={item.instructions} onTap={()=> handleProductClick(item, index)} title={product.title} options={item.options} side={item.extra} image={product.images[0]}  price={calculateTotalPrice(item)} action={<Pressable onPress={()=>handleDeleteFromCart(index)} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={35} color="#B22334" /></Pressable>}><View
       style={{
         backgroundColor: "black",
         width: 30,
@@ -591,7 +580,18 @@ function handleProductClick(item, index){
                 </FlexButton>
               </View>
             )}
-        </View>
+            <TouchableOpacity onPress={()=>setInstruct(prev=> !prev)} style={{ borderWidth: 2,
+    borderColor: "#rgba(0,0,0,0.05)",
+    borderRadius: 15,
+    padding: 10,}} ><Svg xmlns="http://www.w3.org/2000/svg" width={23} height={23} viewBox="0 0 512 512"><Path d="M0 64C0 28.7 28.7 0 64 0L448 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64l-138.7 0L185.6 508.8c-4.8 3.6-11.3 4.2-16.8 1.5s-8.8-8.2-8.8-14.3l0-80-96 0c-35.3 0-64-28.7-64-64L0 64zM128 240a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm128 0a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm160-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></Svg>
+        </TouchableOpacity>
+           </View>
+        
+           {instruct && <TextInput
+        style={styles.notesInput}
+        placeholder="Delivery Notes"
+      />}
+           
       </View>
 
       {/* Order Section */}
@@ -617,8 +617,8 @@ function handleProductClick(item, index){
           <Text style={styles.summaryLabel}>Taxes & Fees</Text>
           <Text style={styles.summaryValue}>${taxesAndFees.toFixed(2)}</Text>
         </View>
-        <TouchableOpacity onPress={address.length ? checkOut : () => { }} style={[styles.payButton,
-        {backgroundColor: !address.length ? "rgba(0,0,0,0.05)" : "white"}
+        <TouchableOpacity onPress={(address.length && cartItems.length > 0) ? checkOut : () => { }} style={[styles.payButton,
+        {backgroundColor: !(address.length && cartItems.length > 0) ? "rgba(0,0,0,0.05)" : "white"}
         ]}>
           <Text style={styles.payButtonText}>Pay</Text>
           <Text style={styles.totalText}>${total.toFixed(2)}</Text>
@@ -678,10 +678,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  notesInput: {
+    marginTop: 15,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+  },
   deliverySection: {
     backgroundColor: '#fff',
     borderRadius: 10,
-    paddingHorizontal: 32,
+    paddingHorizontal: 22,
     paddingBottom: 20,
   },
   coDeliveryRow: {
@@ -700,6 +707,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 3
+    
   },
   addressText: {
     fontSize: 16,

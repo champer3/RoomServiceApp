@@ -23,7 +23,7 @@ import { useNavigation } from "@react-navigation/native";
 import Text from '../components/Text';
 function AddressConfirm() {
   const data = useSelector((state) => state.profileData.profile)
-  const orders = useSelector((state) => state.cartItems.order)
+  const orders = useSelector((state) => state.orders.ids)
   const address = [...data.address]
   const dispatch = useDispatch();
   const navigation = useNavigation()

@@ -19,6 +19,7 @@ import Text from '../components/Text';
 
 export default function Delivery() {
     const [location, setLocation] = useState(null);
+    const encodedAddress = encodeURIComponent('501 Main Street Nashville, TN 37206')
     const [coords, setCoords] = useState([]);
     const route = useRoute()
   const [errorMsg, setErrorMsg] = useState(null);
@@ -34,17 +35,13 @@ export default function Delivery() {
   useEffect(() => {
    try{ (async () => {
       
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-      if (location) {
-        setDriver({latitude: location.coords.latitude,
-          longitude: location.coords.longitude ,})
+
+    let locationT = await getPosition(encodedAddress);
+    setLocation({coords: {longitude: locationT.lng, latitude: locationT.lat}});
+      if (locationT) {
+        setDriver({latitude: locationT.lat,
+          longitude: locationT.lng ,})
       }
       
         

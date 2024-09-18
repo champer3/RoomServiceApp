@@ -10,7 +10,8 @@ import DeliveryMode from "../components/DeliveryMode";
 import CreditCard from "../components/CreditCard";
 import Info from "../components/Info";
 import { useNavigation , useRoute} from "@react-navigation/native";
-import {clearCart, completeOrder} from '../Data/cart'
+import {clearCart} from '../Data/cart'
+import {completeOrder} from "../Data/order"
 import {useSelector, useDispatch} from 'react-redux'
 import { updateProfile } from "../Data/profile";
 import OrderSuccess from "../components/Modals/OrderSuccess";
@@ -19,7 +20,7 @@ function PaymentScreen() {
   const [visible, setVisible] = useState(false)
   const dispatch = useDispatch();
   const data = useSelector((state) => state.profileData.profile)
-  const orders = useSelector((state) => state.cartItems.order)
+  const orders = useSelector((state) => state.orders.ids)
   const cards = [...data.payments]
   const [cartItems, setCartItems] = useState([...useSelector((state) => state.cartItems.ids)])
   const temp = [...cartItems]

@@ -49,6 +49,7 @@ const items = createSlice({
       });
   },
 });
+console.log('here')
 
 export const { addReview } = items.actions;
 export default items.reducer;

@@ -28,7 +28,8 @@ import Input from "../components/Inputs/Input";
 const { width, height } = Dimensions.get("window");
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart, addOptions, updateOrder } from "../Data/cart";
+import { addToCart, removeFromCart, addOptions,  } from "../Data/cart";
+import {fetchOrders, updateOrder} from "../Data/order"
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from "../components/Modals/BottomSheet";
 import { LinearGradient } from "expo-linear-gradient";
@@ -101,8 +102,7 @@ const FadeInView = (props) => {
 function Home() {
   
   const [socket, setSocket] = useState(socket);
-  const address = useSelector((state) => state.profileData.profile)
-  console.log(address)
+  const address = useSelector((state) => state.profileData.profile).address[0]
 
   useEffect(() => {
     const setupSocket = async () => {
@@ -163,12 +163,38 @@ function Home() {
 
   useEffect(() =>{
     if(socket){
-      socket.on('orderInDelivery', data => {
-        
-      })
-      socket.on('delivered', (data) => {
-        console.log("here6556477")
-        const deliveringOrders = orders.filter(order => order.status === "Delivering");
+    //   socket.on('Delivered', (data) => {
+    //     console.log("here6556477")
+    //     const deliveringOrders = orders.filter(order => order.status === "Delivering");
+
+    // if (deliveringOrders.length === 0) {
+    //     return null; // Return null if there are no delivering orders
+    // }
+
+    // let earliestOrder = deliveringOrders[0];
+    // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+
+    // deliveringOrders.forEach(order => {
+    //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+    //     if (timestamp < earliestTimestamp) {
+    //         earliestOrder = order;
+    //         earliestTimestamp = timestamp;
+    //     }
+    // });
+    // console.log("orders",deliveringOrders)
+    // console.log("order",orders)
+    //   date = getTodaysDate()
+    //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+    //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+
+    //   });
+
+    //   return () => {
+    //     socket.off('delivered'); // Remove 'message' event listener
+    //     // Remove other event listeners as needed
+    //   };
+      socket.on('Out for Delivery', (data) => {
+        const deliveringOrders = orders.filter(order => order.status === "Ready for Delivery");
 
     if (deliveringOrders.length === 0) {
         return null; // Return null if there are no delivering orders
@@ -228,7 +254,7 @@ function Home() {
       return "Good Evening";
     }
   }
-  const orders = useSelector((state) => state.cartItems.order)
+  const orders = useSelector((state) => state.orders.ids)
   const [isVisible, setIsVisible] = useState(false);
   const [option, setOption] = useState();
   const ref = useRef(null);
@@ -278,7 +304,7 @@ function Home() {
     // Iterate through the orders array
     for (let i = 0; i < orders.length; i++) {
       // Check if the status of the order is "Delivering"
-      if (orders[i].status === "Delivering") {
+      if (orders[i].status === "Out for Delivery") {
         // If the status is "Delivering", increment the counter
         count++;
       }
@@ -309,7 +335,6 @@ function Home() {
     }
   };
 
-  console.log(tryCreateOrder().data)
   // deliveringOrdersCount = countDeliveringOrders(orders);
   useEffect(() => {
     setBlink(true)
@@ -321,11 +346,7 @@ function Home() {
   const cartItems = useSelector((state) => state.cartItems.ids);
 
 
-  useEffect(() => {
-    dispatch(fetchProducts());
-  }, [dispatch]);
-
-
+ 
   const productItems = useSelector((state) => state.productItems.ids);
   const categoryObject = {};
   
@@ -521,6 +542,7 @@ function Home() {
 
     }
   }
+
   function handleScroll(event) {
     setIsVisible(event.nativeEvent.contentOffset.y > 223);
   }
@@ -563,18 +585,15 @@ function Home() {
                { <Text
                   style={{
                     color: "white",
-                    fontSize: 14,
-                    letterSpacing: 1,
-                  }}
-                >
-                  {"6700 Cabot Dr"}
-                </Text>}
-                {<Text
-                  style={{
-                    color: "white",
                     fontSize: 9,
+                    width: 250,
+                    letterSpacing: 1,
+    
                   }}
-                >{"Nashville, Tennessee"}</Text>}
+                  
+                >
+                  {address.address}
+                </Text>}
                 </View>
                 
                 </View>
@@ -604,8 +623,18 @@ function Home() {
                         alignItems: "center",
                         position: "absolute",
                         zIndex: 2,
-                        top: -10,
-                        rigth: -90,
+                        top: -15,
+                        left: -13,
+                        width: 25,
+                        height: 25,
+                        shadowColor: 'black',
+                        shadowOffset: {
+                          width: 0,
+                          height: 1,
+                        },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 2,
+                        elevation: 3,
                         borderRadius: 100,
                         backgroundColor: "#425928",
                       }}
@@ -640,14 +669,22 @@ function Home() {
                   {cartItems.length > 0 && (
                     <View
                       style={{
-                        height: "85%",
-                        minWidth: "35%",
                         justifyContent: "center",
                         alignItems: "center",
                         position: "absolute",
                         zIndex: 2,
-                        top: -10,
-                        rigth: -90,
+                        top: -15,
+                        left: -13,
+                        width: 25,
+                        height: 25,
+                        shadowColor: 'black',
+                        shadowOffset: {
+                          width: 0,
+                          height: 1,
+                        },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 2,
+                        elevation: 3,
                         borderRadius: 100,
                         backgroundColor: "#425928",
                       }}
@@ -783,7 +820,6 @@ function Home() {
       key={categoryKey}
       categoryName={categoryKey}
       items={categoryObject[categoryKey]}
-      onPress={handleAddToCart}
     />
   ))}
 </View>

@@ -248,8 +248,8 @@ function Category() {
   const result = searchTitles(productItems, value);
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView  style={styles.container}>
-        <SafeAreaView>
+      <GestureHandlerRootView style={{flex:1,    paddingHorizontal: "2%",  backgroundColor: "white"}} >
+        <SafeAreaView style={styles.container}>
         <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.search}>
             <Input
@@ -400,10 +400,8 @@ export default Category;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: "2%",
     mpaddingTop: "4%",
     flex: 1,
-    backgroundColor: "white"
   },
   search: {
     flexDirection: "row",

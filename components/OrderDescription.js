@@ -1,26 +1,29 @@
 import { Image, Pressable, Dimensions, ScrollView } from "react-native";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet,  View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 const { width, height } = Dimensions.get("window");
 import { Octicons } from '@expo/vector-icons';
-
+import Text from "./Text";
 import { Fontisto } from '@expo/vector-icons';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as Location from 'expo-location';
 import { AntDesign } from "@expo/vector-icons";
 import { useSelector, useDispatch } from "react-redux";
-import {updateOrder } from "../Data/cart";
+import {updateOrder } from "../Data/order";
 import { EvilIcons } from '@expo/vector-icons';
 import FlexButton from "./Buttons/FlexButton";
 import { getAddress, getPosition, searchAddress, getDuration } from "../util/location";
 
 
-function OrderDescription({address, date, id,order, price, status = 'Delivering', press }) {
+function OrderDescription({address, date, id,order, price, status = 'Ordered', press }) {
     const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('Delivery Status', {address: address})
   }
+  const encodedAddress = encodeURIComponent('501 Main Street Nashville, TN 37206')
+  console.log(order)
   const [time, setTime] = useState();
+  
   const [position , setPosition] = useState(null)
   const [driver, setDriver] = useState(null)
   useEffect(() => {
@@ -32,22 +35,39 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
   }, [time, position,driver]);
   useEffect(() => {
     (async () => {
-      
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
 
-      let location = await Location.getCurrentPositionAsync({});
+      let location = await await getPosition(encodedAddress);
       if (location) {
-        setDriver({latitude: location.coords.latitude,
-          longitude: location.coords.longitude ,})
+        setDriver({latitude: location.lat,
+          longitude: location.lng})
       }
       
         
     })();
   }, []);
+  function getTimeLeft(date, duration) {
+    const durationInMinutes = parseInt(duration); // Extract the number of minutes from the duration
+    const durationInMilliseconds = durationInMinutes * 60 * 1000; // Convert minutes to milliseconds
+  
+    const currentTime = new Date(); // Get current time
+    const pastTime = new Date(date); // The start time (from the provided date)
+  
+    // Calculate the time difference in milliseconds
+    const timeElapsed = currentTime - pastTime; // Time elapsed in milliseconds
+  
+    // Calculate the remaining time
+    const timeLeft = durationInMilliseconds - timeElapsed;
+  
+    // If time left is less than or equal to 0, the person is running late
+    if (timeLeft <= 0) {
+      return "Running late";
+    } else {
+      // Convert remaining time back to minutes
+      const minutesLeft = Math.floor(timeLeft / (60 * 1000));
+      return `${minutesLeft} minutes away`;
+    }
+  }
+  
   useEffect(() => {
     (async () => {
       
@@ -75,9 +95,9 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
             return status == 'Delivered' ? `Delivered on ${month} ${day}` : `Ordered on ${month} ${day}`;
         }
     }
-    const statuses = ['Placed', 'Preparing', 'Delivering', 'Delivered']
+    const statuses = ['Ordered', 'Ready for Delivery', 'Out for Delivery', 'Delivered']
     const cost = {}
-    let total = 0
+    let total = order.reduce((total, item)=> total + item.products.length , 0)
     var rater = []
     for (var i = 0; i < 3; i++ ){
         if (i < statuses.indexOf(status)){
@@ -131,7 +151,6 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
   
         return filteredList;
     }
-    const newList = addQuantityToObjects(order)
     let lastStatus = <></>
     if(statuses.indexOf(status) !== 3){lastStatus = <Octicons name={`dot`} size={24} color={ 'rgba(0,0,0,0.5)'} />
    }else{ lastStatus = <Fontisto name="radio-btn-active" size={24} color= "#BC6C25" />} 
@@ -141,26 +160,60 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
         <View style={styles.recommendedView}>
 
      <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20}}>
-        <Text style={{fontWeight: 900, fontSize: 16}}>{formattedDate}</Text>
-        <Text style={{fontWeight: 'bold', fontSize: 17}}>{price}</Text>
+        <Text style={{ fontSize: 16}}>{formattedDate}</Text>
+        <Text style={{ fontSize: 17}}>{price}</Text>
      </View>
-     <View style={{flexDirection: 'row'}}>
-        {rater.map(({rate,id},idx)=>{if(statuses.indexOf(status) !== id){console.log(id);return <View style={{flex:1, alignItems: 'center',flexDirection:'row'}} key={id}><Octicons name={`${rate}`} size={24} color={ rate == 'dot-fill' ? "#BC6C25": 'rgba(0,0,0,0.5)'} />
-     <View style={{height : 2, width: '90%', alignSelf: 'center', backgroundColor: rate == 'dot-fill' ? "#BC6C25": 'rgba(0,0,0,0.5)'}}></View>
-     </View>}else{return <View  key={id} style={{flexDirection: 'row', width: '27.3%'}}><Fontisto name="radio-btn-active" size={24} color= "#BC6C25" /><View key={6} style={{height : 2, width: '72%', alignSelf: 'center', backgroundColor: "#BC6C25"}}></View></View>}})}
-     {lastStatus}
-     </View>
+     <View style={{ flexDirection: 'row' }}>
+  {rater.map(({ rate, id }, idx) => {
+    // Determine if the current status matches or not
+    if (statuses.indexOf(status) !== id) {
+      return (
+        <View key={`${id}-${idx}`} style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
+          <Octicons 
+            name={`${rate}`} 
+            size={24} 
+            color={rate === 'dot-fill' ? "#BC6C25" : 'rgba(0,0,0,0.5)'} 
+          />
+          <View 
+            style={{
+              height: 2,
+              width: '90%',
+              alignSelf: 'center',
+              backgroundColor: rate === 'dot-fill' ? "#BC6C25" : 'rgba(0,0,0,0.5)'
+            }}
+          />
+        </View>
+      );
+    } else {
+      return (
+        <View key={`${id}-${idx}-active`} style={{ flexDirection: 'row', width: '27.3%' }}>
+          <Fontisto name="radio-btn-active" size={24} color="#BC6C25" />
+          <View 
+            style={{
+              height: 2,
+              width: '72%',
+              alignSelf: 'center',
+              backgroundColor: "#BC6C25"
+            }} 
+          />
+        </View>
+      );
+    }
+  })}
+  {lastStatus}
+</View>
+
      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <Text style={{fontWeight: 300, fontSize: 12}}>Placed</Text>
-        <Text style={{fontWeight: 300, fontSize: 12}}>Preparing</Text>
-        <Text style={{fontWeight: 300, fontSize: 12}}>Delivering</Text>
-        <Text style={{fontWeight: 300, fontSize: 12}}>Delivered</Text>
+        <Text style={{ fontSize: 9}}>Ordered</Text>
+        <Text style={{ fontSize: 9}}>Ready for Delivery</Text>
+        <Text style={{ fontSize: 9}}>Out for Delivery</Text>
+        <Text style={{ fontSize: 9}}>Delivered</Text>
      </View>
      <View style={{height : 1,width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', alignSelf: 'center'}}></View>
-    {status == 'Delivering' && <View style={{height: 45}}><FlexButton onPress={pressHandler} background={'#283618'} ><Text style={{fontWeight:'bold', fontSize: 16, color: 'white',textAlign: 'center'}}>Track Order</Text></FlexButton></View>}
-     <Text style={{fontWeight: 900, fontSize: 13}}>{total} {`${total > 1 ? 'Items': 'Item'}`}</Text>
+    {status == 'Out for Delivery' && <View style={{height: 45}}><FlexButton onPress={pressHandler} background={'#283618'} ><Text style={{ fontSize: 16, color: 'white',textAlign: 'center'}}>Track Order</Text></FlexButton></View>}
+     <Text style={{ fontSize: 13}}>{total} {`${total > 1 ? 'Items': 'Item'}`}</Text>
     
-     <ScrollView horizontal>{newList.map(({title, oldPrice,image, quantity}, idx)=><View key={title} style={{marginRight: 3}} ><Image style={styles.image}  source={image}/>{quantity > 1 && <View  style={{
+     <ScrollView horizontal>{order.map((item, idx)=><View key={idx} style={{marginRight: 3}} ><Image source={{uri: item.products[0].images[0]}} style={{width: 55, height: 55, borderRadius: 30}}/>{item.products.length > 1 && <View  style={{
                   height: '27%',
                   minWidth: '25%',
                   justifyContent: 'center',
@@ -173,9 +226,11 @@ function OrderDescription({address, date, id,order, price, status = 'Delivering'
                   borderWidth: 1,
                   fontSize: 14,
                   backgroundColor: 'white'
-                }}><Text style={{fontWeight: 900, fontSize: 10}} >{quantity}</Text></View>}</View>)}</ScrollView>
+                }}><Text style={{ fontSize: 10}} >{item.products.length}</Text></View>}
+                </View>)
+                }</ScrollView>
          <View style={{height : 1,width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', alignSelf: 'center'}}></View>
-         <View >{time && status == 'Delivering' && <View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{fontWeight: 900, fontSize: 14}} >{`Driver is `}</Text><Text style={{fontWeight: 900, fontSize: 19, color: '#4F6B30'}}>{time}</Text><Text style={{fontWeight: 900, fontSize: 14}}> away</Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton onPress={()=>press(order, id, price)}><Text style={{fontWeight: 900, fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
+         <View >{time && status == 'Out for Dellivery' && <View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{ fontSize: 14}} >{`Driver is `}</Text><Text style={{ fontSize: 19, color: '#4F6B30'}}>{getTimeLeft(date, time)}</Text><Text style={{ fontSize: 14}}></Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton onPress={()=>press(order, id, price)}><Text style={{ fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
         
      </View>
      
@@ -212,7 +267,7 @@ const styles = StyleSheet.create({
     maxWidth: width / 5,
     height: height / 10,
   },
-  text: { fontSize: 16, fontWeight: 900, lineHeight: 25, },
+  text: { fontSize: 16,  lineHeight: 25, },
   priceView: {
     position: "absolute",
     top: 15,
@@ -229,13 +284,11 @@ const styles = StyleSheet.create({
   },
   priceText: {
     color: "white",
-    fontWeight: "900",
     fontStyle: "italic",
     fontSize: 14,
   },
   crossPrice: {
     color: "#aaa",
-    fontWeight: "700",
     fontStyle: "italic",
     textDecorationLine: "line-through",
     fontSize: 14,

@@ -160,7 +160,7 @@ function AccountDisplay() {
             gap: 20,
           }}
         >
-          <Text style={{ fontWeight: "bold", fontSize: 20 }}>My Account</Text>
+          <Text style={{  fontSize: 20 }}>My Account</Text>
         </View>
           <View style={{ flex: 1 }}>
             <ScrollView style={{}}>

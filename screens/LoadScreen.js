@@ -2,7 +2,8 @@ import { Image, StyleSheet, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-
+import {fetchOrders, updateOrder} from "../Data/order"
+import {fetchProducts} from "../Data/Items"
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import { store } from "../Data/Store";
@@ -30,6 +31,12 @@ function LoadScreen() {
     storedToken = JSON.parse(storedToken)
     if (profile) {
       profile = JSON.parse(profile)
+        dispatch(fetchProducts());
+    
+          dispatch(fetchOrders());
+      
+      
+      
       dispatch(updateProfile({ id: {firstName: profile.firstName, lastName: profile.lastName,phoneNumber : profile.phoneNumber, email: profile.email, address: storedToken.address}}));
      setIsLoading(true)
      

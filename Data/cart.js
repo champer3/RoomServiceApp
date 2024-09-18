@@ -5,7 +5,6 @@ export const cart = createSlice({
     name : 'cart',
     initialState: {
         ids: [],
-        order : []
     },
     reducers: {
         addToCart : (state, action) => {
@@ -59,24 +58,14 @@ export const cart = createSlice({
                 state.ids.splice(indexToRemove, 1);
             }},
         clearCart : (state) => {state.ids.length = 0},
-        completeOrder: (state, action) => {state.order.push(action.payload.id)},
-        updateOrder: (state, action) => { const index = state.order.findIndex(item => item.id === action.payload.id.uid); // Find the object with the given id
-        if (index !== -1) {
-            const order = state.order[index] 
-            const act = action.payload.id.act
-            order[act] = action.payload.id.perform; // Add the delivery time to the found order object
-            console.log("Delivery time added successfully:", order);
-        } }
     }
 })
 
 export const addToCart = cart.actions.addToCart
 export const updateCart = cart.actions.updateCart
-export const updateOrder = cart.actions.updateOrder
 export const addItem = cart.actions.addItem
 export const removeFromCart = cart.actions.removeFromCart
 export const deleteFromCart = cart.actions.deleteFromCart
 export const addOptions = cart.actions.addOptions
 export const clearCart = cart.actions.clearCart
-export const completeOrder = cart.actions.completeOrder
 export default cart.reducer

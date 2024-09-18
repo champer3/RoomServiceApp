@@ -15,13 +15,14 @@ import { AntDesign } from '@expo/vector-icons';
 import { RotateInDownLeft } from "react-native-reanimated";
 import {useSelector, useDispatch} from 'react-redux'
 import { addReview } from "../Data/Items";
-import {clearCart, completeOrder} from '../Data/cart'
+import {clearCart} from '../Data/cart'
+import {completeOrder} from "../Data/order"
 import OrderDescription from "../components/OrderDescription";
 import Text from '../components/Text';
 
 const { width, height } = Dimensions.get("window");
 function OrderDisplay(){
-  const orders = useSelector((state) => state.cartItems.order)
+  const orders = useSelector((state) => state.orders.ids)
     const [index, setIndex] = useState(0);
     const [rating, setrating] = useState(0);
     const data = useSelector((state) => state.profileData.profile)

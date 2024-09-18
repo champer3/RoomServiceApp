@@ -15,7 +15,8 @@ import { AntDesign } from '@expo/vector-icons';
 import { RotateInDownLeft } from "react-native-reanimated";
 import {useSelector, useDispatch} from 'react-redux'
 import { addReview } from "../Data/Items";
-import {clearCart, completeOrder} from '../Data/cart'
+import {clearCart} from '../Data/cart'
+import {completeOrder, fetchOrders} from "../Data/order"
 import OrderDescription from "../components/OrderDescription";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -23,7 +24,13 @@ import Text from '../components/Text';
 
 const { width, height } = Dimensions.get("window");
 function OrderDisplay(){
-  const orders = useSelector((state) => state.cartItems.order)
+  
+  useEffect(() => {
+    dispatch(fetchOrders());
+  }, [dispatch]);
+  const orders = useSelector((state) => state.orders.ids)
+  console.log('order',orders)
+
   const navigation = useNavigation()
     const [index, setIndex] = useState(0);
     
@@ -155,13 +162,13 @@ function OrderDisplay(){
         
         <View style={[{width: 'auto',alignItems: 'center', padding: '3%'}, index == 0 ? styles.active : undefined]}>
             <Pressable onPressIn={() => handleSelect(0)}>
-            <Text style ={{fontWeight: 'bold', fontSize: 20, color : index == 0 ? 'black' : 'rgba(0,0,0,0.5)'}}>Active Orders</Text>
+            <Text style ={{ fontSize: 18, color : index == 0 ? 'black' : 'rgba(0,0,0,0.5)'}}>Active Orders</Text>
             </Pressable>
         </View>
         
         <View style={[{width: 'auto',alignItems: 'center', padding: '3%'}, index == 1 ? styles.active : undefined]}>
             <Pressable onPressIn={() => handleSelect(1)}>
-                <Text style ={{fontWeight: 'bold', fontSize: 20, color : index == 1 ? 'black' : 'rgba(0,0,0,0.5)'}}>Completed Orders</Text>
+                <Text style ={{ fontSize: 18, color : index == 1 ? 'black' : 'rgba(0,0,0,0.5)'}}>Completed Orders</Text>
             </Pressable>
         </View>
     </View>
@@ -178,8 +185,8 @@ function OrderDisplay(){
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
     </View>} */}
     <View style={styles.recommendedView}>
-    {index == 0 && undeliveredOrders.map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} /></View>)}
-    {index == 1 && deliveredOrders.map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} /></View>)}
+    {index == 0 && undeliveredOrders.reverse().map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} /></View>)}
+    {index == 1 && deliveredOrders.reverse().map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} /></View>)}
        
     </View>
     </View>
