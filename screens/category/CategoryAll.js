@@ -123,24 +123,51 @@ const { width, height } = Dimensions.get("window");
       const result = [];
   
       // Iterate through each item in the array
-      items.forEach(item => {
-          // Check if the title or related keywords contain the search phrase
-          if (item.title.toLowerCase().includes(searchPhrase.toLowerCase())) {
+      items.forEach((item) => {
+        // Check if the title or related keywords contain the search phrase
+        if (item.title.toLowerCase().includes(searchPhrase.toLowerCase())) {
+          // If found, push the title into the result array
+          result.push(item);
+        }
+         else if (item.related) {
+          // If the item has related keywords, check each related keyword
+          item.related.forEach((keyword) => {
+            if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
               // If found, push the title into the result array
               result.push(item);
-          } else if (item.related) {
-              // If the item has related keywords, check each related keyword
-              item.related.forEach(keyword => {
-                  if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
-                      // If found, push the title into the result array
-                      result.push(item);
-                  }
-              });
-          }
+            }
+          });
+        }
+         else if (item.subCategory) {
+          // If the item has related keywords, check each related keyword
+          item.subCategory.forEach((keyword) => {
+            if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+              // If found, push the title into the result array
+              result.push(item);
+            }
+          });
+        }
+         else if (item.nutrients) {
+          // If the item has related keywords, check each related keyword
+          item.nutrients.forEach((keyword) => {
+            if (keyword.name.toLowerCase().includes(searchPhrase.toLowerCase())) {
+              // If found, push the title into the result array
+              result.push(item);
+            }
+          });
+        } else if (item.components) {
+          // If the item has related keywords, check each related keyword
+          item.components.forEach((keyword) => {
+            if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+              // If found, push the title into the result array
+              result.push(item);
+            }
+          });
+        }
       });
   
       return result;
-  }
+    }
   const result = searchTitles(productItems, value);
     return (
       <SafeAreaProvider>
@@ -164,7 +191,7 @@ const { width, height } = Dimensions.get("window");
         <Text style={styles.text}>Recent</Text>
         <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
       </View> */}
-      {value && <ProductCategory items={result} onPress={handleAddToCart} />}
+      {value && <ProductCategory items={result} />}
       {!result.length && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>No results found</Text></View>}
           {/* <View style={styles.recentView}>
           <Text style={styles.text}>Recent</Text>

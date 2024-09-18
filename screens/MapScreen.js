@@ -30,7 +30,7 @@ import Text from '../components/Text';
 export default function MapScreen() {
     const [location, setLocation] = useState(null);
     const route = useRoute()
-    const orders = useSelector((state) => state.cartItems.order)
+    const orders = useSelector((state) => state.orders.ids)
     const navigation = useNavigation()
     const dispatch = useDispatch();
     const [results, setResults] = useState()

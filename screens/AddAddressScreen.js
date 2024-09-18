@@ -32,7 +32,7 @@ import { updateProfile } from "../Data/profile";
   
   export default function AddAddressScreen() {
       const [location, setLocation] = useState(null);
-      const orders = useSelector((state) => state.cartItems.order)
+      const orders = useSelector((state) => state.orders.ids)
     const [errorMsg, setErrorMsg] = useState(null);
     const dispatch = useDispatch();
     const [results, setResults] = useState()

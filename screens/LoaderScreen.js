@@ -6,6 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchOrders } from "../Data/order";
 
 const { width, height } = Dimensions.get("window");
 function LoaderScreen() {
@@ -19,7 +20,10 @@ function LoaderScreen() {
     storedToken = JSON.parse(storedToken)
     if (profile) {
       profile = JSON.parse(profile)
-      console.log(profile, storedToken)
+        dispatch(fetchOrders());
+    
+    
+    
       dispatch(updateProfile({ id: {firstName: profile.firstName, lastName: profile.lastName,phoneNumber : profile.phoneNumber, email: profile.email, address: storedToken.address}}));
       navigation.replace('HomeTabs')
     } else{navigation.replace('HomeTabs')} } catch (error) {

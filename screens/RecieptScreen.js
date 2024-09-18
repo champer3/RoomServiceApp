@@ -10,7 +10,8 @@ import { Fontisto } from '@expo/vector-icons';
 import AddressEditable from "../components/AddressEditable";
 import DeliveryMode from "../components/DeliveryMode";
 import {useSelector, useDispatch} from 'react-redux'
-import {clearCart, completeOrder} from '../Data/cart'
+import {clearCart} from '../Data/cart'
+import {completeOrder} from "../Data/order"
 import { useNavigation , useRoute} from "@react-navigation/native";
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
@@ -23,6 +24,32 @@ function RecieptScreen() {
     
     
     const [cartItems, setCartItems] = useState([...route.params.items])
+    const calculateTotalPrice = (formObject) => {
+        const productQuantity = formObject.products.length; // The quantity of the main product
+        let totalPrice = formObject.products[0].price * productQuantity; // Start with the base product price times the quantity
+      
+        // Calculate the total price of extra items
+        formObject.extra?.forEach((extraItem) => {
+          totalPrice += extraItem.price * productQuantity;
+        });
+      
+        // Calculate the total price of selected options
+        formObject.options.forEach((optionCategory) => {
+          if (optionCategory.required) {
+            // If the option category is required, multiply the price of each selected option by the product quantity
+            optionCategory.values.forEach((selectedOption) => {
+              totalPrice += selectedOption.price * productQuantity;
+          });
+          } else {
+            // If the option category is not required, just add the price of each selected option
+            optionCategory.values.forEach((selectedOption) => {
+                totalPrice += selectedOption.price;
+            });
+          }
+        });
+      
+        return totalPrice;
+      };
     function getTotalSum() {
         var totalPrice = 0;
     cartItems.forEach(obj => {
@@ -122,6 +149,13 @@ function RecieptScreen() {
   
         return filteredList;
     }
+    const calculateSubtotal = () => {
+        return cartItems?.reduce((total, item) => {
+          const productPrice = calculateTotalPrice(item)
+          return total + productPrice 
+        }, 0);
+      };
+      const taxesAndFees = 0.3 * calculateSubtotal();
     function getFormattedDate() {
         const today = new Date();
     
@@ -136,7 +170,7 @@ function RecieptScreen() {
         return formattedDate;
     }
     let show = false
-    if (route.params.total - getTotalSum() > 3){
+    if (route.params.total != calculateSubtotal() + taxesAndFees){
         show = true
 
     }
@@ -154,30 +188,36 @@ function RecieptScreen() {
     const todayFormatted = getFormattedDate();
     const newList = addQuantityToObjects(cartItems);
     console.log(order)
-    let cnst = order.map(({title,image, Sides, Flavour, extras, Picked, oldPrice}) => `
+    let cnst = cartItems.map(({ components, extra, instructions, options, products }, idx) =>`
     <tr>
     <td>
             <div style="display: flex; align-items: start; flex-direction: column;">
-            <img src=${image}>
-                <h2 style="font-size: 25px; font-weight: bolder; font-family: Georgia, 'Times New Roman', Times, serif; font-style: oblique;">${title}</h2>
-                ${Picked ? `<p>${Picked}</p>` : ''}
+            <img src="${products[0].images[0]}" alt="Product Image" style="width: 100px; height: auto; margin-bottom: 10px;">
+                    <h2 style="font-size: 25px; font-weight: bolder; font-family: Georgia, 'Times New Roman', Times, serif; font-style: oblique;">${products[0].title}</h2>
+                ${components ? `<p>${components}</p>` : ''}
+                ${`<p>Quantity: ${products.length}</p>`}
             </div>
         </td>
         <td style="padding-top: 20px;">
-            ${Sides ? `
-                <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
-                    <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Sides</p>
-                    ${Sides.map(side => `<p style="font-size: large; font-weight: 200; text-align: center; font-style: oblique;">${side}</p>`).join('')}
-                </div>
-            ` : ''}
-            ${Flavour ? `
-                <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
-                    <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Flavours</p>
-                    ${Flavour.map(flavour => `<p style="font-size: large; font-weight: 200; text-align: center; font-style: oblique;">${extras[flavour]}</p>`).join('')}
-                </div>
-            ` : ''}
+        ${extra.length ? `
+        <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
+            <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Extras</p>
+            ${extra.map(ex => `<p style="font-size: large; font-weight: 200; text-align: center; font-style: oblique;">${ex.name} - $${ex.price.toFixed(2)}</p>`).join('')}
+        </div>
+    ` : ''}
+    ${options[0]?.values?.length ? `
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
+        <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Options</p>
+        ${options.map(option => `
+            <div style="padding-left: 10px;">
+                <p style="font-size: large; font-weight: 200; text-align: left; font-style: oblique;">${option.name}</p>
+                ${option.values.map(val => `<p style="font-size: large; font-weight: 200; text-align: left; font-style: oblique;">${val.name} - $${val.price.toFixed(2)}</p>`).join('')}
+            </div>
+        `).join('')}
+    </div>
+` : ''}
         </td>
-                <td style="display: flex; align-items: center; justify-content: center;padding-top: 20px;"><p style="font-size: large; font-style: oblique;font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;">$${oldPrice}</p></div></td>
+                <td style="display: flex; align-items: center; justify-content: center;padding-top: 20px;"><p style="font-size: large; font-style: oblique;font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;">$${calculateTotalPrice(cartItems[idx]).toFixed(2)}</p></div></td>
               </tr>
                 <td></td>
     </tr>
@@ -186,7 +226,7 @@ function RecieptScreen() {
     if (show){
         content = `<tr>
         <td colspan="3" class="sum-up">Faster Delivery</td>
-        <td class="price">$2.00</td>
+        <td class="price">$5.00</td>
     </tr>`
     }
     const html = `
@@ -350,16 +390,16 @@ function RecieptScreen() {
         <tbody>
 ${cnst}
                 <td colspan="3" class="sum-up line">Subtotal</td>
-                <td class="line price">$${getTotalSum().toFixed(2)}</td>
+                <td class="line price">$${calculateSubtotal().toFixed(2)}</td>
             </tr>
             <tr>
-                <td colspan="3" class="sum-up">Shipping</td>
-                <td class="price">$2.62</td>
+                <td colspan="3" class="sum-up">Taxes & Fees</td>
+                <td class="price">$${taxesAndFees.toFixed(2)}</td>
             </tr>
             ${content}
             <tr>
                 <th colspan="3" class="total text">Total</th>
-                <th class="total price">$${route.params.total}</th>
+                <th class="total price">${route.params.total}</th>
             </tr>
         </tbody>
     </table>
@@ -400,48 +440,46 @@ const selectPrinter = async () => {
     <View style ={{flex: 1}}>
         {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
         {cartItems.length > 0 && <><View style={{flex: 0.5}}>
-        <ScrollView>
-        <View style={styles.recommendedView}>
+        </View>
+        <View>
+            <ScrollView style= {{marginBottom: '25%'}}>
+            <View style={styles.recommendedView}>
             <View style={{gap: 20}}>
-            {newList.map(({title, image, quantity, oldPrice}, idx)=><ProductAction key={idx} price={oldPrice} title={title} image={image}><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
+            {cartItems.map((item, idx)=><ProductAction key={idx}component={item.components} instruction={item.instructions} title={item.products[0].title} options={item.options} side={item.extra} image={item.products[0].images[0]}  price={calculateTotalPrice(item)}><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
                     <Text style ={{fontWeight: 'bold', fontSize: 18}}
-                    >{quantity}</Text>
+                    >{item.products.length}</Text>
                 </View></ProductAction>)}
             </View>
         </View>
         
-        </ScrollView>
-        </View>
-        <View style={{flex: 0.75}}>
-            <ScrollView style= {{marginBottom: '25%'}}>
         <View style={[styles.recommendedView,{marginVertical: '10%', marginTop: '5%', marginHorizontal: '5%', paddingBottom: '2%',borderWidth: 2, borderColor: 'rgba(0,0,0,0.05)', borderRadius: 20,justifyContent: 'space-between'}]}>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            <Text style={styles.text}>Items Amount</Text>
-            <Text style={[styles.text, {color : 'black'}]}>{`$${getTotalSum().toFixed(2)}`}</Text>
+            <Text style={[styles.text, {fontSize: 13}]}>Items Amount</Text>
+            <Text style={[styles.text, {color : 'black'}]}>{`$${calculateSubtotal().toFixed(2)}`}</Text>
             </View>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            <Text style={styles.text}>Shipping</Text>
+            <Text style={[styles.text, {fontSize: 13}]}>Shipping</Text>
             <Text style={[styles.text, {color : 'black'}]}>$2.62</Text>
             </View>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            {show && <><Text style={styles.text}>Faster Delivery</Text>
+            {show && <><Text style={[styles.text, {fontSize: 13}]}>Faster Delivery</Text>
             <Text style={[styles.text, {color : 'black'}]}>$2.00</Text></>}
             </View>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)', paddingTop: 20, paddingBottom: 30 }}>
-            <Text style={styles.text}>Total Paid</Text>
+            <Text style={[styles.text, {fontSize: 13}]}>Total Paid</Text>
             <Text style={[styles.text, {color : 'black'}]}>{route.params.total}</Text>
             </View>
         </View>
         <View style={[styles.recommendedView,{marginVertical: '10%', marginTop: '5%', marginHorizontal: '5%', paddingBottom: '2%',borderWidth: 2, borderColor: 'rgba(0,0,0,0.05)', borderRadius: 20,justifyContent: 'space-between'}]}>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
             </View>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            <Text style={styles.text}>Order Id</Text>
-            <Text style={[styles.text, {color : 'black'}]}>{route.params.id}</Text>
+            <View style={{flexDirection: 'row',alignItems: 'center', justifyContent: 'space-between', flex: 1}}>
+            <Text style={[styles.text, {fontSize: 13}]}>Order Id</Text>
+            <Text style={[styles.text, {color : 'black', fontSize: 13}]}>{route.params.id}</Text>
             </View>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            <Text style={styles.text}>Date</Text>
-            <Text style={[styles.text, {color : 'black'}]}>{todayFormatted}</Text>
+            <Text style={[styles.text, {fontSize: 13}]}>Date</Text>
+            <Text style={[styles.text, {color : 'black', fontSize: 13}]}>{todayFormatted}</Text>
             </View>
         </View>
         </ScrollView>

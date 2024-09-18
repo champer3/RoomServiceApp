@@ -25,11 +25,10 @@ import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
-function EmailSignUp({route}) {
+function EmailSignUp() {
   function handleScreenPress() {
     Keyboard.dismiss();
   }
-  const {promptAsync} = route.params
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
   
@@ -245,7 +244,7 @@ function EmailSignUp({route}) {
               </BareButton>
             </View>
             <View style={[styles.buttonContainer]}>
-              <BareButton onPress={()=>promptAsync()} borderRadius={24} color="#EEEEEE">
+              <BareButton  borderRadius={24} color="#EEEEEE">
                 <Image
                   style={styles.facebook}
                   source={require("../assets/google.png")}

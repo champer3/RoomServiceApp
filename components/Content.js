@@ -1,5 +1,6 @@
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
+import Text from "./Text";
 import { Pressable } from "react-native";
 
 function Content({icon,  title, info, onPress }) {
@@ -14,13 +15,12 @@ function Content({icon,  title, info, onPress }) {
         {icon}
         </View>}
       <View style={styles.textContainer}>
-        <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 5 }}>
+        <Text style={{ fontSize: 15, marginBottom: 5 }}>
           {title}
         </Text>
         <Text
           style={{
-            fontWeight: "400",
-            fontSize: 13,
+            fontSize: 12,
             color: "grey",
             marginTop: 5,
           }}

@@ -232,9 +232,36 @@ function Category() {
       if (item.title.toLowerCase().includes(searchPhrase.toLowerCase())) {
         // If found, push the title into the result array
         result.push(item);
-      } else if (item.related) {
+      }
+       else if (item.related) {
         // If the item has related keywords, check each related keyword
         item.related.forEach((keyword) => {
+          if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+            // If found, push the title into the result array
+            result.push(item);
+          }
+        });
+      }
+       else if (item.subCategory) {
+        // If the item has related keywords, check each related keyword
+        item.subCategory.forEach((keyword) => {
+          if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+            // If found, push the title into the result array
+            result.push(item);
+          }
+        });
+      }
+       else if (item.nutrients) {
+        // If the item has related keywords, check each related keyword
+        item.nutrients.forEach((keyword) => {
+          if (keyword.name.toLowerCase().includes(searchPhrase.toLowerCase())) {
+            // If found, push the title into the result array
+            result.push(item);
+          }
+        });
+      } else if (item.components) {
+        // If the item has related keywords, check each related keyword
+        item.components.forEach((keyword) => {
           if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
             // If found, push the title into the result array
             result.push(item);
@@ -303,7 +330,7 @@ function Category() {
         <RecentList items={["water", "Gatorade", "bottle", "chips", "ice cream", "milk", "candy", "cookies", "food", "salmon"]} />
       </View> */}
           {value && (
-            <ProductCategory  onTouch={()=>ref2?.current?.scrollTo(0)} items={result} onPress={handleAddToCart} />
+            <ProductCategory  onTouch={()=>ref2?.current?.scrollTo(0)} items={result} />
           )}
           {!result.length && (
             <View style={{ gap: 19, marginBottom: 45 }}>

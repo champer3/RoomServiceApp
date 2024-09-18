@@ -5,7 +5,7 @@ import Product from "../Product/Product"
 
 const { width, height } = Dimensions.get("window");
 
-function ProductHorizontal({ items,categoryName, onPress }) {
+function ProductHorizontal({ items,categoryName}) {
   // Split the items into rows with 5 items each
   const rows = [];
   for (let i = 0; i < items?.length; i += 5) {
@@ -32,7 +32,7 @@ function ProductHorizontal({ items,categoryName, onPress }) {
         <ScrollView key={rowIndex} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listContainer} horizontal={true}>
         <View key={rowIndex} style={styles.rowContainer}>
           {row.map((product, index) => (
-            <Product key={product.id} product={product} onAdd={onPress} />
+            <Product key={product.id} product={product} />
           ))}
         </View>
         </ScrollView>

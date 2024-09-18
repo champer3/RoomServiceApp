@@ -19,7 +19,8 @@ import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from "../components/Modals/BottomSheet";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart, addOptions, updateOrder } from "../Data/cart";
+import { addToCart, removeFromCart, addOptions,  } from "../Data/cart";
+
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const { height } = Dimensions.get("window");

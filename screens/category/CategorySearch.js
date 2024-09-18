@@ -166,7 +166,7 @@ function toggleNumberInArray2(number) {
 // Function to filter items based on the provided filtering options
 function filterItems(filteringOptions) {
   if (filteringOptions.length === 0) {
-    return productItems.filter(item => item.category === name.toLowerCase()); // Return only food items if filteringOptions is empty
+    return productItems.filter(item => item.category === name || item.subCategory === name); // Return only food items if filteringOptions is empty
   }
   return productItems.filter(item => {
     // Check if the item's related array includes any of the filtering options
@@ -188,16 +188,46 @@ const [value, setValue] = useState("");
 const [filteredItems, setFilteredItems] = useState(filterItems(restrictions));
 function searchTitles(items, searchPhrase) {
   const result = [];
-
+  if (searchPhrase.length < 1){
+    return items
+  }
   // Iterate through each item in the array
   items.forEach((item) => {
     // Check if the title or related keywords contain the search phrase
     if (item.title.toLowerCase().includes(searchPhrase.toLowerCase())) {
       // If found, push the title into the result array
       result.push(item);
-    } else if (item.related) {
+    }
+     else if (item.related) {
       // If the item has related keywords, check each related keyword
       item.related.forEach((keyword) => {
+        if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+          // If found, push the title into the result array
+          result.push(item);
+        }
+      });
+    }
+     else if (item.subCategory) {
+      // If the item has related keywords, check each related keyword
+      item.subCategory.forEach((keyword) => {
+        if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
+          // If found, push the title into the result array
+          result.push(item);
+        }
+      });
+    }
+     else if (item.nutrients) {
+      // If the item has related keywords, check each related keyword
+      item.nutrients.forEach((keyword) => {
+        if (keyword.name.toLowerCase().includes(searchPhrase.toLowerCase())) {
+          // If found, push the title into the result array
+          result.push(item);
+        }
+      });
+    }
+     else if (item.components) {
+      // If the item has related keywords, check each related keyword
+      item.components.forEach((keyword) => {
         if (keyword.toLowerCase().includes(searchPhrase.toLowerCase())) {
           // If found, push the title into the result array
           result.push(item);
@@ -236,7 +266,7 @@ const result = searchTitles(filteredItems, value);
           />
         </View> */}
         <View style={styles.topList}>
-          <Text style={{ fontWeight: "700", fontSize: 20 }}>{`All ${name}`}</Text>
+          <Text style={{  fontSize: 20 }}>{`All ${name}`}</Text>
           <Pressable onPress={()=> {ref?.current?.scrollTo(-570); ref2?.current?.scrollTo(0)}}>
             <Text style={{ color: "#BC6C25" }}>
               <Ionicons name="filter" size={16} color="#BC6C25" /> Filter By (
@@ -245,8 +275,8 @@ const result = searchTitles(filteredItems, value);
             </Text>
           </Pressable>
         </View>
-        {categoryObject[name.toLowerCase()] && <ProductCategory onTouch={()=>{ref?.current?.scrollTo(0);ref2?.current?.scrollTo(0)}} items={result} onPress={handleAddToCart} />}
-        {!categoryObject[name.toLowerCase()] && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>We don’t have this item yet 😥😥.</Text></View>}
+        {categoryObject[name] && <ProductCategory onTouch={()=>{ref?.current?.scrollTo(0);ref2?.current?.scrollTo(0)}} items={result} onPress={handleAddToCart} />}
+        {!categoryObject[name] && <View  style={{gap: 19, marginBottom: 45}}><View><Image style={styles.image} source={require('../../assets/empty.png')}/></View><Text style={{textAlign: 'center'}}>We don’t have this item yet 😥😥.</Text></View>}
         {/* {visible && <View style ={{
     justifyContent: 'flex-end',
     marginHorizontal: 10,

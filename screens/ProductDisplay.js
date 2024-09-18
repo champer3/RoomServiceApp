@@ -17,12 +17,14 @@ import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
+import Svg, {Path} from 'react-native-svg';
 import { addToCart, removeFromCart, deleteFromCart } from "../Data/cart";
 import IncrementDecrementBton from "../components/Buttons/IncrementDecrementBtn copy";
 import { LinearGradient } from "expo-linear-gradient";
 const {width:screenWidth, height} = Dimensions.get('window');
 function ProductDisplay() {
   const route = useRoute();
+  
   const {product, productData} = route.params
   const [formObject, setFormObject] = useState({...productData})
   const dummyData = {
@@ -133,72 +135,14 @@ function ProductDisplay() {
   });
 const [notes, setNotes] = useState('');
 const [price, setPrice] = useState(product.price);
-  const ingredients = [
-    {
-      id: 1,
-      name: 'Mushroom',
-      quantity: '50g',
-      unit: 'g',
-      price: 0.40,
-      selected: false,  // Can be used to track if the ingredient is selected
-      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],  // Add image URL if needed
-    },
-    {
-      id: 2,
-      name: 'Mayonnaise',
-      quantity: '1/4 cup',
-      unit: 'cup',
-      price: 0.20,
-      selected: false,
-      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
-    },
-    {
-      id: 3,
-      name: 'Peeled boiled egg',
-      quantity: '1 piece',
-      unit: 'piece',
-      price: 0.50,
-      selected: false,
-      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
-    },
-    {
-      id: 4,
-      name: 'Lemon juice',
-      quantity: '1 tbsp',
-      unit: 'tbsp',
-      price: 0.10,
-      selected: false,
-      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
-    },
-    {
-      id: 5,
-      name: 'Cheddar Cheese',
-      quantity: '20g',
-      unit: 'g',
-      price: 0.75,
-      selected: false,
-      images: ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
-    },
-    {
-      id: 6,
-      name: 'Tomato Sauce',
-      quantity: '2 tbsp',
-      unit: 'tbsp',
-      price: 0.30,
-      selected: false,
-      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
-    },
-    {
-      id: 7,
-      name: 'Bacon Bits',
-      quantity: '30g',
-      unit: 'g',
-      price: 1.00,
-      selected: false,
-      images:  ["https://res.cloudinary.com/dvxcif0nt/image/upload/v1725305973/opx1ndmu1ux9e3drpl38.jpg"],
-    }
-  ];
-  console.log(formObject)
+  const ingredients = productItems.filter(product => 
+    product?.subcategory?.some(sub => /side/i.test(sub)) || /side/i.test(product?.category)
+  ).map(product => ({
+    name: product.title,   // Extract title as name
+    images: product.images,  // Extract images
+    price: product.price    // Extract price
+  }));
+
   useEffect(() => {
     const timer = setTimeout(() => setRefresh(false), 1000);
   }, [refresh]);
@@ -470,7 +414,6 @@ const [price, setPrice] = useState(product.price);
       </View>
     );
   };
-  console.log(product)
   const canAddToCart = () => {
     // Check if there are at least 2 items in the extra array
     if (formObject.extra?.length < 2) {
@@ -500,20 +443,13 @@ return false
       <View style={styles.carouselContainer}>
         {renderImageCarousel()}
       </View>
-        <View style={styles.detailsContainer}>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>African</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>Sides</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>Seafood</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>Top Category</Text>
-            </View>
-          </View>
+      <View style={styles.detailsContainer}>
+  {product?.subcategory?.map((item, index) => (
+    <View key={index} style={styles.pill}>
+      <Text style={styles.pillText}>{item}</Text>
+    </View>
+  ))}
+</View>
       {/* Product Title and Quantity Selector */}
       <View style={{  borderTopRightRadius: 25,
   borderTopLeftRadius: 25,
@@ -566,32 +502,27 @@ return false
     </View>
     <View style={styles.separator} />
     <View 
-      horizontal 
-      showsHorizontalScrollIndicator={false} 
-      style={{
-        paddingHorizontal: 10,
-        width: screenWidth,
-        flexDirection: 'row',
-        justifyContent: 'space-around'
-      }}
-    >
+  horizontal 
+  showsHorizontalScrollIndicator={false} 
+  style={{
+    paddingHorizontal: 10,
+    width: screenWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  }}
+>
+  {product.nutrients?.map((nutrient, index) => (
+    <React.Fragment key={index}>
       <View style={styles.nutritionItem}>
-        <Text style={styles.label}>Calories</Text>
-        <Text style={styles.value}>220 kcal</Text>
+        <Text style={styles.label}>{nutrient.name}</Text>
+        <Text style={styles.value}>{`${nutrient.value} ${nutrient.unit}`}</Text>
       </View>
-      <View style={{  borderRightWidth: 1,
-    borderRightColor: 'rgba(0,0,0,0.2)'}} />
-      <View style={styles.nutritionItem}>
-        <Text style={styles.label}>Total Fat</Text>
-        <Text style={styles.value}>12g</Text>
-      </View>
-      <View style={{  borderRightWidth: 1,
-    borderRightColor: 'rgba(0,0,0,0.2)'}} />
-      <View style={styles.nutritionItem}>
-        <Text style={styles.label}>Cholesterol</Text>
-        <Text style={styles.value}>25mg</Text>
-      </View>
-    </View>
+      {index < product.nutrients.length - 1 && (
+        <View style={{ borderRightWidth: 1, borderRightColor: 'rgba(0,0,0,0.2)' }} />
+      )}
+    </React.Fragment>
+  ))}
+</View>
     <View style={styles.separator} />
       {/* Extra Options */}
       {/* Ingredients List */}
@@ -620,7 +551,7 @@ return false
       ))}</>} */}
       {/* Render each category and its options */}
       <FlatList
-        data={dummyData.options}
+        data={product.options}
         renderItem={({item})=>renderOptions({items: item})}
         keyExtractor={(category) => category.name}
         scrollEnabled={false} 
@@ -664,6 +595,10 @@ return false
     </TouchableOpacity>
       </View>
       </View>
+      <View style={{marginTop: 45, padding: 10, flexDirection: 'row', alignItems: 'center', position: 'absolute'}}>
+        <TouchableOpacity onPress={navigation.goBack}><Svg width={43} height={43} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><Path class="fa-secondary" fill={'#F0F0F0'} opacity=".8" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zm112 0c0-6.1 2.3-12.3 7-17L231 127c4.7-4.7 10.8-7 17-7s12.3 2.3 17 7c9.4 9.4 9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9c-4.7 4.7-10.8 7-17 7s-12.3-2.3-17-7L119 273c-4.7-4.7-7-10.8-7-17z"/><Path fill={'black'} class="fa-primary" d="M119 273c-9.4-9.4-9.4-24.6 0-33.9L231 127c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L119 273z"/></Svg>
+        </TouchableOpacity>
+     </View>
     </>
   );
 };
