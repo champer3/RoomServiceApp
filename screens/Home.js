@@ -164,7 +164,7 @@ function Home() {
   useEffect(() =>{
     if(socket){
       socket.on('orderInDelivery', (data) => {})
-      socket.on('Devlivered', (data) => {})
+      socket.on('delivered', (data) => {})
     //   socket.on('Delivered', (data) => {
     //     console.log("here6556477")
     //     const deliveringOrders = orders.filter(order => order.status === "Delivering");
