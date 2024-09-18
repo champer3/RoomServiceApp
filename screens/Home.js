@@ -101,18 +101,27 @@ const FadeInView = (props) => {
 
 function Home() {
   
-  const [socket, setSocket] = useState(socket);
-  const address = useSelector((state) => state.profileData.profile).address[0]
+  const [socket, setSocket] = useState(null);
+  const address = useSelector((state) => state.profileData.profile)?.address[0]
 
   useEffect(() => {
     const setupSocket = async () => {
-      const token = await retrieveTokenFromAsyncStorage();
-      console.log('Token:', token);
-
-      await initializeSocket(token);
-    }
-    setupSocket();
-
+      try {
+        const token = await retrieveTokenFromAsyncStorage();
+        console.log('Token:', token);
+  
+        // Ensure the socket is initialized before trying to get it
+        await initializeSocket(token); // Wait for the socket to be initialized
+  
+        const socketInstance = getSocket(); // Get the socket after it's initialized
+        setSocket(socketInstance); // Set the socket
+      } catch (error) {
+        console.error('Error setting up socket:', error);
+      }
+    };
+  
+    setupSocket(); // Call the async setup function
+  
     return () => {
       disconnectSocket(); // Clean up the socket on component unmount
     };
@@ -163,8 +172,8 @@ function Home() {
 
   useEffect(() =>{
     if(socket){
-      socket.on('orderInDelivery', (data) => {})
-      socket.on('delivered', (data) => {})
+      socket.on('orderInDelivery', (data) => {console.log('socket', data)})
+      socket.on('delivered', (data) => {console.log('socket', data)})
     //   socket.on('Delivered', (data) => {
     //     console.log("here6556477")
     //     const deliveringOrders = orders.filter(order => order.status === "Delivering");
@@ -191,39 +200,38 @@ function Home() {
 
     //   });
 
-    //   return () => {
-    //     socket.off('delivered'); // Remove 'message' event listener
-    //     // Remove other event listeners as needed
-    //   };
-      socket.on('Out for Delivery', (data) => {
-        const deliveringOrders = orders.filter(order => order.status === "Ready for Delivery");
-
-    if (deliveringOrders.length === 0) {
-        return null; // Return null if there are no delivering orders
-    }
-
-    let earliestOrder = deliveringOrders[0];
-    let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
-
-    deliveringOrders.forEach(order => {
-        const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
-        if (timestamp < earliestTimestamp) {
-            earliestOrder = order;
-            earliestTimestamp = timestamp;
-        }
-    });
-    console.log("orders",deliveringOrders)
-    console.log("order",orders)
-      date = getTodaysDate()
-          dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
-          dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
-
-      });
-
       return () => {
-        socket.off('delivered'); // Remove 'message' event listener
-        // Remove other event listeners as needed
+        socket.off('delivered');
+        socket.off('orderInDelivery');
+         // Remove 'message' event listener
+    //     // Remove other event listeners as needed
       };
+    //   socket.on('Out for Delivery', (data) => {
+    //     const deliveringOrders = orders.filter(order => order.status === "Ready for Delivery");
+
+    // if (deliveringOrders.length === 0) {
+    //     return null; // Return null if there are no delivering orders
+    // }
+
+    // let earliestOrder = deliveringOrders[0];
+    // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+
+    // deliveringOrders.forEach(order => {
+    //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+    //     if (timestamp < earliestTimestamp) {
+    //         earliestOrder = order;
+    //         earliestTimestamp = timestamp;
+    //     }
+    // });
+    // console.log("orders",deliveringOrders)
+    // console.log("order",orders)
+    //   date = getTodaysDate()
+    //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+    //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+
+    //   });
+
+     
     }
 
   })
@@ -594,7 +602,7 @@ function Home() {
                   }}
                   
                 >
-                  {address.address}
+                  {address?.address}
                 </Text>}
                 </View>
                 

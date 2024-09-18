@@ -7,8 +7,10 @@ import { updateProfile } from "../Data/profile";
 import { StyleSheet, View, Alert, ScrollView, Image, Dimensions, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
 
 function Settings() {
+  const navigation = useNavigation()
     const data = useSelector((state) => state.profileData.profile);
     console.log(data)
     const handleNo = () => {

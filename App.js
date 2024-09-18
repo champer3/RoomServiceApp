@@ -64,15 +64,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import io from 'socket.io-client';
 import * as Font from 'expo-font';
 import AppLoading from 'expo-app-loading';
-import {fetchProducts} from "./Data/Items"
 import FalseHomeScreen from "./screens/FalseHomeScreen";
-import * as Google from "expo-auth-session/providers/google";
-import * as WebBrowser from "expo-web-browser";
-import {GoogleAuthProvider, onAuthStateChanged, signInWithCredential} from 'firebase/auth'
-import { auth } from "./firebaseConfig";
 import CartShow from "./screens/CartShow";
-import { UseDispatch } from "react-redux";
-WebBrowser.maybeCompleteAuthSession();
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -371,9 +364,7 @@ function HomeTabs() {
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [userInfo, setUserInfo] = useState()
-  const [request, response, promptAsync] = Google.useAuthRequest({iosClientId: '867770443500-4d7duu63ncch51i43vsas1itfr94q4pm.apps.googleusercontent.com', androidClientId: '867770443500-rfes4l80dc3buvcpqk5fet59tf3tdupu.apps.googleusercontent.com'})
-  useEffect(() => {
+useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 5000); // 5 seconds
@@ -393,11 +384,6 @@ export default function App() {
       // Add other Poppins font styles if needed
     });
   };
-  useEffect(()=>{if (response?.type== 'success'){
-    const {id_token} = response.params;
-    const credential = GoogleAuthProvider.credential(id_token)
-    signInWithCredential(auth, credential)
-  }}, [response])
   // if (!fontsLoaded) {
   //   return <AppLoadin
 
