@@ -216,22 +216,21 @@ function HomeTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarInactiveTintColor: "#ddd",
-        tabBarActiveTintColor: "#EFF5E9",
-        tabBarShowLabel: false,
+        tabBarInactiveTintColor: "black",
+        tabBarActiveTintColor: "green",
+        // tabBarActiveTintColor: "#283618",
+        // tabBarInactiveTintColor: "#ddd",
+        // tabBarActiveTintColor: "#EFF5E9",
+        // tabBarShowLabel: false,
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: 'bold',
+        },
         tabBarStyle: {
           position: 'absolute',
-          right: 1,
-          left: 1,
           bottom: 0,
-          height: 60,
-          backgroundColor: '#4F6B30',
-          borderTopRightRadius: 25,
-          borderTopLeftRadius: 25,
-          borderTopWidth: 2,
-          borderLeftWidth: 1,
-          borderRightWidth: 1,
-          borderColor: '#F0F0F0',
+          height: 80,
+          backgroundColor: 'white',
           shadowColor: 'black',
           shadowOffset: {
             width: 0,
@@ -249,6 +248,7 @@ function HomeTabs() {
         component={Home2}
         options={{
           headerShown: false,
+          tabBarLabel: 'Home',
           tabBarIcon: ({ color, size, focused }) => (<>
          { !focused && <Svg width={size} height={size} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><Path fill={color} d="M293.3 2c-3-2.7-7.6-2.7-10.6 0L2.7 250c-3.3 2.9-3.6 8-.7 11.3s8 3.6 11.3 .7L64 217.1 64 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-230.9L562.7 262c3.3 2.9 8.4 2.6 11.3-.7s2.6-8.4-.7-11.3L293.3 2zM80 448l0-245.1L288 18.7 496 202.9 496 448c0 26.5-21.5 48-48 48l-320 0c-26.5 0-48-21.5-48-48zM240 184c-13.3 0-24 10.7-24 24l0 96c0 13.3 10.7 24 24 24l96 0c13.3 0 24-10.7 24-24l0-96c0-13.3-10.7-24-24-24l-96 0zm-8 24c0-4.4 3.6-8 8-8l96 0c4.4 0 8 3.6 8 8l0 96c0 4.4-3.6 8-8 8l-96 0c-4.4 0-8-3.6-8-8l0-96z"/></Svg>}
           {focused && <Svg width={size} height={size} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><Path class="fa-secondary" opacity=".4" fill={color} d="M64 270.5L64.1 448c0 35.3 28.7 64 64 64l320.4 0c35.4 0 64-28.7 64-64c-.1-59.2-.3-118.3-.4-177.4L288 74.5 64 270.5zM224 264c0-13.3 10.7-24 24-24l80 0c13.3 0 24 10.7 24 24l0 80c0 13.3-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24l0-80z"/><Path class="fa-primary" fill={color} d="M266.9 7.9C279-2.6 297-2.6 309.1 7.9l256 224c13.3 11.6 14.6 31.9 3 45.2s-31.9 14.6-45.2 3L288 74.5 53.1 280.1c-13.3 11.6-33.5 10.3-45.2-3s-10.3-33.5 3-45.2l256-224z"/></Svg>}
@@ -274,6 +274,7 @@ function HomeTabs() {
         component={CartShow}
         options={{
           headerShown: false,
+          tabBarLabel: '',
           tabBarIcon: ({ color, size, focused }) => (
             <>
   <View>
@@ -282,7 +283,8 @@ function HomeTabs() {
             width: 0,
             height: 1,
           },
-          backgroundColor: 'black',
+          backgroundColor: 'white',
+          // backgroundColor: '#4F6B30',
           borderRadius: 50
 ,          shadowOpacity: 0.25,
           padding: 13,
@@ -380,7 +382,9 @@ useEffect(() => {
   const loadFonts = () => {
     return Font.loadAsync({
       'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
-      // 'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
+      'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
+      'Poppins-SemiBold': require('./assets/fonts/Poppins-SemiBold.ttf'),
+      'Poppins-Medium': require('./assets/fonts/Poppins-Medium.ttf'),
       // Add other Poppins font styles if needed
     });
   };

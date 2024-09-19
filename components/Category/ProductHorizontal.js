@@ -13,14 +13,15 @@ function ProductHorizontal({ items,categoryName}) {
   }
 
   return (
-    <View style={{marginBottom: 15, borderRadius: 15, overflow: 'hidden', backgroundColor: '#F0F0F0', 
+    <View style={{marginBottom: 15, overflow: 'hidden', backgroundColor: '#F0F0F0', 
  }}>
-    <Text style={{ paddingLeft: '3%',      fontSize: 22,
+    <Text style={{ paddingLeft: '3%',      fontSize: 28,
           color: '#BC6C25',
           // borderLeftWidth: 5,
           textDecorationLine: 'underline',
           textDecorationStyle: "solid",
           textDecorationColor: "#BC6C25",
+          fontFamily: 'Poppins-Bold',
           // borderLeftColor: '#BC6C25', // Distinct accent color
           paddingVertical: 5,
           // backgroundColor: '#BC6C25', // Light background to make it stand out
