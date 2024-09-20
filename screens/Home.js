@@ -105,7 +105,8 @@ function Home() {
   const [socket, setSocket] = useState(null);
   const address = useSelector((state) => state.profileData.profile)?.address[0]
   const expoPushToken = useSelector((state) => state.notifications.expoPushToken);
-
+  const [message, setMessage] = useState('')
+  const [orderId, setOrderId] = useState('')
   const handleSendNotification = (title, message) => {
     if (expoPushToken) {
       dispatch(triggerNotification(expoPushToken, title, message));
@@ -178,20 +179,24 @@ function Home() {
 
   // connectSocket()
   // },[])
+  useEffect(()=>{if(message)handleSendNotification("Order Update", message);
+}, [orderId])
 
   useEffect(() =>{
     const date = new Date()
     if(socket){
       socket.on('orderInDelivery', (data) => {
-        let message = data.message
+        setMessage(data.message)
+        setOrderId(data.orderId)
         dispatch(updateOrder({ id: {uid : data.orderId, act: 'status', perform: 'Out for Delivery'}}));
-        handleSendNotification("Out for Delivery", message)
+        console.log(data)
       })
       socket.on('delivered', (data) => {
-        let message = data.message
+        setMessage(data.message)
+        setOrderId(data.orderId)
         dispatch(updateOrder({ id: {uid : data.orderId, act: 'status', perform: 'Delivered'} })); 
         dispatch(updateOrder({ id: {uid : data.orderId, act: 'date', perform: date.toString()} })); 
-        handleSendNotification("Delivered", message)
+        console.log(data)
         setDeliveringOrdersCount(prev=> prev-1)
       })
     //   socket.on('Delivered', (data) => {
