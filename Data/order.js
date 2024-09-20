@@ -101,7 +101,7 @@ const order = createSlice({
       if (index !== -1) {
         const order = state.ids[index];
         const act = action.payload.id.act;
-        order[act] = action.payload.id.perform; // Add the delivery time to the found order object
+        order[act] = action.payload.id.perform; 
         console.log("Delivery time added successfully:", order);
       }
     }
