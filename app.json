@@ -63,8 +63,7 @@
             "deploymentTarget": "14.0"
           }
         }
-      ],
-      "expo-font"
+      ]
     ],
     "platforms": [
       "ios",
