@@ -401,7 +401,8 @@ useEffect(() => {
   //   return <AppLoadin
   return (
     <Provider store={store}>
-      <StripeProvider publishableKey={"pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"}>
+      <StripeProvider publishableKey={"pk_live_51P6dMbP6ljIK4vM9ugD9DeeBJpItDsJ3kDMthFVXeEeKsUxIsIvvdLpoGMx1gVdA48uTZUXsBb9FLr8qPYfVSB0A00HPdPx6mC"}>
+      {/* <StripeProvider publishableKey={"pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"}> */}
         <NavigationContainer>
           <StatusBar style="light" />
           <Stack.Navigator>

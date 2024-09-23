@@ -263,6 +263,7 @@ const constructOrderDetails = (formObject) => {
   };
   const id = generateRandomId(8);
   const checkOut = async () => {
+    console.log(total.toFixed(2))
     try {
       // Retrieve token from async storage
       const token = await retrieveTokenFromAsyncStorage();
@@ -271,7 +272,7 @@ const constructOrderDetails = (formObject) => {
       const response = await axios.post(
         "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/checkout-session",
         {
-          amount: total, // Ensure total is correctly calculated
+          amount: total.toFixed(2), // Ensure total is correctly calculated
         },
         {
           headers: {
@@ -297,6 +298,7 @@ const constructOrderDetails = (formObject) => {
   
       // Handle any errors from the payment sheet
       if (error) {
+        console.log(error)
         // Stop loading and return, because an error occurred
         setIsLoading(false);
         return;
@@ -649,8 +651,7 @@ function handleProductClick(item, index){
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    
-    // backgroundColor: '#F8F8F8',
+    paddingVertical: "",
   },
   headerSection: {
     flexDirection: 'row',
