@@ -4,11 +4,12 @@ import { useRef } from 'react';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: false,
+    shouldPlaySound: true,
     shouldSetBadge: false,
   }),
 });
@@ -86,7 +87,7 @@ export async function registerForPushNotificationsAsync() {
 
 const initialState = {
     expoPushToken: '',
-    notification: null,
+    notification: [],
   };
   
   const notificationsSlice = createSlice({
@@ -96,13 +97,16 @@ const initialState = {
       setExpoPushToken(state, action) {
         state.expoPushToken = action.payload;
       },
+      addNotification(state, action) {
+        state.notification.push(action.payload);
+      },
       setNotification(state, action) {
         state.notification = action.payload;
       },
     },
   });
-  
-  export const { setExpoPushToken, setNotification } = notificationsSlice.actions;
+  export const { setExpoPushToken, addNotification, setNotification } = notificationsSlice.actions;
+
   
   // Thunk for registering notifications
   export const registerPushNotifications = () => async (dispatch) => {
@@ -113,14 +117,62 @@ const initialState = {
       console.error('Error registering for push notifications:', error);
     }
   };
+  export const loadNotifications = () => async (dispatch) => {
+    try {
+      const storedNotifications = await AsyncStorage.getItem('notifications');
+      if (storedNotifications !== null) {
+        dispatch(setNotification(JSON.parse(storedNotifications)));
+      }
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    }
+  };
+  export const saveNotification = (notification) => async (dispatch) => {
+    try {
+      dispatch(addNotification(notification)); // Add notification to Redux state
+  
+      // Save to AsyncStorage
+      const currentNotifications = await AsyncStorage.getItem('notifications');
+      const newNotifications = currentNotifications
+        ? [...JSON.parse(currentNotifications), notification]
+        : [notification];
+  
+      await AsyncStorage.setItem('notifications', JSON.stringify(newNotifications));
+    } catch (error) {
+      console.error('Failed to save notification:', error);
+    }
+  };
+  
+  
   
   // Thunk for sending notifications
-  export const triggerNotification = (expoPushToken, title, body) => async () => {
+// Thunk for sending notifications and saving sent notifications
+export const triggerNotification = (expoPushToken, title, body) => async (dispatch) => {
     try {
+      // Send the notification
       await sendPushNotification(expoPushToken, title, body);
+  
+      // Create a notification object to save
+      const notification = {
+        request: {
+          content: {
+            title,
+            body,
+            data: { someData: 'goes here' },
+          },
+        },
+        type: 'sent', // Mark this as a sent notification (you can filter later based on this)
+        date: new Date(), // Add a timestamp
+      };
+  
+      // Save the sent notification
+      dispatch(saveNotification(notification)); // Save in Redux and AsyncStorage
+      
+      console.log('Notification sent and saved!');
     } catch (error) {
       console.error('Error sending notification:', error);
     }
   };
+  
   
   export default notificationsSlice.reducer;

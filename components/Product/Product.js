@@ -242,7 +242,7 @@ function Product({product}) {
       {product.description.length > 1 ? product.description : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." }
     </Text>
     <View style={{width: 172.5}}>
-      <View style={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={styles.price}>${product.price?.toFixed(2)}</Text><Pressable style={{backgroundColor: '#BC6C25', paddingHorizontal: 6, paddingTop: 1.5, borderRadius: 4 }}><Text style={{color: 'white', fontSize: 12, fontFamily: 'Poppins-SemiBold',}}>Order Now</Text></Pressable></View>
+      <View style={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={styles.price}>${product.price?.toFixed(2)}</Text><Pressable style={{backgroundColor: '#BC6C25', paddingHorizontal: 6, paddingTop: 3, borderRadius: 12 }}><Text style={{color: 'white', fontSize: 12}}>Order Now</Text></Pressable></View>
       {/* <FlexButton></FlexButton> */}
     </View>
   </View>
@@ -296,29 +296,25 @@ const styles = StyleSheet.create({
   },
   pillText: {
     fontSize: 12,
-    fontFamily: 'Poppins-Bold',
     color: '#555', // Darker text for contrast
   },
   name: {
-    fontSize: 16,
+    fontSize: 13,
     width: 172.5,
-    fontFamily: 'Poppins-Bold',
     color: '#333',
     textAlign: 'left',
     alignSelf: 'flex-start'
   },
   description: {
-    fontSize: 12,
+    fontSize: 10,
     color: 'rgba(0,0,0,0.5)',
     width: 172.5,
     textAlign: 'left',
-    alignSelf: 'flex-start',
-    fontFamily: 'Poppins-SemiBold',
+    alignSelf: 'flex-start'
   },
   price: {
     fontSize: 14,
     color: 'rgba(0,0,0,0.7)',
-    fontFamily: 'Poppins-SemiBold',
   },
   card: {
     backgroundColor: "#EFF5E9",

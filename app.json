@@ -39,7 +39,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.RS"
+      "package": "com.anonymous.RS",
+      "notification": {
+        "icon": "./assets/splash.png",
+        "color": "#FF0000" 
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

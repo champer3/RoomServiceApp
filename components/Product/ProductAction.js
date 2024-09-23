@@ -113,9 +113,14 @@ function ProductAction({title, image, price, reviews, category, component, instr
       </View>
       <View style={[{ flexDirection: 'row', alignItems: "center", justifyContent: 'space-between', },  visible ? {borderBottomWidth: 1} :{ }]}
       ><><View
-                style={{ alignItems: "center",  marginTop: 2, flexDirection: 'row', flexWrap: 'wrap'}}
+                style={{ alignItems: "center",width: '95%',  marginTop: 2, flexDirection: 'row', flexWrap: 'nowrap', overflow: 'hidden'}}
               >
-                {!visible && side?.map((item,idx)=><View key={idx} style={{marginHorizontal: 2}}><Image source={{uri: item.images[0]}} style={{width: 25, height: 30, borderRadius: 30}}/><View style={{ position: 'absolute', top: -5,zIndex: 6, backgroundColor: '#FFFDD0', width: 25, height: 20, alignItems: 'center', justifyContent: 'center', borderRadius: 15}}><Text style={{fontSize: 9}}>${item.price}</Text></View></View>)}
+                {!visible && side?.slice(0, 10).map((item,idx)=><View key={idx} style={{marginHorizontal: 2}}><Image source={{uri: item.images[0]}} style={{width: 25, height: 30, borderRadius: 30}}/><View style={{ position: 'absolute', top: -5,zIndex: 6, backgroundColor: '#FFFDD0', width: 25, height: 20, alignItems: 'center', justifyContent: 'center', borderRadius: 15}}><Text style={{fontSize: 9}}>${item.price}</Text></View></View>)}
+                {!visible && side?.length - 10 > 0 && (
+        <View style={styles.remainingContainer}>
+          <Text style={styles.remainingText}>+{side?.length - 10}</Text>
+        </View>
+      )}
               </View></>
               <TouchableOpacity onPress={()=>setVisible(prev => !prev)} style={{}}>
                 {!visible && <Svg xmlns="http://www.w3.org/2000/svg" width={23} height={23} viewBox="0 0 320 512"><Path class="fa-secondary" opacity=".4" d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z"/><Path class="fa-primary" d=""/></Svg>}
@@ -203,6 +208,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     borderRadius: 30,
     zIndex: 1,
+  },remainingContainer: {
+    width: 30,
+    height: 30,
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 2,
+  },
+  remainingText: {
+    fontSize: 11,
+    // fontWeight: 'bold',
   },
   priceText: {
     color: "white",

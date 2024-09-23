@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {fetchProducts} from "../Data/Items"
 import { registerPushNotifications } from '../Data/notify';
 import { useSelector, useDispatch } from "react-redux";
@@ -9,12 +9,44 @@ import { updateProfile } from "../Data/profile";
 import { store } from "../Data/Store";
 import FalseHomeScreen from "./FalseHomeScreen";
 import { fetchOrders } from "../Data/order";
+import * as Notifications from 'expo-notifications';
+import { saveNotification, loadNotifications, setExpoPushToken } from '../Data/notify';
 
 
 function LoadScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation()
   const [isLoading, setIsLoading] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+  useEffect(() => {
+    // Register for push notifications
+    dispatch(registerPushNotifications());
+    dispatch(loadNotifications());
+    // Listen for incoming notifications
+    Notifications.
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      // Dispatch action to save the notification in Redux
+      dispatch(saveNotification(notification));
+    });
+
+    // Optionally listen for notification responses (if needed)
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('User interacted with notification:', response);
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, []); // Dependency array includes dispatch
+
+
 
   useEffect(() => {
     const timer = setTimeout(() => {

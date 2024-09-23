@@ -7,7 +7,8 @@ import {
   Dimensions,
   StatusBar,
   Button,
-  Animated
+  Animated, 
+  FlatList,
 } from "react-native";
 import Text from '../components/Text';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -83,7 +84,7 @@ const FadeInView = (props) => {
       {
         toValue: 1,
         duration: 1000,
-        useNativeDriver: true, // Add this line to improve performance
+        useNativeDriver: true, // Add this line to improve performan
       }
     ).start();
   }, []);
@@ -107,6 +108,8 @@ function Home() {
   const expoPushToken = useSelector((state) => state.notifications.expoPushToken);
   const [message, setMessage] = useState('')
   const [orderId, setOrderId] = useState('')
+  const [actions, setAction] = useState('')
+  
   const handleSendNotification = (title, message) => {
     if (expoPushToken) {
       dispatch(triggerNotification(expoPushToken, title, message));
@@ -179,25 +182,30 @@ function Home() {
 
   // connectSocket()
   // },[])
-  useEffect(()=>{if(message)handleSendNotification("Order Update", message);
+  useEffect(()=>{if(message){handleSendNotification("Order Update", message)};
+  const date = new Date()
+  dispatch(updateOrder({ id: {uid : orderId, act: 'status', perform: actions} })); 
+  if (actions == 'Delivered'){
+  dispatch(updateOrder({ id: {uid : orderId, act: 'date', perform: date.toString()} }));
+  
+  setDeliveringOrdersCount(prev=> prev-1)
+
+}
 }, [orderId])
 
   useEffect(() =>{
-    const date = new Date()
+
     if(socket){
       socket.on('orderInDelivery', (data) => {
+        console.log('we got here right')
         setMessage(data.message)
         setOrderId(data.orderId)
-        dispatch(updateOrder({ id: {uid : data.orderId, act: 'status', perform: 'Out for Delivery'}}));
-        console.log(data)
+        setAction('Out for Delivery')
       })
       socket.on('delivered', (data) => {
         setMessage(data.message)
         setOrderId(data.orderId)
-        dispatch(updateOrder({ id: {uid : data.orderId, act: 'status', perform: 'Delivered'} })); 
-        dispatch(updateOrder({ id: {uid : data.orderId, act: 'date', perform: date.toString()} })); 
-        console.log(data)
-        setDeliveringOrdersCount(prev=> prev-1)
+        setAction('Delivered')
       })
     //   socket.on('Delivered', (data) => {
     //     console.log("here6556477")

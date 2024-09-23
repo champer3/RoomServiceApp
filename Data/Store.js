@@ -12,5 +12,8 @@ export const store = configureStore({
         orders: order,
         profileData: profile,
        notifications: notifications
-    }
+    },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+        serializableCheck: false, // Disabling serializable state check
+      }),
 })

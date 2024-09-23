@@ -121,5 +121,5 @@ const styles = StyleSheet.create({
   image: { width: width/6.5, height: height/ 16, resizeMode: 'cover' ,
   borderRadius: 10, paddingVertical: 10,
  },
-  text: {  fontSize: 16, textAlign: "center", fontFamily: 'Poppins-Bold', },
+  text: {  fontSize: 10, textAlign: "center" },
 });

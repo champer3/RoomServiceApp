@@ -350,7 +350,7 @@ const [price, setPrice] = useState(product.price);
       <View style = {{height: height/1.7, }}>
         <View style = {{height: height/1.5,}}>
         <FlatList
-          data={[...product.images, ...product.images]}
+          data={[...product.images]}
           horizontal
           showsHorizontalScrollIndicator={false}
           pagingEnabled
@@ -400,7 +400,7 @@ const [price, setPrice] = useState(product.price);
     padding: 2,
     borderRadius: 25,
     marginTop: 10,  backgroundColor: 'rgba(255,255,255,0.8)', }}>
-          {[...product.images, ...product.images].map((_, index) => (
+          {[...product.images,].map((_, index) => (
             <View
               key={index}
               style={[

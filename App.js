@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { Button, Pressable, StyleSheet, Text, View, Platform } from "react-native";
+import { Button, Pressable, StyleSheet, Text, View, FlatList } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -212,23 +212,28 @@ function Account() {
   );
 }
 function Notification(){
-  const dispatch = useDispatch();
-  const expoPushToken = useSelector((state) => state.notifications.expoPushToken);
-  const notification = useSelector((state) => state.notifications.notification);
-  useEffect(() => {
-    dispatch(registerPushNotifications());
-  }, [dispatch]);
+  const notifications = useSelector(state => state.notifications.notification);
+
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
-      <Text>Your Expo push token: {expoPushToken}</Text>
-      {notification && <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Title: {notification && notification.request.content.title} </Text>
-        <Text>Body: {notification && notification.request.content.body}</Text>
-        <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
-      </View>}
+    <View style={styles.container}>
+      {notifications.length > 0 ? (
+        <FlatList
+          data={notifications}
+          keyExtractor={(item, index) => `${index}`}
+          renderItem={({ item }) => (
+            <View style={styles.notificationContainer}>
+              <Text style={styles.title}>{item.request.content.title}</Text>
+              <Text style={styles.body}>{item.request.content.body}</Text>
+            </View>
+          )}
+        />
+      ) : (
+        <Text style={styles.emptyText}>No notifications to show.</Text>
+      )}
     </View>
   );
-}
+};
+
 function HomeTabs() {
   const cartItems = useSelector((state) => state.cartItems.ids);
   return (
@@ -548,5 +553,26 @@ const styles = StyleSheet.create({
     right: 10,
     left: 10,
     height: 92,
+  },
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  notificationContainer: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  body: {
+    fontSize: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
