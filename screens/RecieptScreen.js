@@ -106,7 +106,6 @@ function RecieptScreen() {
   
         return titleCountMap;
       }
-      const order = getItems(cartItems)
       function addQuantityToObjects(inputList) {
         const titleCountMap = {};
 
@@ -149,6 +148,7 @@ function RecieptScreen() {
   
         return filteredList;
     }
+    console.log(cartItems, 'error')
     const calculateSubtotal = () => {
         return cartItems?.reduce((total, item) => {
           const productPrice = calculateTotalPrice(item)
@@ -186,20 +186,18 @@ function RecieptScreen() {
     
     // Example usage:
     const todayFormatted = getFormattedDate();
-    const newList = addQuantityToObjects(cartItems);
-    console.log(order)
-    let cnst = cartItems.map(({ components, extra, instructions, options, products }, idx) =>`
+    let cnst = cartItems?.map(({ components, extra, instructions, options, products }, idx) =>`
     <tr>
     <td>
             <div style="display: flex; align-items: start; flex-direction: column;">
             <img src="${products[0].images[0]}" alt="Product Image" style="width: 100px; height: auto; margin-bottom: 10px;">
                     <h2 style="font-size: 25px; font-weight: bolder; font-family: Georgia, 'Times New Roman', Times, serif; font-style: oblique;">${products[0].title}</h2>
                 ${components ? `<p>${components}</p>` : ''}
-                ${`<p>Quantity: ${products.length}</p>`}
+                ${`<p>Quantity: ${products?.length}</p>`}
             </div>
         </td>
         <td style="padding-top: 20px;">
-        ${extra.length ? `
+        ${extra?.length ? `
         <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
             <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Extras</p>
             ${extra.map(ex => `<p style="font-size: large; font-weight: 200; text-align: center; font-style: oblique;">${ex.name} - $${ex.price.toFixed(2)}</p>`).join('')}
@@ -438,8 +436,8 @@ const selectPrinter = async () => {
 };
   return (
     <View style ={{flex: 1}}>
-        {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
-        {cartItems.length > 0 && <><View style={{flex: 0.5}}>
+        {cartItems?.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
+        {cartItems?.length > 0 && <><View style={{flex: 0.5}}>
         </View>
         <View>
             <ScrollView style= {{marginBottom: '25%'}}>
@@ -447,7 +445,7 @@ const selectPrinter = async () => {
             <View style={{gap: 20}}>
             {cartItems.map((item, idx)=><ProductAction key={idx}component={item.components} instruction={item.instructions} title={item.products[0].title} options={item.options} side={item.extra} image={item.products[0].images[0]}  price={calculateTotalPrice(item)}><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
                     <Text style ={{fontWeight: 'bold', fontSize: 18}}
-                    >{item.products.length}</Text>
+                    >{item.products?.length}</Text>
                 </View></ProductAction>)}
             </View>
         </View>

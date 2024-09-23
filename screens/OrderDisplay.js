@@ -131,8 +131,6 @@ function OrderDisplay(){
     console.log(deliveredOrders);
 
     const undeliveredOrders = orders.filter(order => order.status !== 'Delivered');
-    console.log("Undelivered Orders:");
-    console.log(undeliveredOrders);
     function handleFormSubmit(){
       dispatch(addReview({id: form}))
       updateReviews(form.title)

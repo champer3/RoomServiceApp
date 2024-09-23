@@ -52,11 +52,6 @@ function AddressConfirm() {
     }
     dispatch(updateProfile({id : newData}))
     setTimeout(async ()=>{
-      try{
-        await AsyncStorage.removeItem('essential')
-      } catch(error){
-        console.error('Error deleting item:', error);
-      }
       try {
         await AsyncStorage.setItem("essential", JSON.stringify({address: newData.address, orders:  orders}));
         console.log("Essential saved successfully.");

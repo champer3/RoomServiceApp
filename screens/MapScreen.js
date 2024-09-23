@@ -117,11 +117,6 @@ export default function MapScreen() {
       }
 
     setTimeout(async ()=>{
-      try{
-        await AsyncStorage.removeItem('essential')
-      } catch(error){
-        console.error('Error deleting item:', error);
-      }
       try {
         await AsyncStorage.setItem("essential", JSON.stringify({address: newAddress.address, orders:  orders}));
         console.log("Essential saved successfully.");
@@ -172,6 +167,7 @@ export default function MapScreen() {
       }
       
     }
+    console.log(newData.address)
     dispatch(updateProfile({id : newData}))
     return newData
   }
