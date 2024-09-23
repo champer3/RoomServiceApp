@@ -239,22 +239,14 @@ function HomeTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarInactiveTintColor: "#ddd",
-        tabBarActiveTintColor: "#EFF5E9",
-        tabBarShowLabel: false,
+        tabBarInactiveTintColor: "black",
+        tabBarActiveTintColor: "#425928",
+        tabBarShowLabel: true,
         tabBarStyle: {
           position: 'absolute',
-          right: 1,
-          left: 1,
           bottom: 0,
-          height: 60,
-          backgroundColor: '#4F6B30',
-          borderTopRightRadius: 25,
-          borderTopLeftRadius: 25,
-          borderTopWidth: 2,
-          borderLeftWidth: 1,
-          borderRightWidth: 1,
-          borderColor: '#F0F0F0',
+          height: "9%",
+          backgroundColor: 'white',
           shadowColor: 'black',
           shadowOffset: {
             width: 0,
@@ -297,6 +289,7 @@ function HomeTabs() {
         component={CartShow}
         options={{
           headerShown: false,
+          tabBarLabel: "",
           tabBarIcon: ({ color, size, focused }) => (
             <>
   <View>
@@ -305,7 +298,7 @@ function HomeTabs() {
             width: 0,
             height: 1,
           },
-          backgroundColor: 'black',
+          backgroundColor: 'white',
           borderRadius: 50
 ,          shadowOpacity: 0.25,
           padding: 13,
@@ -403,7 +396,9 @@ useEffect(() => {
   const loadFonts = () => {
     return Font.loadAsync({
       'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
-      // 'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
+      'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
+      'Poppins-SemiBold': require('./assets/fonts/Poppins-SemiBold.ttf'),
+      'Poppins-Medium': require('./assets/fonts/Poppins-Medium.ttf'),
       // Add other Poppins font styles if needed
     });
   };
@@ -411,7 +406,8 @@ useEffect(() => {
   //   return <AppLoadin
   return (
     <Provider store={store}>
-      <StripeProvider publishableKey={"pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"}>
+      <StripeProvider publishableKey={"pk_live_51P6dMbP6ljIK4vM9ugD9DeeBJpItDsJ3kDMthFVXeEeKsUxIsIvvdLpoGMx1gVdA48uTZUXsBb9FLr8qPYfVSB0A00HPdPx6mC"}>
+      {/* <StripeProvider publishableKey={"pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"}> */}
         <NavigationContainer>
           <StatusBar style="light" />
           <Stack.Navigator>

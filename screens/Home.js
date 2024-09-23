@@ -17,7 +17,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import ItemCategory from "../components/Category/ItemCategory";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import Svg, {Path} from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { triggerNotification } from '../Data/notify';
 import {
   GestureHandlerRootView,
@@ -30,8 +30,8 @@ import Input from "../components/Inputs/Input";
 const { width, height } = Dimensions.get("window");
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart, addOptions,  } from "../Data/cart";
-import {fetchOrders, updateOrder} from "../Data/order"
+import { addToCart, removeFromCart, addOptions, } from "../Data/cart";
+import { fetchOrders, updateOrder } from "../Data/order"
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from "../components/Modals/BottomSheet";
 import { LinearGradient } from "expo-linear-gradient";
@@ -42,11 +42,11 @@ import TransparentSheet from "../components/Modals/TransparentSheet.";
 import axios from "axios";
 import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
 import { current } from "@reduxjs/toolkit";
-import {fetchProducts} from "../Data/Items"
+import { fetchProducts } from "../Data/Items"
 import ItemSmallCategory from "../components/Category/ItemSmallCategory";
 // const SERVER_URL = 'ws://192.168.179.1:3000';
 // const SERVER_URL = 'http://10.0.0.173:3000';
- const SERVER_URL="https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
+const SERVER_URL = "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
 
 
 
@@ -102,7 +102,7 @@ const FadeInView = (props) => {
 };
 
 function Home() {
-  
+
   const [socket, setSocket] = useState(null);
   const address = useSelector((state) => state.profileData.profile)?.address[0]
   const expoPushToken = useSelector((state) => state.notifications.expoPushToken);
@@ -122,19 +122,19 @@ function Home() {
       try {
         const token = await retrieveTokenFromAsyncStorage();
         console.log('Token:', token);
-  
+
         // Ensure the socket is initialized before trying to get it
         await initializeSocket(token); // Wait for the socket to be initialized
-  
+
         const socketInstance = getSocket(); // Get the socket after it's initialized
         setSocket(socketInstance); // Set the socket
       } catch (error) {
         console.error('Error setting up socket:', error);
       }
     };
-  
+
     setupSocket(); // Call the async setup function
-  
+
     return () => {
       disconnectSocket(); // Clean up the socket on component unmount
     };
@@ -207,64 +207,64 @@ function Home() {
         setOrderId(data.orderId)
         setAction('Delivered')
       })
-    //   socket.on('Delivered', (data) => {
-    //     console.log("here6556477")
-    //     const deliveringOrders = orders.filter(order => order.status === "Delivering");
+      //   socket.on('Delivered', (data) => {
+      //     console.log("here6556477")
+      //     const deliveringOrders = orders.filter(order => order.status === "Delivering");
 
-    // if (deliveringOrders.length === 0) {
-    //     return null; // Return null if there are no delivering orders
-    // }
+      // if (deliveringOrders.length === 0) {
+      //     return null; // Return null if there are no delivering orders
+      // }
 
-    // let earliestOrder = deliveringOrders[0];
-    // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+      // let earliestOrder = deliveringOrders[0];
+      // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
 
-    // deliveringOrders.forEach(order => {
-    //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
-    //     if (timestamp < earliestTimestamp) {
-    //         earliestOrder = order;
-    //         earliestTimestamp = timestamp;
-    //     }
-    // });
-    // console.log("orders",deliveringOrders)
-    // console.log("order",orders)
-    //   date = getTodaysDate()
-    //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
-    //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+      // deliveringOrders.forEach(order => {
+      //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+      //     if (timestamp < earliestTimestamp) {
+      //         earliestOrder = order;
+      //         earliestTimestamp = timestamp;
+      //     }
+      // });
+      // console.log("orders",deliveringOrders)
+      // console.log("order",orders)
+      //   date = getTodaysDate()
+      //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+      //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
 
-    //   });
+      //   });
 
       return () => {
         socket.off('delivered');
         socket.off('orderInDelivery');
-         // Remove 'message' event listener
-    //     // Remove other event listeners as needed
+        // Remove 'message' event listener
+        //     // Remove other event listeners as needed
       };
-    //   socket.on('Out for Delivery', (data) => {
-    //     const deliveringOrders = orders.filter(order => order.status === "Ready for Delivery");
+      //   socket.on('Out for Delivery', (data) => {
+      //     const deliveringOrders = orders.filter(order => order.status === "Ready for Delivery");
 
-    // if (deliveringOrders.length === 0) {
-    //     return null; // Return null if there are no delivering orders
-    // }
+      // if (deliveringOrders.length === 0) {
+      //     return null; // Return null if there are no delivering orders
+      // }
 
-    // let earliestOrder = deliveringOrders[0];
-    // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
+      // let earliestOrder = deliveringOrders[0];
+      // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
 
-    // deliveringOrders.forEach(order => {
-    //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
-    //     if (timestamp < earliestTimestamp) {
-    //         earliestOrder = order;
-    //         earliestTimestamp = timestamp;
-    //     }
-    // });
-    // console.log("orders",deliveringOrders)
-    // console.log("order",orders)
-    //   date = getTodaysDate()
-    //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
-    //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
+      // deliveringOrders.forEach(order => {
+      //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
+      //     if (timestamp < earliestTimestamp) {
+      //         earliestOrder = order;
+      //         earliestTimestamp = timestamp;
+      //     }
+      // });
+      // console.log("orders",deliveringOrders)
+      // console.log("order",orders)
+      //   date = getTodaysDate()
+      //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
+      //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
 
-    //   });
+      //   });
 
-     
+
     }
 
   })
@@ -364,7 +364,7 @@ function Home() {
       const order = await axios.get(
         "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/orders/get-your-orders",
         // "http://10.0.0.173:3000/api/v1/orders",
-       
+
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -389,10 +389,10 @@ function Home() {
   const cartItems = useSelector((state) => state.cartItems.ids);
 
 
- 
+
   const productItems = useSelector((state) => state.productItems.ids);
   const categoryObject = {};
-  
+
   productItems.forEach((item) => {
     const category = item.category;
 
@@ -483,7 +483,7 @@ function Home() {
       }
       setCurrentIndex(nextIndex);
       Animated.spring(animatedValue, {
-        toValue: nextIndex * (width+5) ,
+        toValue: nextIndex * (width + 5),
         useNativeDriver: true,
       }).start();
     }, 5000);
@@ -546,7 +546,7 @@ function Home() {
     const day = String(today.getDate()).padStart(2, "0");
     return today.toString();
   }
-  
+
   const timer = useRef()
   // useEffect(()=>{if (deliveringOrdersCount > 0){timer.current = setTimeout(()=>{setBlink((prev)=> !prev)},5)}})
   function handleAddToCart(product) {
@@ -596,188 +596,190 @@ function Home() {
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
-      <GestureHandlerRootView style={{ flex: 1 , }}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <LinearGradient
           // colors={["#19171A", "#01418D", "#2873CC"]}
           // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-          style= {{flex: 1,}}
-          locations={[0.05, 0.1, 0.15, 0.2,  0.6,]}
-          colors={['#283618',"#354820", "#425928","#4F6B30" ,  '#F0F0F0'   ]}><View
-          // colors={["#19171A", "#01418D", "#2873CC"]}
-          // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-          // locations={[0.1375, 0.275, 0.3125, 0.80, 1]}
-          // colors={[]}
-          style={{justifyContent: 'flex-end'}}
-        // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
-        >
-          <SafeAreaView onTouchStart={() => { ref?.current?.scrollTo(0); setBlink(true) }} style={styles.top}>
-            {!isVisible && <View
-              style={[styles.top, {
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: 'center',
-                paddingHorizontal: "5%",
-                paddingTop: "3%",
-              }]}
-            >
-             
-              {<View style={{  justifyContent: 'center', }}>
-              <Text style={{color: 'white', fontSize: 15}}>{greeting} {data.firstName}</Text>
-                <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
-                 
-                </View>
-                <View style={{ justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
-                  <View>
-               { <Text
-                  style={{
-                    color: "white",
-                    fontSize: 9,
-                    width: 250,
-                    letterSpacing: 1,
-    
-                  }}
-                  
-                >
-                  {address?.address}
-                </Text>}
-                </View>
-                
-                </View>
-                {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
-              </View>}
-                  <View style={{flexDirection: 'row',gap: 12}}>
-                  <View style={[styles.cart, { width: 40, height: 40, 
-              shadowColor: '#000',
-              shadowOffset: { width: 10, height: 7 },
-              shadowOpacity: 0.8,
-              shadowRadius: 2,
-              elevation: 5, // Ad
-              }]}>
-                <Pressable
-                  onPress={notifyHandler}
-                >
-                  <View>
-                  <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><Path fill={"#425928"} d="M282.6 40.1C214 15.1 138 50.4 112.8 119L98.2 159C84 197.8 57.6 231 23 253.7L14.9 259C4.7 265.7-.8 277.5 .6 289.5s9.4 22.2 20.8 26.3l230.5 83.9 1.1-3.9c2.6-9.1 4.4-18.4 5.4-27.7l-226-82.3 8.2-5.4c40.3-26.5 71.1-65.2 87.7-110.4l14.7-40c18.7-51 74.5-77.7 125.7-60.9c8.4-8.6 17.7-16.3 27.9-23c-4.5-2.2-9.1-4.2-13.9-6zm71.1 48.4c54.8-19.9 115.4 8.3 135.5 63L508 202.6c16.3 44.6 46.4 82.8 85.9 109.2l13.7 9.2s0 0 0 0L310.1 429.3l4.6-15.8c13.1-45.6 11.3-94.1-5-138.7l-18.8-51.2c-20.1-54.7 8.1-115.2 62.8-135.2zm165.5 52C493.2 69.2 414.1 32.5 342.8 58.4s-108 104.8-81.9 176.2l18.8 51.2c14 38.2 15.5 79.8 4.3 118.9l-4.6 15.8c-3.3 11.6 .1 24 9 32.2s21.5 10.8 32.8 6.7L618.6 351.1c11.3-4.1 19.4-14.2 20.8-26.2s-4-23.7-14-30.4l-13.7-9.2c-33.8-22.7-59.6-55.4-73.6-93.6l-18.8-51.2zM434.8 437.6c-6.7 5.8-7.4 15.9-1.6 22.6C450.5 480.1 479 488 505 477.8s41.5-35.5 40.5-61.8c-.3-8.8-7.7-15.7-16.6-15.4s-15.7 7.7-15.4 16.6c.5 13.2-7.3 25.8-20.3 30.9s-27.2 1.2-35.9-8.8c-5.8-6.7-15.9-7.4-22.6-1.6zM179.9 406.7c-8.7 10-23 13.9-35.9 8.8s-20.7-17.7-20.3-30.9c.3-8.8-6.6-16.2-15.4-16.6s-16.2 6.6-16.6 15.4c-.9 26.3 14.6 51.6 40.5 61.8s54.5 2.3 71.8-17.6c5.8-6.7 5.1-16.8-1.6-22.6s-16.8-5.1-22.6 1.6z"/></Svg>
-                  </View>
-
-                  {deliveringOrdersCount > 0 && (
-                    <View
-                      style={{
-                        height: "85%",
-                        minWidth: "35%",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        position: "absolute",
-                        zIndex: 2,
-                        top: -15,
-                        left: -13,
-                        width: 25,
-                        height: 25,
-                        shadowColor: 'black',
-                        shadowOffset: {
-                          width: 0,
-                          height: 1,
-                        },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 2,
-                        elevation: 3,
-                        borderRadius: 100,
-                        backgroundColor: "#425928",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "white",
-                          fontSize: 12,
-                          fontWeight: 900,
-                        }}
-                      >
-                        {deliveringOrdersCount}
-                      </Text>
-                    </View>
-                  )}
-                </Pressable>
-              </View>
-              <View style={[styles.cart, { width: 40, height: 40, 
-              shadowColor: '#000',
-              shadowOffset: { width: 10, height: 7 },
-              shadowOpacity: 0.8,
-              shadowRadius: 2,
-              elevation: 5, // Ad
-              }]}>
-                <Pressable
-                  onPress={cartHandler}
-                >
-                  <View>
-                  <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><Path fill={"#425928"} d="M16 0C7.2 0 0 7.2 0 16s7.2 16 16 16l37.9 0c7.6 0 14.2 5.3 15.7 12.8l58.9 288c6.1 29.8 32.3 51.2 62.7 51.2L496 384c8.8 0 16-7.2 16-16s-7.2-16-16-16l-304.8 0c-15.2 0-28.3-10.7-31.4-25.6L152 288l314.6 0c29.4 0 55-20 62.1-48.5L570.6 71.8c5-20.2-10.2-39.8-31-39.8L99.1 32C92.5 13 74.4 0 53.9 0L16 0zm90.1 64l433.4 0L497.6 231.8C494 246 481.2 256 466.5 256l-321.1 0L106.1 64zM168 456a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zm80 0a56 56 0 1 0 -112 0 56 56 0 1 0 112 0zm200-24a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm0 80a56 56 0 1 0 0-112 56 56 0 1 0 0 112z"/></Svg>
-                  </View>
-
-                  {cartItems.length > 0 && (
-                    <View
-                      style={{
-                        justifyContent: "center",
-                        alignItems: "center",
-                        position: "absolute",
-                        zIndex: 2,
-                        top: -15,
-                        left: -13,
-                        width: 25,
-                        height: 25,
-                        shadowColor: 'black',
-                        shadowOffset: {
-                          width: 0,
-                          height: 1,
-                        },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 2,
-                        elevation: 3,
-                        borderRadius: 100,
-                        backgroundColor: "#425928",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "white",
-                          fontSize: 12,
-                          fontWeight: 900,
-                        }}
-                      >
-                        {cartItems.length}
-                      </Text>
-                    </View>
-                  )}
-                </Pressable>
-              </View>
-             </View>
-            </View>}
-            <Pressable
-              style={[styles.search, { marginTop: 10 }]}
-              onPress={() => navigation.navigate("Search")}
-            >
+          style={{ flex: 1}}
+          locations={[0.05, 0.1, 0.15, 0.2, 0.6,]}
+          colors={['#283618', "#354820", "#425928", "#4F6B30", '#F0F0F0']}><View
+            // colors={["#19171A", "#01418D", "#2873CC"]}
+            // colors={["#19171A", "#2F5A8C", "#2873CC"]}
+            // locations={[0.1375, 0.275, 0.3125, 0.80, 1]}
+            // colors={[]}
+            style={{ justifyContent: 'center', height: 170 }}
+          // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
+          >
+            <SafeAreaView onTouchStart={() => { ref?.current?.scrollTo(0); setBlink(true) }} style={styles.top}>
               <View
-                style={{
+                style={[styles.top, {
                   flexDirection: "row",
-                  gap: 10,
-                  borderColor: "white",
-                  borderWidth: 1,
-                  borderRadius: 25,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  paddingVertical: 8,
-                  paddingHorizontal: 12,
-                }}
+                  justifyContent: "space-between",
+                  alignItems: 'center',
+                  paddingHorizontal: "5%",
+                  paddingTop: "3%",
+                }]}
               >
-                <EvilIcons name="search" size={24} color="#aaa" />
-                <Text
-                  style={{ color: "#aaa", fontSize: 16, fontWeight: 500 }}
 
-                >
-                  What would you like??
-                </Text>
+                {<View style={{ justifyContent: 'center', }}>
+                  <Text style={{ color: 'white', fontSize: 15, fontFamily: 'Poppins-SemiBold' }}>{greeting} {data.firstName}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+
+                  </View>
+                  <View style={{ justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
+                    <View>
+                      {<Text
+                        style={{
+                          color: "white",
+                          fontSize: 9,
+                          width: 250,
+                          letterSpacing: 1,
+
+                        }}
+
+                      >
+                        {address ? address?.address : <Pressable onPress={() => {navigation.navigate("Address")}}><Text>Where should we send your order?</Text></Pressable>}
+                      </Text>}
+                    </View>
+
+                  </View>
+                  {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
+                </View>}
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View style={[styles.cart, {
+                    width: 40, height: 40,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 10, height: 7 },
+                    shadowOpacity: 0.8,
+                    shadowRadius: 2,
+                    elevation: 5, // Ad
+                  }]}>
+                    <Pressable
+                      onPress={notifyHandler}
+                    >
+                      <View>
+                        <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><Path fill={"#425928"} d="M282.6 40.1C214 15.1 138 50.4 112.8 119L98.2 159C84 197.8 57.6 231 23 253.7L14.9 259C4.7 265.7-.8 277.5 .6 289.5s9.4 22.2 20.8 26.3l230.5 83.9 1.1-3.9c2.6-9.1 4.4-18.4 5.4-27.7l-226-82.3 8.2-5.4c40.3-26.5 71.1-65.2 87.7-110.4l14.7-40c18.7-51 74.5-77.7 125.7-60.9c8.4-8.6 17.7-16.3 27.9-23c-4.5-2.2-9.1-4.2-13.9-6zm71.1 48.4c54.8-19.9 115.4 8.3 135.5 63L508 202.6c16.3 44.6 46.4 82.8 85.9 109.2l13.7 9.2s0 0 0 0L310.1 429.3l4.6-15.8c13.1-45.6 11.3-94.1-5-138.7l-18.8-51.2c-20.1-54.7 8.1-115.2 62.8-135.2zm165.5 52C493.2 69.2 414.1 32.5 342.8 58.4s-108 104.8-81.9 176.2l18.8 51.2c14 38.2 15.5 79.8 4.3 118.9l-4.6 15.8c-3.3 11.6 .1 24 9 32.2s21.5 10.8 32.8 6.7L618.6 351.1c11.3-4.1 19.4-14.2 20.8-26.2s-4-23.7-14-30.4l-13.7-9.2c-33.8-22.7-59.6-55.4-73.6-93.6l-18.8-51.2zM434.8 437.6c-6.7 5.8-7.4 15.9-1.6 22.6C450.5 480.1 479 488 505 477.8s41.5-35.5 40.5-61.8c-.3-8.8-7.7-15.7-16.6-15.4s-15.7 7.7-15.4 16.6c.5 13.2-7.3 25.8-20.3 30.9s-27.2 1.2-35.9-8.8c-5.8-6.7-15.9-7.4-22.6-1.6zM179.9 406.7c-8.7 10-23 13.9-35.9 8.8s-20.7-17.7-20.3-30.9c.3-8.8-6.6-16.2-15.4-16.6s-16.2 6.6-16.6 15.4c-.9 26.3 14.6 51.6 40.5 61.8s54.5 2.3 71.8-17.6c5.8-6.7 5.1-16.8-1.6-22.6s-16.8-5.1-22.6 1.6z" /></Svg>
+                      </View>
+
+                      {deliveringOrdersCount > 0 && (
+                        <View
+                          style={{
+                            height: "85%",
+                            minWidth: "35%",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            position: "absolute",
+                            zIndex: 2,
+                            top: -15,
+                            left: -13,
+                            width: 25,
+                            height: 25,
+                            shadowColor: 'black',
+                            shadowOffset: {
+                              width: 0,
+                              height: 1,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 2,
+                            elevation: 3,
+                            borderRadius: 100,
+                            backgroundColor: "#425928",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: "white",
+                              fontSize: 12,
+                              fontWeight: 900,
+                            }}
+                          >
+                            {deliveringOrdersCount}
+                          </Text>
+                        </View>
+                      )}
+                    </Pressable>
+                  </View>
+                  <View style={[styles.cart, {
+                    width: 40, height: 40,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 10, height: 7 },
+                    shadowOpacity: 0.8,
+                    shadowRadius: 2,
+                    elevation: 5, // Ad
+                  }]}>
+                    <Pressable
+                      onPress={cartHandler}
+                    >
+                      <View>
+                        <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><Path fill={"#425928"} d="M16 0C7.2 0 0 7.2 0 16s7.2 16 16 16l37.9 0c7.6 0 14.2 5.3 15.7 12.8l58.9 288c6.1 29.8 32.3 51.2 62.7 51.2L496 384c8.8 0 16-7.2 16-16s-7.2-16-16-16l-304.8 0c-15.2 0-28.3-10.7-31.4-25.6L152 288l314.6 0c29.4 0 55-20 62.1-48.5L570.6 71.8c5-20.2-10.2-39.8-31-39.8L99.1 32C92.5 13 74.4 0 53.9 0L16 0zm90.1 64l433.4 0L497.6 231.8C494 246 481.2 256 466.5 256l-321.1 0L106.1 64zM168 456a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zm80 0a56 56 0 1 0 -112 0 56 56 0 1 0 112 0zm200-24a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm0 80a56 56 0 1 0 0-112 56 56 0 1 0 0 112z" /></Svg>
+                      </View>
+
+                      {cartItems.length > 0 && (
+                        <View
+                          style={{
+                            justifyContent: "center",
+                            alignItems: "center",
+                            position: "absolute",
+                            zIndex: 2,
+                            top: -15,
+                            left: -13,
+                            width: 25,
+                            height: 25,
+                            shadowColor: 'black',
+                            shadowOffset: {
+                              width: 0,
+                              height: 1,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 2,
+                            elevation: 3,
+                            borderRadius: 100,
+                            backgroundColor: "#425928",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: "white",
+                              fontSize: 12,
+                              fontWeight: 900,
+                            }}
+                          >
+                            {cartItems.length}
+                          </Text>
+                        </View>
+                      )}
+                    </Pressable>
+                  </View>
+                </View>
               </View>
-            </Pressable>
-            
-            <View style={{ marginTop: 0, paddingBottom: 1 }}>
+              <Pressable
+                style={[styles.search, { marginTop: 10 }]}
+                onPress={() => navigation.navigate("Search")}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 10,
+                    borderColor: "white",
+                    borderWidth: 1,
+                    borderRadius: 12,
+                    backgroundColor: "white",
+                    alignItems: "center",
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                  }}
+                >
+                  <EvilIcons name="search" size={28} color="black" />
+                  <Text
+                    style={{ color: "black", fontSize: 16, fontFamily: "Poppins-SemiBold" }}
+
+                  >
+                    What would you like??
+                  </Text>
+                </View>
+              </Pressable>
+
+              {/* <View style={{ marginTop: 0, paddingBottom: 1 }}>
               {isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
           <FadeInView style={{marginVertical: 5, marginTop: 8}}>
        <ItemSmallCategory
@@ -801,51 +803,51 @@ function Home() {
        
       </FadeOutView>
     </ScrollView>}
-              </View>
-          
+              </View> */}
+
             </SafeAreaView>
           </View>
-          <View style={{  flex: 1 ,}}>
-          <ScrollView
-            scrollEventThrottle={16}
-            onScroll={(e) => handleScroll(e)}
-            bounces={false}
-            style={{}}
-            onTouchStart={() => { ref?.current?.scrollTo(0) }}
+          <View style={{ flex: 1, }}>
+            <ScrollView
+              scrollEventThrottle={16}
+              onScroll={(e) => handleScroll(e)}
+              bounces={false}
+              style={{}}
+              onTouchStart={() => { ref?.current?.scrollTo(0) }}
             >
 
-           <View style={{  backgroundColor: '#F0F0F0',  }}>
-  <ScrollView
-    ref={scrollViewRef}
-    horizontal
-    pagingEnabled
-    showsHorizontalScrollIndicator={false}
-    contentContainerStyle={styles.scrollViewContent}
-  >
-    <View style={{flexDirection: "row", flexWrap: "nowrap", gap: 5}}>
-      {[
-  require('../assets/deal1.png'),
-  require('../assets/deal3.png'),
-  require('../assets/deal2.png'),
-  require('../assets/deal4.png'),
-  require('../assets/deal5.png'),
-  require('../assets/deal1.png'),
-].map((image, index) => (
-        <Pressable key={index}>
-          <View style={styles.imageContainer}>
-            <Image
-              style={styles.image}
-              source={image}
-              resizeMode="contain"  // or "contain", depending on the effect you want
-            />
-          </View>
-        </Pressable>
-      ))}
-    </View>
-  </ScrollView>
-</View>
+              <View style={{ backgroundColor: '#F0F0F0', }}>
+                <ScrollView
+                  ref={scrollViewRef}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.scrollViewContent}
+                >
+                  <View style={{ flexDirection: "row", flexWrap: "nowrap", gap: 5 }}>
+                    {[
+                      require('../assets/deal1.png'),
+                      require('../assets/deal3.png'),
+                      require('../assets/deal2.png'),
+                      require('../assets/deal4.png'),
+                      require('../assets/deal5.png'),
+                      require('../assets/deal1.png'),
+                    ].map((image, index) => (
+                      <Pressable key={index}>
+                        <View style={styles.imageContainer}>
+                          <Image
+                            style={styles.image}
+                            source={image}
+                            resizeMode="contain"  // or "contain", depending on the effect you want
+                          />
+                        </View>
+                      </Pressable>
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
 
-            <View style={{marginBottom: 10  }}>
+              <View style={{ marginBottom: 10 }}>
                 <ItemCategory
                   items={[
                     { text: "Alcohol", image: require("../assets/Alcohol.png") },
@@ -860,19 +862,19 @@ function Home() {
                   show={!isVisible}
                 />
               </View>
-              <View style={{ gap: 10, marginBottom: 50}}>
-  {Object.keys(categoryObject).map((categoryKey) => (
-    <ProductHorizontal
-      key={categoryKey}
-      categoryName={categoryKey}
-      items={categoryObject[categoryKey]}
-    />
-  ))}
-</View>
-          </ScrollView>
+              <View style={{ gap: 10, marginBottom: 50 }}>
+                {Object.keys(categoryObject).map((categoryKey) => (
+                  <ProductHorizontal
+                    key={categoryKey}
+                    categoryName={categoryKey}
+                    items={categoryObject[categoryKey]}
+                  />
+                ))}
+              </View>
+            </ScrollView>
           </View>
-          
-        
+
+
           {blink && deliveringOrdersCount > 0 && <TransparentSheet ref={reg}>
             <LinearGradient locations={[0.2, 0.7, 0.9, 0.6]} colors={["#4F6B30", "#425928", "#354820", '#283618']} style={{ borderTopLeftRadius: width * 3, borderTopRightRadius: width * 3, alignItems: 'center', justifyContent: 'start', paddingTop: height / 13, height: height, width: width * 2, alignSelf: 'center' }}>{deliveringOrdersCount >= 1 && <Pressable onPress={orderHandler} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
 
@@ -931,7 +933,7 @@ const styles = StyleSheet.create({
     // borderWidth: 1
   }, imageContainer: {
     width: width,
-    
+
     maxHeight: 150, // Set a fixed height
     // Optional: Add border radius if desired
     overflow: 'hidden', // Ensures the image stays within the container
@@ -939,11 +941,11 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     borderRadius: 10,
-    maxHeight: 150, 
+    maxHeight: 150,
   },
   scrollViewContent: {
     borderRadius: 10,
-    
+
     alignItems: 'center',
   },
   deals: {
