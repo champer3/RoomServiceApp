@@ -1,4 +1,4 @@
-import { Image, StyleSheet, TextInput, View, Pressable, Dimensions, TouchableOpacity, FlatList } from "react-native";
+import { Image, StyleSheet, TextInput, View, Pressable, Dimensions, TouchableOpacity, FlatList, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef , useEffect} from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,7 +21,7 @@ import {useSelector, useDispatch} from 'react-redux'
 import {addToCart, removeFromCart, deleteFromCart, addOptions, addItem, updateCart} from '../Data/cart'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import BottomSheet from '../components/Modals/BottomSheet';
-import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
+// import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import ProductDescription from "../components/Product/ProductDescription";
 import IncrementDecrementBton from "../components/Buttons/IncrementDecrementBtn copy";
 const { width, height } = Dimensions.get("window");
@@ -309,6 +309,7 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
   const total = subtotal + taxesAndFees + deliveryFee;
 
   return (
+    <ScrollView>
     <View style={styles.container}>
            <View style={{marginTop: 45, flexDirection: 'row', alignItems: 'center'}}>
         <TouchableOpacity onPress={navigation.goBack}><Svg width={43} height={43} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><Path class="fa-secondary" fill={'#425928'} opacity=".4" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zm112 0c0-6.1 2.3-12.3 7-17L231 127c4.7-4.7 10.8-7 17-7s12.3 2.3 17 7c9.4 9.4 9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9c-4.7 4.7-10.8 7-17 7s-12.3-2.3-17-7L119 273c-4.7-4.7-7-10.8-7-17z"/><Path fill={'#425928'} class="fa-primary" d="M119 273c-9.4-9.4-9.4-24.6 0-33.9L231 127c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L119 273z"/></Svg>
@@ -346,6 +347,7 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
         <Text style={styles.checkoutButtonText}>Checkout</Text>
       </TouchableOpacity></>}
     </View>
+    </ScrollView>
   );
 };
 
