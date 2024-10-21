@@ -18,9 +18,6 @@ function ProductHorizontal({ items,categoryName}) {
     <Text style={{ paddingLeft: '3%',      fontSize: 22,
           color: '#BC6C25',
           // borderLeftWidth: 5,
-          textDecorationLine: 'underline',
-          textDecorationStyle: "solid",
-          textDecorationColor: "#BC6C25",
           // borderLeftColor: '#BC6C25', // Distinct accent color
           paddingVertical: 5,
           // backgroundColor: '#BC6C25', // Light background to make it stand out

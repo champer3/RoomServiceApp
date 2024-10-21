@@ -136,7 +136,7 @@ function ProductDisplay() {
 const [notes, setNotes] = useState('');
 const [price, setPrice] = useState(product.price);
   const ingredients = productItems.filter(product => 
-    product?.subcategory?.some(sub => /side/i.test(sub)) || /side/i.test(product?.category)
+    product?.subCategory?.some(sub => /side/i.test(sub)) || /side/i.test(product?.category)
   ).map(product => ({
     name: product.title,   // Extract title as name
     images: product.images,  // Extract images
@@ -348,7 +348,7 @@ const [price, setPrice] = useState(product.price);
   const renderImageCarousel = () => {
     return (
       <View style = {{height: height/1.7, }}>
-        <View style = {{height: height/1.5,}}>
+        <View style = {{height: height/1.2,}}>
         <FlatList
           data={[...product.images]}
           horizontal
@@ -444,7 +444,7 @@ return false
         {renderImageCarousel()}
       </View>
       <View style={styles.detailsContainer}>
-  {product?.subcategory?.map((item, index) => (
+  {product?.subCategory?.map((item, index) => (
     <View key={index} style={styles.pill}>
       <Text style={styles.pillText}>{item}</Text>
     </View>
@@ -622,6 +622,8 @@ const styles = StyleSheet.create({
     // position: 'absolute',
     gap: 3,
     bottom: 0,
+    width: screenWidth,
+    flexWrap: "wrap",
     paddingHorizontal: 10,
     marginBottom: 5,
   },pill: {
@@ -646,7 +648,7 @@ const styles = StyleSheet.create({
   carouselContainer: {
   },
   productImage: {
-    height: height/1.5,
+    height: height/1.2,
     // resizeMode: 'stretch',
   },
   dotsContainer: {

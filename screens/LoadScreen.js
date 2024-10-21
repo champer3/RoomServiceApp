@@ -24,26 +24,7 @@ function LoadScreen() {
     dispatch(registerPushNotifications());
     dispatch(loadNotifications());
     // Listen for incoming notifications
-    Notifications.
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      // Dispatch action to save the notification in Redux
-      dispatch(saveNotification(notification));
-    });
-
-    // Optionally listen for notification responses (if needed)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('User interacted with notification:', response);
-    });
-
-    // Cleanup listeners on unmount
-    return () => {
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
-    };
+   
   }, []); // Dependency array includes dispatch
 
 

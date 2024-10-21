@@ -27,7 +27,7 @@ export const cart = createSlice({
         },
         removeFromCart : (state, action) => {
             const index = action.payload.id.index
-            console.log(index, state.ids[index].products)
+            console.log(index)
             if (index !== -1) {
                 state.ids[index].products.pop();
             } if (state.ids[index].products.length == 0){

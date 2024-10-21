@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
 
 const Placeholder = ({ style }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0))?.current;
 
   useEffect(() => {
     Animated.loop(

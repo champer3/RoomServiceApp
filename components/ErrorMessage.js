@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { View, Text, Animated, StyleSheet, Dimensions } from 'react-native';
 
 const ErrorMessage = ({ visible, message }) => {
-  const slideAnim = useRef(new Animated.Value(-100)).current; // Initial position is above the screen
+  const slideAnim = useRef(new Animated.Value(-100))?.current; // Initial position is above the screen
 
   useEffect(() => {
     if (visible) {

@@ -37,6 +37,9 @@ function Product({product}) {
     }
     dispatch(addToCart({id : productData }))
    }
+  function handleDecrement(index) {
+    dispatch(removeFromCart({id :{'index': index}}))
+   }
   const canAddToCart = () => {
     // Check if there are at least 2 items in the extra array
     if (product.extra) {
@@ -51,74 +54,74 @@ function Product({product}) {
       }
     return true; 
   };
-  const dummyData = {
-    id: 1,
-    title: "Classic Cheese Burger",
-    image: "https://example.com/cheese-burger.jpg", // Replace with your own image URL
-    description: "Juicy beef patty topped with melted cheese, fresh lettuce, tomato, pickles, and our special sauce, all nestled in a toasted bun.",
-    price: 15.50,
-    rating: 4.8,
-    time: 12, // in minutes
-    calories: 145, // in kcal
-    extras: [
-      {
-        name: "More Ham",
-        price: 4.50,
-      },
-      {
-        name: "Spicy",
-        price: 0.50,
-      },
-      {
-        name: "Add Egg",
-        price: 2.00,
-      },
-    ],
-    options: [{'name': 'Flavors', 'value': [
-      {
-        name: 'Barbeque',
-        price: 0
-      },
-      {
-        name: 'Lemon Hot',
-        price: 0
-      },
-      {
-        name: 'Hot',
-        price: 0
-      },
-      {
-        name: 'Mild Hot',
-        price: 0
-      },
-    ] ,  'required': false,
-    'quantity': 2
-  },{'name': 'Drinks', 'value': [
-      {
-        name: 'Coca Cola',
-        price: 2,
-        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
-      },
-      {
-        name: 'Smirnoff',
-        price: 1,
-        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
-      },
-      {
-        name: 'Pepsi',
-        price: 2,
-        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
-      },
-      {
-        name: 'Lemonade',
-        price: 3,
-        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
-      },
-    ],
-    'required': false,
-    'quantity': 4
-  }]
-  };
+  // const dummyData = {
+  //   id: 1,
+  //   title: "Classic Cheese Burger",
+  //   image: "https://example.com/cheese-burger.jpg", // Replace with your own image URL
+  //   description: "Juicy beef patty topped with melted cheese, fresh lettuce, tomato, pickles, and our special sauce, all nestled in a toasted bun.",
+  //   price: 15.50,
+  //   rating: 4.8,
+  //   time: 12, // in minutes
+  //   calories: 145, // in kcal
+  //   extras: [
+  //     {
+  //       name: "More Ham",
+  //       price: 4.50,
+  //     },
+  //     {
+  //       name: "Spicy",
+  //       price: 0.50,
+  //     },
+  //     {
+  //       name: "Add Egg",
+  //       price: 2.00,
+  //     },
+  //   ],
+  //   options: [{'name': 'Flavors', 'value': [
+  //     {
+  //       name: 'Barbeque',
+  //       price: 0
+  //     },
+  //     {
+  //       name: 'Lemon Hot',
+  //       price: 0
+  //     },
+  //     {
+  //       name: 'Hot',
+  //       price: 0
+  //     },
+  //     {
+  //       name: 'Mild Hot',
+  //       price: 0
+  //     },
+  //   ] ,  'required': false,
+  //   'quantity': 2
+  // },{'name': 'Drinks', 'value': [
+  //     {
+  //       name: 'Coca Cola',
+  //       price: 2,
+  //       images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
+  //     },
+  //     {
+  //       name: 'Smirnoff',
+  //       price: 1,
+  //       images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
+  //     },
+  //     {
+  //       name: 'Pepsi',
+  //       price: 2,
+  //       images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
+  //     },
+  //     {
+  //       name: 'Lemonade',
+  //       price: 3,
+  //       images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
+  //     },
+  //   ],
+  //   'required': false,
+  //   'quantity': 4
+  // }]
+  // };
   const constructProductFormObject = (product) => {
     // Initialize the form object
     let formObject = {
@@ -131,7 +134,7 @@ function Product({product}) {
   
     // Loop through options and set the values array to empty
     if (product.options) {
-      formObject.options = dummyData.options.map(option => ({
+      formObject.options = product.options.map(option => ({
         name: option.name,
         required: option.required || false,
         quantity: option.quantity || null,
@@ -153,26 +156,25 @@ function Product({product}) {
 //   function handleRemoveFromCart(product){
 //     dispatch(removeFromCart({id : product}))
 //   }
-//   function addQuantityToObjects(inputList) {
-
-//     const result = {};
-//     inputList.forEach(obj => {
-//         const title = Object.keys(obj)[0];
-//         const arrayLength = obj[title].length;
-//         result[title] = arrayLength;
-//     });
-//     return result;
-// }
+  function addQuantityToObjects(inputList) {
+    const result = {};
+    inputList.forEach(obj => {
+        const title = obj.products[0].title;
+        result[title] = (result[title] ?? 0) + obj.products.length
+    });
+    return result;
+}
 //   // const item = productItems.find(item => product.title === title);
 
 
 //   // Example usage:
 
-//   const newList = addQuantityToObjects(cartItems);
-//   var quantity = 0
-//   if (newList){
-//       quantity = newList[title]
-//   }
+  const newList = addQuantityToObjects(cartItems);
+  var quantity = 0
+  if (newList){
+      quantity = newList[product.title]
+  }
+
   function pressHandler (){
     navigation.navigate('Product',{product, productData})
 
@@ -213,7 +215,7 @@ function Product({product}) {
           colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']} // Customize gradient colors
           style={styles.gradient}
         >
-        <Pressable style={styles.addButton} onPress={handleIncrement}>
+        <Pressable style={styles.minusButton} onPress={handleIncrement}>
             <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
               <Path
                 d="M12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0ZM17 13H13V17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17V13H7C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11H11V7C11 6.44772 11.4477 6 12 6C12.5523 6 13 6.44772 13 7V11H17C17.5523 11 18 11.4477 18 12C18 12.5523 17.5523 13 17 13Z"
@@ -221,17 +223,24 @@ function Product({product}) {
               />
             </Svg>
           </Pressable>
+         {quantity > 0 && <View style={styles.textButton}><Text style={styles.price}>{quantity}</Text></View>}
+       {quantity > 0 && <Pressable disabled={quantity == 0} style={styles.addButton} onPress={quantity > 0 ? ()=>{handleDecrement(cartItems.findIndex(item => product.title === item.products[0].title))} : ()=>{}}>
+       <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><Path fill="#BC6C25" d="M432 256c0 13.3-10.7 24-24 24L40 280c-13.3 0-24-10.7-24-24s10.7-24 24-24l368 0c13.3 0 24 10.7 24 24z"/></Svg>
+          </Pressable>}
           <View style={styles.detailsContainer}>
-        <View style={styles.pill}>
-          <Text style={styles.pillText}>African</Text>
-        </View>
-        <View style={styles.pill}>
-          <Text style={styles.pillText}>Sides</Text>
-        </View>
-        <View style={styles.pill}>
-          <Text style={styles.pillText}>2+</Text>
-        </View>
-      </View>
+          {product?.subCategory?.slice(0, 2).map((item, index) => (
+  <View key={index} style={styles.pill}>
+    <Text style={styles.pillText}>{item}</Text>
+  </View>
+))}
+{product?.subCategory?.length > 2 && (
+  <View style={styles.pill}>
+    <Text style={styles.pillText}>
+      +{product.subCategory.length - 2} 
+    </Text>
+  </View>
+)}
+</View>
         </LinearGradient>
       </ImageBackground>
     )}</Pressable>
@@ -285,7 +294,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     gap: 3,
     bottom: 0,
-    paddingHorizontal: 10,
+    paddingHorizontal: 1,
     marginBottom: 5,
   },
   pill: {
@@ -313,7 +322,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start'
   },
   price: {
-    fontSize: 14,
+    fontSize: 15,
     color: 'rgba(0,0,0,0.7)',
   },
   card: {
@@ -349,10 +358,31 @@ const styles = StyleSheet.create({
     textDecorationLine: "line-through",
     fontSize: 14,
   },
-  addButton: {
+  minusButton: {
     position: 'absolute',
     top: 10,
     right: 10,
+    backgroundColor: 'rgba(255,255,255,0.8)', // Orange color for the button
+    borderRadius: 50,
+    padding: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textButton: {
+    position: 'absolute',
+    top: 12,
+    right: 69,
+    backgroundColor: 'rgba(255,255,255,0.8)', // Orange color for the button
+    borderRadius: 50,
+    padding: 1,
+    paddingHorizontal: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
     backgroundColor: 'rgba(255,255,255,0.8)', // Orange color for the button
     borderRadius: 50,
     padding: 5,

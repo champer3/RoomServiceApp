@@ -41,7 +41,6 @@ import io from 'socket.io-client';
 import TransparentSheet from "../components/Modals/TransparentSheet.";
 import axios from "axios";
 import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
-import { current } from "@reduxjs/toolkit";
 import { fetchProducts } from "../Data/Items"
 import ItemSmallCategory from "../components/Category/ItemSmallCategory";
 // const SERVER_URL = 'ws://192.168.179.1:3000';
