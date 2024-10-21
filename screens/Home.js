@@ -589,11 +589,11 @@ function Home() {
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1,marginBottom: '5%' }}>
         <LinearGradient
           // colors={["#19171A", "#01418D", "#2873CC"]}
           // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-          style={{ flex: 1}}
+          style={{ flex: 1 }}
           locations={[0.05, 0.1, 0.15, 0.2, 0.6,]}
           colors={['#283618', "#354820", "#425928", "#4F6B30", '#F0F0F0']}><View
             // colors={["#19171A", "#01418D", "#2873CC"]}
@@ -601,7 +601,6 @@ function Home() {
             // locations={[0.1375, 0.275, 0.3125, 0.80, 1]}
             // colors={[]}
             style={{ justifyContent: 'center', height: 170 }}
-          // style={{ borderBottomEndRadius: 20, borderBottomLeftRadius: 20 }}
           >
             <SafeAreaView onTouchStart={() => { ref?.current?.scrollTo(0); setBlink(true) }} style={styles.top}>
               <View
@@ -631,7 +630,7 @@ function Home() {
                         }}
 
                       >
-                        {address ? address?.address : <Pressable onPress={() => {navigation.navigate("Address")}}><Text>Where should we send your order?</Text></Pressable>}
+                        {address ? address?.address : <Pressable onPress={() => { navigation.navigate("Address") }}><Text>Where should we send your order?</Text></Pressable>}
                       </Text>}
                     </View>
 
@@ -767,37 +766,10 @@ function Home() {
                     style={{ color: "black", fontSize: 16, fontFamily: "Poppins-SemiBold" }}
 
                   >
-                    What would you like??
+                    What would you like?
                   </Text>
                 </View>
               </Pressable>
-
-              {/* <View style={{ marginTop: 0, paddingBottom: 1 }}>
-              {isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
-          <FadeInView style={{marginVertical: 5, marginTop: 8}}>
-       <ItemSmallCategory
-                  items={[
-                    { text: "Alcohol", image: require("../assets/Alcohol.png") },
-                    {
-                      text: "Ice Cream",
-                      image: require("../assets/icecream.png"),
-                    },
-                    { text: "Food", image: require("../assets/food.png") },
-                    { text: "Frozen", image: require("../assets/frozen.png") },
-                    { text: "Snacks", image: require("../assets/snack.png") },
-                  ]}
-                  color="white"
-                  show={!isVisible}
-                />
-      </FadeInView>
-    </ScrollView>}
-              {!isVisible && <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
-          <FadeOutView style={{ marginVertical: 12  }}>
-       
-      </FadeOutView>
-    </ScrollView>}
-              </View> */}
-
             </SafeAreaView>
           </View>
           <View style={{ flex: 1, }}>

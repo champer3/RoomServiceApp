@@ -240,7 +240,7 @@ function HomeTabs() {
         tabBarStyle: {
           position: 'absolute',
           bottom: 0,
-          height: "9%",
+          height: "8%",
           backgroundColor: 'white',
           shadowColor: 'black',
           shadowOffset: {
