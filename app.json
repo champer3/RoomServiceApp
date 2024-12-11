@@ -2,7 +2,7 @@
   "expo": {
     "name": "Room  Service",
     "slug": "RS",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -64,7 +64,8 @@
             "buildToolsVersion": "31.0.0"
           },
           "ios": {
-            "deploymentTarget": "14.0"
+            "deploymentTarget": "15.1",
+            "flipper": false
           }
         }
       ]

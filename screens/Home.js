@@ -7,7 +7,7 @@ import {
   Dimensions,
   StatusBar,
   Button,
-  Animated, 
+  Animated,
   FlatList,
 } from "react-native";
 import Text from '../components/Text';
@@ -108,7 +108,7 @@ function Home() {
   const [message, setMessage] = useState('')
   const [orderId, setOrderId] = useState('')
   const [actions, setAction] = useState('')
-  
+
   const handleSendNotification = (title, message) => {
     if (expoPushToken) {
       dispatch(triggerNotification(expoPushToken, title, message));
@@ -181,20 +181,21 @@ function Home() {
 
   // connectSocket()
   // },[])
-  useEffect(()=>{if(message){handleSendNotification("Order Update", message)};
-  const date = new Date()
-  dispatch(updateOrder({ id: {uid : orderId, act: 'status', perform: actions} })); 
-  if (actions == 'Delivered'){
-  dispatch(updateOrder({ id: {uid : orderId, act: 'date', perform: date.toString()} }));
-  
-  setDeliveringOrdersCount(prev=> prev-1)
+  useEffect(() => {
+    if (message) { handleSendNotification("Order Update", message) };
+    const date = new Date()
+    dispatch(updateOrder({ id: { uid: orderId, act: 'status', perform: actions } }));
+    if (actions == 'Delivered') {
+      dispatch(updateOrder({ id: { uid: orderId, act: 'date', perform: date.toString() } }));
 
-}
-}, [orderId])
+      setDeliveringOrdersCount(prev => prev - 1)
 
-  useEffect(() =>{
+    }
+  }, [orderId])
 
-    if(socket){
+  useEffect(() => {
+
+    if (socket) {
       socket.on('orderInDelivery', (data) => {
         console.log('we got here right')
         setMessage(data.message)
@@ -595,7 +596,7 @@ function Home() {
   return (
     <SafeAreaProvider>
       {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
-      <GestureHandlerRootView style={{ flex: 1,marginBottom: '5%' }}>
+      <GestureHandlerRootView style={{ flex: 1, marginBottom: '5%' }}>
         <LinearGradient
           // colors={["#19171A", "#01418D", "#2873CC"]}
           // colors={["#19171A", "#2F5A8C", "#2873CC"]}
@@ -752,7 +753,8 @@ function Home() {
               </View>
               <Pressable
                 style={[styles.search, { marginTop: 10 }]}
-                onPress={() => navigation.navigate("Search")}
+                // onPress={() => navigation.navigate("Search")}
+                onPress={() => handleSendNotification("Order Update", message)}
               >
                 <View
                   style={{
@@ -911,8 +913,9 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    borderRadius: 10,
+    // borderRadius: 20,
     maxHeight: 150,
+    paddingHorizontal: 6
   },
   scrollViewContent: {
     borderRadius: 10,
