@@ -10,6 +10,8 @@ import {
   KeyboardAvoidingView,
   Dimensions
 } from "react-native";
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import Input from "../components/Inputs/Input";
 import { useNavigation } from "@react-navigation/native";
 import Button from "../components/Buttons/Button";
@@ -26,7 +28,35 @@ import Text from '../components/Text';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const height = Dimensions.get('screen').height
+WebBrowser.maybeCompleteAuthSession();
+
 function NumberLogin() {
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId: '1036326714736-ccfuoqkih54f50u5trqnffods76djkja.apps.googleusercontent.com',
+  });
+
+  const getUsersProfile = async (token) => {
+    if(!token) return;
+    try{
+      const response = await fetch("https://www.googleapis.com/userinfo/v2/me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      return response.json()
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      const token = authentication?.accessToken
+      const user = getUsersProfile(token)
+      
+    }
+  }, [response]);
   function handleScreenPress() {
     Keyboard.dismiss();
   }
@@ -162,6 +192,19 @@ function NumberLogin() {
               </Pressable>
             </View>
           </View>
+          <View
+              style={[
+                styles.buttonContainer,
+              ]}
+            >
+              <BareButton borderRadius={24} color="#EEEEEE">
+                <Image
+                  style={styles.facebook}
+                  source={require("../assets/google.png")}
+                />
+                <Text> Continue with Google</Text>
+              </BareButton>
+            </View>
           <View style={styles.downView}>
             {/* <View style={styles.threeContainer}>
               <View style={styles.line}></View>

@@ -80,10 +80,12 @@
     "session": "^0.1.0",
     "socket.io-client": "^4.7.5",
     "typescript": "~5.3.3",
+    "undefined": "expo-auth-session/providers/google",
     "webpack-config": "^7.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
+    "eas-cli": "^14.1.0",
     "react-native-paper": "^5.11.3"
   },
   "private": true

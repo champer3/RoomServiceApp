@@ -56,12 +56,14 @@ function AddPin() {
   const profile = useSelector((state) => state.profileData.profile);
   const phoneNumberString = phoneNumber.replace(/[^0-9]/g, '');
   const newphoneNumber = "+1" + phoneNumberString
+  const datab = form.googleID && { googleID: form.googleID }
   const postData = {
+    ...datab,
     firstName: form.firstName,
     lastName: form.lastName,
     phoneNumber,
     email: form.email,
-    address: []
+    address: [],
   };
   const createAccount = async () => {
     try {

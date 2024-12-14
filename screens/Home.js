@@ -47,8 +47,6 @@ import ItemSmallCategory from "../components/Category/ItemSmallCategory";
 // const SERVER_URL = 'http://10.0.0.173:3000';
 const SERVER_URL = "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
 
-
-
 const FadeOutView = (props) => {
   const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 1
 
@@ -779,7 +777,7 @@ function Home() {
                 </View>
               </Pressable>
             </SafeAreaView>
-          </View>
+    </View>
           <View style={{ flex: 1, }}>
             <ScrollView
               scrollEventThrottle={16}

@@ -256,8 +256,6 @@ function EmailLogin() {
             <View
               style={[
                 styles.buttonContainer,
-                {
-                },
               ]}
             >
               <BareButton borderRadius={24} color="#EEEEEE">

@@ -10,6 +10,8 @@ import {
   Alert,
   ActivityIndicator
 } from "react-native";
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import Text from '../components/Text';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Input from "../components/Inputs/Input";
@@ -18,33 +20,92 @@ import Info from "../components/Info";
 import BareButton from "../components/Buttons/BareButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
-import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
 
+WebBrowser.maybeCompleteAuthSession();
 function EmailSignUp() {
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.profileData.profile);
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId: '1036326714736-ccfuoqkih54f50u5trqnffods76djkja.apps.googleusercontent.com',
+  });
+  const getUsersProfile = async (token) => {
+    if (!token) return null;
+    try {
+      const response = await fetch("https://www.googleapis.com/userinfo/v2/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch user profile");
+      return await response.json();
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
+      return null;
+    }
+  };
+
+  async function checkEmail(email) {
+    const userEmail = await axios.get(
+      `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getEmail/${email}`
+    );
+    return userEmail.data.data.user.length
+  }
+
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      const token = authentication?.accessToken;
+
+      (async () => {
+        const user = await getUsersProfile(token);
+
+        if (user && user.email) {
+          const emailCheckResult = await checkEmail(user.email);
+
+          if (emailCheckResult > 1) {
+            navigation.replace('Loader');
+          } else {
+            dispatch(updateProfile({
+              id: {
+                firstName: user.family_name || "",
+                lastName: user.given_name || "",
+                email: user.email,
+                googleID: user.id,
+              },
+            }));
+            navigation.navigate("AddNumber");
+          }
+        } else {
+          console.error("User profile or email is missing");
+        }
+      })();
+    }
+  }, [response]);
   function handleScreenPress() {
     Keyboard.dismiss();
   }
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
-  
-  const navigation = useNavigation();
+
   function signInHandler() {
     navigation.navigate("NumberLogin");
   }
-  const dispatch = useDispatch();
-  const data = useSelector((state) => state.profileData.profile);
+
 
   const [warning, setWarning] = useState();
   const [form, setForm] = useState(data);
   function handleUpdate() {
     dispatch(updateProfile({ id: form }));
   }
-  function pressHandler (){
+  function pressHandler() {
     handleSubmit()
   }
   function handleFormChange(field, value) {
@@ -87,7 +148,7 @@ function EmailSignUp() {
         );
         setIsLoading(true)
         setTimeout(() => {
-          if ( checkEmail.data.data.user.length > 0) {
+          if (checkEmail.data.data.user.length > 0) {
             Alert.alert(
               "Email already exist",
               "Go ahead and login with your email address"
@@ -97,10 +158,10 @@ function EmailSignUp() {
             handleUpdate();
             navigation.navigate("AddNumber");
           }
-          setTimeout(()=>{ setIsLoading(false)}, 200)
+          setTimeout(() => { setIsLoading(false) }, 200)
           // Set loading status to false after some time (simulating app loading)
         }, 1000)
-       
+
       } catch (err) {
         console.log(err);
       }
@@ -108,13 +169,13 @@ function EmailSignUp() {
   }
   console.log(form)
   return (
-    <KeyboardAvoidingView onPress={handleScreenPress}    style={{flex: 1}} >
+    <KeyboardAvoidingView onPress={handleScreenPress} style={{ flex: 1 }} >
       {isLoading ? (
         // Render loading indicator while loading
-        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-        <ActivityIndicator size="large" color="#0000ff" /></View>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color="#0000ff" /></View>
       ) : (
-     <Pressable onPress={handleScreenPress}  style={styles.container}>
+        <Pressable onPress={handleScreenPress} style={styles.container}>
           <View style={styles.welcomeView}>
             <Text style={styles.text}>Hello,</Text>
             <Text style={styles.text}>Create An Account🤩</Text>
@@ -149,7 +210,7 @@ function EmailSignUp() {
                 onChangeText: handleFormChange.bind(this, "email"),
               }}
             />
-            
+
             {warning && (
               <Info
                 text={`${warning}                                            `}
@@ -192,7 +253,7 @@ function EmailSignUp() {
             </Text> */}
 
             <View style={styles.buttonContainer}>
-              <Button onPress={handleSubmit} color={!(!warning && form.email && form.firstName && form.lastName) ? '#aaa' : '' }  >
+              <Button onPress={handleSubmit} color={!(!warning && form.email && form.firstName && form.lastName) ? '#aaa' : ''}  >
                 <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
                 <Image
                   style={styles.vector}
@@ -223,9 +284,11 @@ function EmailSignUp() {
             }}
           >
             <View style={styles.threeContainer}>
-              <View style={{height: 2,
-    backgroundColor: "#EEEEEE",
-    width: "90%",}}></View>
+              <View style={{
+                height: 2,
+                backgroundColor: "#EEEEEE",
+                width: "90%",
+              }}></View>
             </View>
             <View
               style={[
@@ -244,7 +307,7 @@ function EmailSignUp() {
               </BareButton>
             </View>
             <View style={[styles.buttonContainer]}>
-              <BareButton  borderRadius={24} color="#EEEEEE">
+              <BareButton onPress={() => { promptAsync() }} borderRadius={24} color="#EEEEEE">
                 <Image
                   style={styles.facebook}
                   source={require("../assets/google.png")}
@@ -266,7 +329,7 @@ function EmailSignUp() {
             </View>
           </View>
         </Pressable>)}
-        </KeyboardAvoidingView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -279,7 +342,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     marginHorizontal: "5%",
-    marginTop: height/35,
+    marginTop: height / 35,
     // marginTop: 200
   },
   welcomeView: {
@@ -287,7 +350,7 @@ const styles = StyleSheet.create({
     // borderColor: "black",
     // flex: 1,
     justifyContent: "flex-start",
-    height: height/10,
+    height: height / 10,
     // marginBottom: 42,
     // marginTop: 40,
   },
