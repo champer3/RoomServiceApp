@@ -36,31 +36,31 @@ function EmailLogin() {
   function validatePassword() {
     // At least 8 characters
     if (password.length < 8) {
-        return false;
+      return false;
     }
-    
+
     // Contains at least one uppercase letter
     if (!/[A-Z]/.test(password)) {
-        return false;
+      return false;
     }
 
     // Contains at least one lowercase letter
     if (!/[a-z]/.test(password)) {
-        return false;
+      return false;
     }
 
     // Contains at least one digit
     if (!/\d/.test(password)) {
-        return false;
+      return false;
     }
 
     // Contains at least one special character
     if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
-        return false;
+      return false;
     }
 
     return true;
-}
+  }
 
   const [warning, setWarning] = useState();
   const navigation = useNavigation();
@@ -69,19 +69,19 @@ function EmailLogin() {
   }
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
-  
+
   async function pressHandler() {
     setIsLoading(true)
     let response = ''
-    let storedToken = {address: [], orders:  [],}
-      
-     
-    try {response = await createAccount();}
-    catch(error){}
-    
+    let storedToken = { address: [], orders: [], }
+
+
+    try { response = await createAccount(); }
+    catch (error) { }
+
     if (typeof response !== "undefined") {
       try {
-        
+
         await AsyncStorage.setItem("profile", JSON.stringify({
           firstName: response.firstName,
           lastName: response.lastName,
@@ -106,7 +106,7 @@ function EmailLogin() {
           },
         })
       );
-        navigation.replace('Loader'); // Set loading status to false after some time (simulating app loading)
+      navigation.replace('Loader'); // Set loading status to false after some time (simulating app loading)
     } else {
       setIsLoading(false)
       Alert.alert("Invalid input", "check the email or password");
@@ -147,24 +147,24 @@ function EmailLogin() {
       console.log(err.error);
     }
   };
-  function handleEmailChange( value) {
-      setEmail(value.trim())
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  function handleEmailChange(value) {
+    setEmail(value.trim())
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      if (!emailRegex.test(value.trim())) {
-        setWarning("Provide a valid email address");
-      } else {
-        setWarning();
-      }
+    if (!emailRegex.test(value.trim())) {
+      setWarning("Provide a valid email address");
+    } else {
+      setWarning();
+    }
   }
   return (
     <TouchableWithoutFeedback onPress={handleScreenPress}>
-         <KeyboardAvoidingView onPress={handleScreenPress}  style={styles.container}>
-         {isLoading ? (
-        // Render loading indicator while loading
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (<>
-        <StatusBar hidden={false} barStyle="dark-content" />
+      <KeyboardAvoidingView onPress={handleScreenPress} style={styles.container}>
+        {isLoading ? (
+          // Render loading indicator while loading
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (<>
+          <StatusBar hidden={false} barStyle="dark-content" />
           <View style={styles.welcomeView}>
             <Text style={styles.text}>Hello,</Text>
             <Text style={styles.text}>Welcome Back😍</Text>
@@ -189,7 +189,7 @@ function EmailLogin() {
               }}
               icon={<MaterialIcons name="email" size={24} color="#aaa" />}
             />
-             {warning && (
+            {warning && (
               <Info
                 text={`${warning}                                            `}
               />
@@ -204,8 +204,8 @@ function EmailLogin() {
               secured={true}
               icon={<MaterialIcons name="lock" size={24} color="#aaa" />}
             />
-           
-          
+
+
             <Text
               style={{
                 textAlign: "right",
@@ -218,7 +218,7 @@ function EmailLogin() {
             </Text>
 
             <View style={styles.buttonContainer}>
-              <Button onPress={!(!warning && email) || !validatePassword() ? ()=>{}: pressHandler} color={!(!warning && email) || !validatePassword() ? '#aaa' : '' }>
+              <Button onPress={!(!warning && email) || !validatePassword() ? () => { } : pressHandler} color={!(!warning && email) || !validatePassword() ? '#aaa' : ''}>
                 <Text style={{ fontSize: 16, color: "white" }}>Login </Text>
                 <Image
                   style={styles.vector}
@@ -273,7 +273,7 @@ function EmailLogin() {
                 },
               ]}
             >
-              <BareButton onPress={()=> promptAsync()} borderRadius={24} color="#EEEEEE">
+              <BareButton onPress={() => promptAsync()} borderRadius={24} color="#EEEEEE">
                 <Image
                   style={styles.facebook}
                   source={require("../assets/google.png")}
@@ -295,7 +295,7 @@ function EmailLogin() {
               </Pressable>
             </View>
           </View></>)}
-          </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 }
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     marginHorizontal: "5%",
-    marginTop: height/35,
+    marginTop: height / 35,
     // marginTop: 200
   },
   welcomeView: {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   },
   image: {
     // flex: 1,
-    height: height/3
+    height: height / 3
   },
   buttonContainer: {
     width: "100%",

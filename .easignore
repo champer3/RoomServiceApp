@@ -1,0 +1,8 @@
+# Node modules cache (optional, if your package manager can handle it)
+node_modules/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Build outputs

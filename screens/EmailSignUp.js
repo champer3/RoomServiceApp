@@ -26,6 +26,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 WebBrowser.maybeCompleteAuthSession();
 function EmailSignUp() {
@@ -35,6 +36,34 @@ function EmailSignUp() {
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: '1036326714736-ccfuoqkih54f50u5trqnffods76djkja.apps.googleusercontent.com',
   });
+  const saveTokenToAsyncStorage = async (authToken) => {
+    try {
+      await AsyncStorage.setItem("authToken", authToken);
+      console.log("Token saved successfully.");
+    } catch (error) {
+      console.error("Error saving token:", error);
+    }
+  };
+  const emailLogin = async (postData) => {
+    try {
+      const response = await axios.post(
+        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/loginWithEmail`,
+        JSON.stringify(postData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const authToken = response.data.token;
+      console.log(authToken);
+      await saveTokenToAsyncStorage(authToken);
+      return response.data.data.user;
+    } catch (err) {
+      console.log(err.error);
+    }
+  };
+
   const getUsersProfile = async (token) => {
     if (!token) return null;
     try {
@@ -66,12 +95,62 @@ function EmailSignUp() {
 
       (async () => {
         const user = await getUsersProfile(token);
+        const postData = {
+          email: user.email,
+          googleID: user.id,
+        };
 
         if (user && user.email) {
           const emailCheckResult = await checkEmail(user.email);
 
-          if (emailCheckResult > 1) {
-            navigation.replace('Loader');
+          if (emailCheckResult >= 1) {
+            let storedToken = { address: [], orders: [], }
+
+
+            try {
+              const userResponse = await emailLogin(postData);
+              if (userResponse && userResponse.firstName && userResponse.email) {
+                try {
+                  const address = storedToken?.address || '';
+                  await AsyncStorage.setItem(
+                    "profile",
+                    JSON.stringify({
+                      firstName: userResponse.firstName,
+                      lastName: userResponse.lastName,
+                      phoneNumber: userResponse.phoneNumber,
+                      email: userResponse.email,
+                      password: userResponse.password,
+                      address: address,
+                    })
+                  );
+                  console.log("Profile saved successfully.");
+                } catch (error) {
+                  console.error("Error saving profile to AsyncStorage:", error);
+                }
+            
+                dispatch(
+                  updateProfile({
+                    id: {
+                      firstName: userResponse.firstName,
+                      lastName: userResponse.lastName,
+                      phoneNumber: userResponse.phoneNumber,
+                      email: userResponse.email,
+                      password: userResponse.password,
+                      address: storedToken?.address || '',
+                    },
+                  })
+                );
+            
+                navigation.replace('Loader');
+              } else {
+                setIsLoading(false);
+                Alert.alert("Invalid Input", "Check the email or password.");
+              }
+            } catch (error) {
+              console.error("Error during email login:", error);
+              setIsLoading(false);
+              Alert.alert("Login Failed", "An unexpected error occurred.");
+            }
           } else {
             dispatch(updateProfile({
               id: {
@@ -373,12 +452,12 @@ const styles = StyleSheet.create({
   vector: {
     width: 21.5,
     height: 15,
-    // resizeMode: 'center',
+    resizeMode: 'center',
     marginLeft: 5,
   },
   facebook: {
     width: "7%",
-    resizeMode: "contain",
+    resizeMode: "center",
     marginRight: 3,
   },
   threeContainer: {

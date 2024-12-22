@@ -37,7 +37,7 @@ function LoadScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(()=>{setTimeout(()=>{retrieveNewFromAsyncStorage()}, 3000) },[])
+  useEffect(()=>{setTimeout(()=>{dispatch(fetchProducts()); retrieveNewFromAsyncStorage()}, 3000) },[])
  const retrieveTokenFromAsyncStorage = async () => {
   try {
     let profile = await AsyncStorage.getItem("profile");
@@ -45,7 +45,7 @@ function LoadScreen() {
     storedToken = JSON.parse(storedToken)
     if (profile) {
       profile = JSON.parse(profile)
-        dispatch(fetchProducts());
+        
         dispatch(fetchOrders());
           dispatch(registerPushNotifications());
       dispatch(updateProfile({ id: {firstName: profile.firstName, lastName: profile.lastName,phoneNumber : profile.phoneNumber, email: profile.email, address: storedToken.address}}));

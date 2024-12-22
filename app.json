@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Room  Service",
-    "slug": "RS",
-    "version": "1.2.0",
+    "slug": "rs",
+    "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -51,7 +51,7 @@
     "scheme": "room-service",
     "extra": {
       "eas": {
-        "projectId": "53a371fa-dec6-47d3-acec-1d49adae92e3"
+        "projectId": "7df9a269-6549-4677-bda2-3d9cc03c63e2"
       }
     },
     "plugins": [
