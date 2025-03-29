@@ -16,7 +16,9 @@ import { Feather, EvilIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import ItemCategory from "../components/Category/ItemCategory";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Svg, { Path } from 'react-native-svg';
 import { triggerNotification } from '../Data/notify';
 import {
@@ -43,8 +45,6 @@ import axios from "axios";
 import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
 import { fetchProducts } from "../Data/Items"
 import ItemSmallCategory from "../components/Category/ItemSmallCategory";
-// const SERVER_URL = 'ws://192.168.179.1:3000';
-// const SERVER_URL = 'http://10.0.0.173:3000';
 const SERVER_URL = "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
 
 const FadeOutView = (props) => {
@@ -613,33 +613,25 @@ function Home() {
                   flexDirection: "row",
                   justifyContent: "space-between",
                   alignItems: 'center',
-                  paddingHorizontal: "5%",
+                  paddingHorizontal: "4%",
                   paddingTop: "3%",
                 }]}
               >
 
                 {<View style={{ justifyContent: 'center', }}>
-                  <Text style={{ color: 'white', fontSize: 15, fontFamily: 'Poppins-SemiBold' }}>{greeting} {data.firstName}</Text>
+                  <Text style={{ color: 'white', fontSize: 16, letterSpacing: 1, fontFamily: 'SFPRO-Medium', }}>{greeting} {data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1).toLowerCase()}</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-
                   </View>
-                  <View style={{ justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
-                    <View>
-                      {<Text
-                        style={{
-                          color: "white",
-                          fontSize: 9,
-                          width: 250,
-                          letterSpacing: 1,
-
-                        }}
-
-                      >
-                        {address ? address?.address : <Pressable onPress={() => { navigation.navigate("Address") }}><Text>Where should we send your order?</Text></Pressable>}
-                      </Text>}
-                    </View>
-
+                  <View style={{ flexDirection: "row", justifyContent: "flex-start", alignItems: "center", marginTop: 4, marginLeft: -4 }}>
+                    <Entypo style={{marginTop: 2, marginRight: 6}}  name="location-pin" size={16} color="white" />
+                    <Pressable onPress={() => { navigation.navigate("Address") }}>{address ? (
+                      <Text style={styles.textStyle}>{address?.address}</Text>
+                    ) : (
+                      <Text style={styles.textStyle}>1615 17th Avenue North</Text>
+                    )}</Pressable>
+                    <MaterialIcons style={{marginTop: 2, marginLeft: 6}} name="keyboard-arrow-down" size={24} color="white" />
                   </View>
+
                   {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
                 </View>}
                 <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -751,8 +743,8 @@ function Home() {
               </View>
               <Pressable
                 style={[styles.search, { marginTop: 10 }]}
-                // onPress={() => navigation.navigate("Search")}
-                onPress={() => handleSendNotification("Order Update", message)}
+                onPress={() => navigation.navigate("Search")}
+                // onPress={() => handleSendNotification("Order Update", message)}
               >
                 <View
                   style={{
@@ -767,17 +759,17 @@ function Home() {
                     paddingHorizontal: 12,
                   }}
                 >
-                  <EvilIcons name="search" size={28} color="black" />
+                  <Feather name="search" size={20} color="black" />
                   <Text
-                    style={{ color: "black", fontSize: 16, fontFamily: "Poppins-SemiBold" }}
+                    style={{ color: "black", fontSize: 18, fontFamily: 'SFPRO-Medium' }}
 
                   >
-                    What would you like?
+                    Search Room Service
                   </Text>
                 </View>
               </Pressable>
             </SafeAreaView>
-    </View>
+          </View>
           <View style={{ flex: 1, }}>
             <ScrollView
               scrollEventThrottle={16}
@@ -797,19 +789,18 @@ function Home() {
                 >
                   <View style={{ flexDirection: "row", flexWrap: "nowrap", gap: 5 }}>
                     {[
-                      require('../assets/deal1.png'),
-                      require('../assets/deal3.png'),
-                      require('../assets/deal2.png'),
-                      require('../assets/deal4.png'),
-                      require('../assets/deal5.png'),
-                      require('../assets/deal1.png'),
+                      require('../assets/deal1.jpg'),
+                      require('../assets/deal3.jpg'),
+                      require('../assets/deal2.jpg'),
+                      require('../assets/deal4.jpg'),
+                      require('../assets/deal5.jpg'),
+                      require('../assets/deal1.jpg'),
                     ].map((image, index) => (
                       <Pressable key={index}>
                         <View style={styles.imageContainer}>
                           <Image
                             style={styles.image}
-                            source={image}
-                            resizeMode="contain"  // or "contain", depending on the effect you want
+                            source={image}// or "contain", depending on the effect you want
                           />
                         </View>
                       </Pressable>
@@ -896,24 +887,21 @@ const styles = StyleSheet.create({
   cart: {
     justifyContent: "center",
     alignItems: "center",
-    // borderWidth: 1,
     borderRadius: 10,
     backgroundColor: 'white',
-    // backgroundColor: "#023C72",
     borderColor: "white",
-    // borderWidth: 1
-  }, imageContainer: {
+  }, 
+  imageContainer: {
     width: width,
-
-    maxHeight: 150, // Set a fixed height
-    // Optional: Add border radius if desired
-    overflow: 'hidden', // Ensures the image stays within the container
+    maxHeight: 160,
   },
   image: {
     width: '100%',
-    // borderRadius: 20,
-    maxHeight: 150,
-    paddingHorizontal: 6
+    borderRadius: 10,
+    maxHeight: "100%",
+    resizeMode: "stretch",
+    padding: "2%",
+    borderRadius: 8,
   },
   scrollViewContent: {
     borderRadius: 10,
@@ -924,6 +912,12 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     marginHorizontal: "2%",
     flexDirection: "row",
+  },
+  textStyle: {
+    color: "white",
+    fontSize: 15,
+    letterSpacing: 1,
+    fontFamily: 'SFPRO-Medium',
   },
   horizontalCat: {
     width: "100%",

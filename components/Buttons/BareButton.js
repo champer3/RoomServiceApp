@@ -47,5 +47,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     alignItems: "center",
     justifyContent: "center",
+    letterSpacing: 2,
+    fontFamily: 'SFPRO-Regular',
   },
 });

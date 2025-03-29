@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useImperativeHandle } from 'react';
 import { useState } from "react";
 import FlexButton from "../Buttons/FlexButton";
 
-const  Input = ({
+const Input = ({
   text,
   length,
   icon,
@@ -19,21 +19,24 @@ const  Input = ({
   children,
   color,
   textInputConfig,
-  onPress, 
+  onPress,
   onInteract
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
   let content = (
     <TextInput
-      style={[styles.input, {color: color, height: 40, fontSize: 16}]}
+      style={[styles.input, { color: color, height: 40, fontSize: 16, fontFamily: 'SFPRO-Regular', letterSpacing: 1 }]}
       placeholder={text}
       autoComplete="address-line1"
       cursorColor={"rgba(0,0,0,0.5)"}
       maxLength={length}
       autoCapitalize="words"
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
       keyboardType={keyboard}
       placeholderTextColor={color}
       {...textInputConfig}
@@ -42,7 +45,7 @@ const  Input = ({
   if (secured) {
     content = (
       <TextInput
-        style={[styles.input, {color: color,  height: 40, fontSize: 16}]}
+        style={[styles.input, { color: color, height: 40, fontSize: 16 }]}
         placeholder={text}
         autoComplete="address-line1"
         cursorColor={"rgba(0,0,0,0.5)"}
@@ -72,8 +75,8 @@ const  Input = ({
 
       }}
     >
-      <View style={styles.container}>
-        <View style={[styles.subContainer, { flex: 1 , paddingVertical: 4,}]}>
+      <View style={[styles.container, isFocused && styles.focusedInput]}>
+        <View style={[styles.subContainer, { flex: 1, paddingVertical: 4, }]}>
           {icon}
           {content}
         </View>
@@ -90,7 +93,7 @@ const  Input = ({
             ]}
           >
             {type == "address" && (
-              <Pressable onPress={onPress} style={{flexDirection: 'row', gap: 6, alignItems: 'center'}}>
+              <Pressable onPress={onPress} style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
                 <Octicons name="location" size={24} color="#BC6C25" />
                 <Text style={{ color: "#BC6C25" }}>Get location</Text>
               </Pressable>
@@ -162,4 +165,8 @@ const styles = StyleSheet.create({
     // flex: 1,
     color: "white"
   },
+  focusedInput: {
+    borderWidth: 1,
+    borderColor: '#131212',
+  }
 });

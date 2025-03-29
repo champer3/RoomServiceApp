@@ -30,7 +30,7 @@ function StartScreen() {
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
         <ActivityIndicator size="large" color="#0000ff" /></View>
       ) : (<>
-      <Pressable onPress={pressHandler} style={{alignSelf: 'flex-end', marginBottom: height/ 9}}><Text style={{color: "#333333", opacity: 0.7, fontSize: height/50, fontWeight: "500", alignSelf: "flex-end"}}>Skip</Text></Pressable>
+      <Pressable onPress={pressHandler} style={{alignSelf: 'flex-end', marginBottom: height/ 9}}><Text style={{color: "#333333", letterSpacing: 1.3, fontFamily: 'SFPRO-Medium', opacity: 0.9, fontSize: height/50, alignSelf: "flex-end"}}>Skip</Text></Pressable>
       <View style={styles.imageContainer}>
         <Image
           style={styles.image}
@@ -38,15 +38,15 @@ function StartScreen() {
         />
       </View>
       <View style={styles.description}>
-        <Text style={{color: "#333333", fontSize: 24, fontWeight: "800", marginVertical: 4}}>Welcome to RoomService</Text>
-        <Text style={{color: "#333333", fontSize: 14, fontWeight: "500", marginVertical: 8, textAlign: "center"}}>
-          Enjoy the ease of ordering food, groceries, and related items from the
+        <Text style={{ color: "#333333", fontSize: 30, fontWeight: "800", marginVertical: 4, fontFamily: 'SFPRO-Medium', letterSpacing: 1.5, transform: [{ scaleY: 1.2 }]}}>Welcome to RoomService</Text>
+        <Text style={{color: "#333333", fontSize: 15, fontWeight: "700", marginVertical: 8, textAlign: "center", letterSpacing: 1, fontFamily: 'SFPRO-Regular'}}>
+          Enjoy the ease of ordering food, groceries, and daily items from the
           comfort of your home
         </Text>
       </View>
       <View style={styles.buttonContainer}>
         <Button onPress={emailHandler}>
-          <Text style={{ fontSize: 16, color: "white" }}>Sign Up  </Text>
+          <Text style={{ fontSize: 16, color: "white", letterSpacing: 1.3, fontFamily: 'SFPRO-Regular' }}>Sign Up  </Text>
           <Image
             style={styles.vector}
             source={require("../assets/Vector.png")}
@@ -75,9 +75,9 @@ function StartScreen() {
         </BareButton>
       </View> */}
       <View style={styles.textContainer}>
-        <Text style={{color: "#333333", opacity: 0.5}}>Already have an account?</Text>
+        <Text style={{color: "#333333", opacity: 0.8, fontSize: 16, letterSpacing: 1.3, fontFamily: 'SFPRO-Regular'}}>Already have an account?</Text>
         <Pressable onPress={signInHandler}>
-        <Text style={{color: "#BC6C25", fontWeight: "700", opacity: 1}}> Sign In</Text>
+        <Text style={{color: "#BC6C25", fontWeight: "700", opacity: 1, letterSpacing: 1.3, fontFamily: 'SFPRO-Regular'}}> Sign In</Text>
         </Pressable>
       </View>
       <View><Image style={styles.image} source={require('../assets/Logo.png')}/></View>
@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
   vector: {
     width: 21.5,
     height: 15,
-    // resizeMode: 'center',
     marginLeft: 5,
   },
   facebook: {
