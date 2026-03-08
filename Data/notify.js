@@ -16,6 +16,7 @@ Notifications.setNotificationHandler({
 
 export async function sendPushNotification(expoPushToken, title, body) {
   console.log(title, body)
+  console.log("Sending notification")
   const message = {
     to: expoPushToken,
     sound: 'default',
@@ -23,7 +24,7 @@ export async function sendPushNotification(expoPushToken, title, body) {
     body: body,
     data: { someData: 'goes here' },
   };
-
+  console.log("Your message",message)
   await fetch('https://exp.host/--/api/v2/push/send', {
     method: 'POST',
     headers: {
@@ -150,6 +151,7 @@ export const saveNotification = (notification) => async (dispatch) => {
 export const triggerNotification = (expoPushToken, title, body) => async (dispatch) => {
   try {
     // Send the notification
+    console.log("Am i here?", expoPushToken, title, body)
     await sendPushNotification(expoPushToken, title, body);
 
     // Create a notification object to save

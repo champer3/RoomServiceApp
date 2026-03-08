@@ -128,7 +128,7 @@ function EmailSignUp() {
                 } catch (error) {
                   console.error("Error saving profile to AsyncStorage:", error);
                 }
-            
+
                 dispatch(
                   updateProfile({
                     id: {
@@ -141,7 +141,7 @@ function EmailSignUp() {
                     },
                   })
                 );
-            
+
                 navigation.replace('Loader');
               } else {
                 setIsLoading(false);
@@ -299,6 +299,7 @@ function EmailSignUp() {
             <Input
               text={"First Name"}
               icon={<Ionicons name="person" size={24} color={"#aaa"} />}
+              onInteract={()=>{}}
               textInputConfig={{
                 cursorColor: "#aaa",
                 value: form.firstName,
@@ -333,8 +334,11 @@ function EmailSignUp() {
             </Text> */}
 
             <View style={styles.buttonContainer}>
-              <Button onPress={handleSubmit} color={!(!warning && form.email && form.firstName && form.lastName) ? '#aaa' : ''}  >
-                <Text style={{ fontSize: 16, color: "white" }}>Continue </Text>
+              <Button onPress={handleSubmit} color={!(!warning && form.email && form.firstName && form.lastName) ? '#8A8888' : ''}  >
+                <Text style={{
+                  fontSize: 18, color: "white", letterSpacing: 1.5,
+                  fontFamily: 'SFPRO-Regular',
+                }}>Continue</Text>
                 <Image
                   style={styles.vector}
                   source={require("../assets/Vector.png")}
@@ -364,27 +368,22 @@ function EmailSignUp() {
             }}
           >
             <View style={styles.threeContainer}>
-              <View style={{
-                height: 2,
-                backgroundColor: "#EEEEEE",
-                width: "90%",
-              }}></View>
-            </View>
-            <View
-              style={[
-                styles.buttonContainer,
-                {
-                  marginBottom: 16,
-                },
-              ]}
-            >
-              <BareButton borderRadius={24} color="#EEEEEE">
-                <Image
-                  style={[styles.facebook, { resizeMode: "center" }]}
-                  source={require("../assets/facebook.png")}
-                />
-                <Text> Continue with facebook</Text>
-              </BareButton>
+              <View style={{ width: "100%", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                <View style={{
+                  height: 1.5,
+                  backgroundColor: "#B6B1B1",
+                  width: "40%",
+                }}></View>
+                <Text style={{
+                  marginHorizontal: 16, letterSpacing: 1, fontSize: 14,
+                  fontFamily: 'SFPRO-Regular',
+                }}>or</Text>
+                <View style={{
+                  height: 1.5,
+                  backgroundColor: "#B6B1B1",
+                  width: "40%",
+                }}></View>
+              </View>
             </View>
             <View style={[styles.buttonContainer]}>
               <BareButton onPress={() => { promptAsync() }} borderRadius={24} color="#EEEEEE">
@@ -392,16 +391,16 @@ function EmailSignUp() {
                   style={styles.facebook}
                   source={require("../assets/google.png")}
                 />
-                <Text> Continue with Google</Text>
+                <Text style={{letterSpacing: 1, fontFamily: 'SFPRO-Regular', fontSize: 16}}> Continue with Google</Text>
               </BareButton>
             </View>
             <View style={styles.textContainer}>
-              <Text style={{ color: "#333333", opacity: 0.5 }}>
+              <Text style={{ color: "#333333", opacity: 0.8, letterSpacing: 0.8, fontFamily: 'SFPRO-Regular', fontSize: 16, marginRight: 4}}>
                 Already have an account?
               </Text>
               <Pressable onPress={signInHandler}>
                 <Text
-                  style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}
+                  style={{ color: "#BC6C25", fontWeight: "700", letterSpacing: 1, fontFamily: 'SFPRO-Regular', fontSize: 16 }}
                 >
                   Sign In
                 </Text>
@@ -453,12 +452,11 @@ const styles = StyleSheet.create({
   vector: {
     width: 21.5,
     height: 15,
-    resizeMode: 'center',
     marginLeft: 5,
   },
   facebook: {
     width: "7%",
-    resizeMode: "center",
+    resizeMode: "contain",
     marginRight: 3,
   },
   threeContainer: {
@@ -479,9 +477,9 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#333333",
-    fontSize: 28,
-    fontWeight: "500",
+    fontSize: 32,
     letterSpacing: 2,
+    fontFamily: 'SFPRO-Regular',
   },
   lineContainer: {
     width: "100%",

@@ -13,21 +13,22 @@ function ProductHorizontal({ items,categoryName}) {
   }
 
   return (
-    <View style={{marginBottom: 15, borderRadius: 15, overflow: 'hidden', backgroundColor: '#F0F0F0', 
+    <View style={{marginBottom: 15, borderRadius: 15, overflow: 'hidden', backgroundColor: 'white', 
  }}>
-    <Text style={{ paddingLeft: '3%',      fontSize: 22,
-          color: '#BC6C25',
-          // borderLeftWidth: 5,
+    <Text style={{ paddingLeft: '3%',      fontSize: 24,
+          // color: '#BC6C25',
+          color: '#333333',
           textDecorationStyle: "solid",
           textDecorationColor: "#BC6C25",
-          fontFamily: 'Poppins-SemiBold',
-          // borderLeftColor: '#BC6C25', // Distinct accent color
+          fontFamily: 'SFPRO-Bold',
           paddingTop: 5,
+          letterSpacing: 1.2,
+          transform: [{ scaleY: 1.2 }],
           // backgroundColor: '#BC6C25', // Light background to make it stand out
           paddingLeft: 15 }}>
         {categoryName}
       </Text>
-      <View style={{  backgroundColor: '#F0F0F0'  }}>
+      <View style={{  backgroundColor: 'white'  }}>
       {rows.map((row, rowIndex) => (
         <ScrollView key={rowIndex} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listContainer} horizontal={true}>
         <View key={rowIndex} style={styles.rowContainer}>
@@ -47,7 +48,7 @@ export default ProductHorizontal
 const styles = StyleSheet.create({
   listContainer: {
     // paddingRight: 10,
-    backgroundColor: '#F0F0F0', 
+    backgroundColor: 'white', 
   },
   rowContainer: {
     flexDirection: 'row',

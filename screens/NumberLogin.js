@@ -19,6 +19,7 @@ import Button from "../components/Buttons/Button";
 import BareButton from "../components/Buttons/BareButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import PhoneIcon from "../components/PhoneIcon";
+import { updateProfile } from "../Data/profile";
 import React, {
   useCallback,
   useEffect,
@@ -37,6 +38,7 @@ function NumberLogin() {
   const navigation = useNavigation();
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: '1036326714736-ccfuoqkih54f50u5trqnffods76djkja.apps.googleusercontent.com',
+    androidClientId: ''
   });
 
   const saveTokenToAsyncStorage = async (authToken) => {
@@ -107,7 +109,6 @@ function NumberLogin() {
           const emailCheckResult = await checkEmail(user.email);
 
           if (emailCheckResult >= 1) {
-            alert("I am present")
             let storedToken = { address: [], orders: [], }
 
 
@@ -131,7 +132,6 @@ function NumberLogin() {
                 } catch (error) {
                   console.error("Error saving profile to AsyncStorage:", error);
                 }
-                Alert.alert("before dispatch")
                 dispatch(
                   updateProfile({
                     id: {
@@ -144,9 +144,7 @@ function NumberLogin() {
                     },
                   })
                 );
-                Alert.alert("after dispatch")
                 navigation.replace('Loader');
-                Alert.alert("after loader")
               } else {
                 setIsLoading(false);
                 Alert.alert("Invalid Input", "Check the email or password.");
@@ -157,7 +155,6 @@ function NumberLogin() {
               Alert.alert("Login Failed", "An unexpected error occurred.");
             }
           } else {
-            Alert.alert("before dispatch II")
             dispatch(updateProfile({
               id: {
                 firstName: user.family_name || "",
@@ -166,9 +163,7 @@ function NumberLogin() {
                 googleID: user.id,
               },
             }));
-            Alert.alert("after dispatch II")
             navigation.navigate("AddNumber");
-            Alert.alert("after AddNumber")
           }
         } else {
           console.error("User profile or email is missing");
@@ -281,22 +276,26 @@ function NumberLogin() {
               />
             </Button>
           </View>
-          <View>
-            <Pressable onPress={emailHandler}>
-              <Text
-                style={{
-                  // marginBottom: 120,
-                  // marginTop: 40,
-                  color: "#BC6C25",
-                  fontSize: 16,
-                  fontWeight: "500",
-                  textAlign: "center",
-                }}
-              >
-                Login with email and password
-              </Text>
-            </Pressable>
-          </View>
+          <Text style={{letterSpacing: 0.5, fontSize: 13,
+            fontFamily: 'SFPRO-Regular', paddingHorizontal: 2, opacity: 0.8}}>
+            By proceeding with the sign-in process, you consent to receiving a one-time verification code via text message sent to the phone number linked to your account. Standard message and data rates may apply.
+          </Text>
+        </View>
+        <View style={{ width: "100%", flexDirection: "row", justifyContent: "center", alignItems: "center", marginVertical: "6%" }}>
+          <View style={{
+            height: 1.5,
+            backgroundColor: "#B6B1B1",
+            width: "40%",
+          }}></View>
+          <Text style={{
+            marginHorizontal: 16, letterSpacing: 1, fontSize: 15,
+            fontFamily: 'SFPRO-Regular',
+          }}>or</Text>
+          <View style={{
+            height: 1.5,
+            backgroundColor: "#B6B1B1",
+            width: "40%",
+          }}></View>
         </View>
         <View style={[styles.buttonContainer]}>
           <BareButton onPress={() => { promptAsync() }} borderRadius={24} color="#EEEEEE">
@@ -304,7 +303,7 @@ function NumberLogin() {
               style={styles.facebook}
               source={require("../assets/google.png")}
             />
-            <Text> Continue with Google</Text>
+            <Text style={{ letterSpacing: 1, fontFamily: 'SFPRO-Regular', fontSize: 16 }}> Continue with Google</Text>
           </BareButton>
         </View>
         <View style={styles.downView}>
@@ -332,12 +331,12 @@ function NumberLogin() {
               </BareButton>
             </View> */}
           <View style={styles.textContainer}>
-            <Text style={{ color: "#333333", opacity: 0.5 }}>
+            <Text style={{ color: "#333333", opacity: 0.7, letterSpacing: 0.8, fontFamily: 'SFPRO-Regular', fontSize: 16, marginRight: 4 }}>
               New to RoomService?
             </Text>
             <Pressable onPress={signUpHandler}>
               <Text
-                style={{ color: "#BC6C25", fontWeight: "700", opacity: 1 }}
+                style={{ color: "#BC6C25", fontWeight: "700", opacity: 1, letterSpacing: 0.8, fontFamily: 'SFPRO-Regular', fontSize: 16 }}
               >
                 {" "}
                 Sign Up
@@ -374,12 +373,11 @@ const styles = StyleSheet.create({
   vector: {
     width: 21.5,
     height: 15,
-    resizeMode: 'center',
     marginLeft: 5,
   },
   facebook: {
     width: "7%",
-    resizeMode: "center",
+    resizeMode: "contain",
     marginRight: 3,
   },
   threeContainer: {
@@ -406,6 +404,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "500",
     letterSpacing: 2,
+    fontFamily: 'SFPRO-Regular',
   },
   downView: {
     marginTop: 22,

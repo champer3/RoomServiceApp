@@ -390,7 +390,7 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }, []);
   const [fontsLoaded, setFontsLoaded] = useState(false);
-
+  console.log("fontsLoading", fontsLoaded)
   useEffect(() => {
     loadFonts().then(() => setFontsLoaded(true));
   }, []);
@@ -401,6 +401,10 @@ useEffect(() => {
       'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
       'Poppins-SemiBold': require('./assets/fonts/Poppins-SemiBold.ttf'),
       'Poppins-Medium': require('./assets/fonts/Poppins-Medium.ttf'),
+      'SFPRO-Regular': require('./assets/fonts/SFPRODISPLAYREGULAR.ttf'),
+      'SFPRO-Medium': require('./assets/fonts/SFPRODISPLAYMEDIUM.ttf'),
+      'SFPRO-Bold': require('./assets/fonts/SFPRODISPLAYBOLD.ttf'),
+      
       // Add other Poppins font styles if needed
     });
   };

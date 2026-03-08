@@ -1,4 +1,4 @@
-import { Image, Pressable, Dimensions , ImageBackground} from "react-native";
+import { Image, Pressable, Dimensions, ImageBackground } from "react-native";
 import { StyleSheet, View } from "react-native";
 import FlexButton from "../Buttons/FlexButton";
 import { MaterialIcons } from '@expo/vector-icons';
@@ -6,15 +6,15 @@ import Text from '../Text';
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import {useSelector, useDispatch} from 'react-redux'
-import {addToCart, removeFromCart} from '../../Data/cart'
+import { useSelector, useDispatch } from 'react-redux'
+import { addToCart, removeFromCart } from '../../Data/cart'
 import { FontAwesome } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import IncrementDecrementBtn from "../Buttons/IncrementDecrementBtn";
 import CircleButton from "../Buttons/CircleButton";
 import IncrementDecrementBton from "../Buttons/IncrementDecrementBtn copy";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import Svg, {Path} from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 const { width, height } = Dimensions.get("window");
 import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "react-native-paper";
@@ -22,37 +22,37 @@ import { Button } from "react-native-paper";
 
 
 
-function Product({product}) {
+function Product({ product }) {
   function isValidURL(str) {
     if (typeof str !== 'string') {
       str = String(str);
     }
-    
+
     return str.startsWith("http://") || str.startsWith("https://");
   }
   function handleIncrement() {
-    if (!canAddToCart()){
-      navigation.navigate('Product',{product, productData})
+    if (!canAddToCart()) {
+      navigation.navigate('Product', { product, productData })
       return
     }
-    dispatch(addToCart({id : productData }))
-   }
+    dispatch(addToCart({ id: productData }))
+  }
   function handleDecrement(index) {
-    dispatch(removeFromCart({id :{'index': index}}))
-   }
+    dispatch(removeFromCart({ id: { 'index': index } }))
+  }
   const canAddToCart = () => {
     // Check if there are at least 2 items in the extra array
     if (product.extra) {
       return false; // Cannot add to cart if there are fewer than 2 extra items
-    } if (product.components?.length > 0){
+    } if (product.components?.length > 0) {
       return false
     }
     for (let optionCategory of product.options) {
       if (optionCategory?.required) {
-          return false; // Cannot add to cart if any required category doesn't meet the required quantity
-        }
+        return false; // Cannot add to cart if any required category doesn't meet the required quantity
       }
-    return true; 
+    }
+    return true;
   };
   // const dummyData = {
   //   id: 1,
@@ -131,7 +131,7 @@ function Product({product}) {
       products: [product],
       instructions: product.instructions ? '' : null, // If instructions are true, set empty string
     };
-  
+
     // Loop through options and set the values array to empty
     if (product.options) {
       formObject.options = product.options.map(option => ({
@@ -141,121 +141,124 @@ function Product({product}) {
         values: [] // Set values to an empty array
       }));
     }
-  
+
     return formObject;
   };
   const productData = constructProductFormObject(product);
-//   const [show, setShow] = useState(false)
+  //   const [show, setShow] = useState(false)
   const navigation = useNavigation()
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids)
-//   const productItems = useSelector((state) => state.productItems.ids);
-//   function handleAddToCart(product){
-//     dispatch(addToCart({id : product}))
-//   }
-//   function handleRemoveFromCart(product){
-//     dispatch(removeFromCart({id : product}))
-//   }
+  //   const productItems = useSelector((state) => state.productItems.ids);
+  //   function handleAddToCart(product){
+  //     dispatch(addToCart({id : product}))
+  //   }
+  //   function handleRemoveFromCart(product){
+  //     dispatch(removeFromCart({id : product}))
+  //   }
   function addQuantityToObjects(inputList) {
     const result = {};
     inputList.forEach(obj => {
-        const title = obj.products[0].title;
-        result[title] = (result[title] ?? 0) + obj.products.length
+      const title = obj.products[0].title;
+      result[title] = (result[title] ?? 0) + obj.products.length
     });
     return result;
-}
-//   // const item = productItems.find(item => product.title === title);
+  }
+  //   // const item = productItems.find(item => product.title === title);
 
 
-//   // Example usage:
+  //   // Example usage:
 
   const newList = addQuantityToObjects(cartItems);
   var quantity = 0
-  if (newList){
-      quantity = newList[product.title]
+  if (newList) {
+    quantity = newList[product.title]
   }
 
-  function pressHandler (){
-    navigation.navigate('Product',{product, productData})
+  function pressHandler() {
+    navigation.navigate('Product', { product, productData })
 
   }
 
-//   const getAverageRatingByTitle = () => {
-//     const item = productItems.find(item => item.title === title);
+  //   const getAverageRatingByTitle = () => {
+  //     const item = productItems.find(item => item.title === title);
 
-//     if (item && item.reviews.length > 0) {
-//         const totalRating = item.reviews.reduce((sum, review) => sum + review.rating, 0);
-//         const averageRating = totalRating / item.reviews.length;
-//         return averageRating;
-//     } else {
-//         return 0; // Indicate that there are no reviews or the item is not found
-//     }
-// };
-//   const rating = getAverageRatingByTitle().toFixed(0)
-//   var rate = []
-//     for (var i = 0; i < 5; i++ ){
-//         if (i < rating){
-//             rate.push('star')
-//         }
-//         else{
-//             rate.push('staro')
-//         }
-//     }
+  //     if (item && item.reviews.length > 0) {
+  //         const totalRating = item.reviews.reduce((sum, review) => sum + review.rating, 0);
+  //         const averageRating = totalRating / item.reviews.length;
+  //         return averageRating;
+  //     } else {
+  //         return 0; // Indicate that there are no reviews or the item is not found
+  //     }
+  // };
+  //   const rating = getAverageRatingByTitle().toFixed(0)
+  //   var rate = []
+  //     for (var i = 0; i < 5; i++ ){
+  //         if (i < rating){
+  //             rate.push('star')
+  //         }
+  //         else{
+  //             rate.push('staro')
+  //         }
+  //     }
   return (
     <View style={styles.container}>
       <Pressable onPress={pressHandler}>
-    {product.images && isValidURL(product.images[0]) && (
-      <ImageBackground
-        style={styles.image}
-        imageStyle={{ borderRadius: 20 }}
-        source={{ uri: product.images[0] }}
-      >
-        {/* Apply LinearGradient as an overlay */}
-        <LinearGradient
-          colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']} // Customize gradient colors
-          style={styles.gradient}
-        >
-        <Pressable style={styles.minusButton} onPress={handleIncrement}>
-            <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-              <Path
-                d="M12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0ZM17 13H13V17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17V13H7C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11H11V7C11 6.44772 11.4477 6 12 6C12.5523 6 13 6.44772 13 7V11H17C17.5523 11 18 11.4477 18 12C18 12.5523 17.5523 13 17 13Z"
-                fill="#BC6C25"
-              />
-            </Svg>
-          </Pressable>
-         {quantity > 0 && <View style={styles.textButton}><Text style={styles.price}>{quantity}</Text></View>}
-       {quantity > 0 && <Pressable disabled={quantity == 0} style={styles.addButton} onPress={quantity > 0 ? ()=>{handleDecrement(cartItems.findIndex(item => product.title === item.products[0].title))} : ()=>{}}>
-       <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><Path fill="#BC6C25" d="M432 256c0 13.3-10.7 24-24 24L40 280c-13.3 0-24-10.7-24-24s10.7-24 24-24l368 0c13.3 0 24 10.7 24 24z"/></Svg>
-          </Pressable>}
-          <View style={styles.detailsContainer}>
-          {product?.subCategory?.slice(0, 2).map((item, index) => (
-  <View key={index} style={styles.pill}>
-    <Text style={styles.pillText}>{item}</Text>
-  </View>
-))}
-{product?.subCategory?.length > 2 && (
-  <View style={styles.pill}>
-    <Text style={styles.pillText}>
-      +{product.subCategory.length - 2} 
-    </Text>
-  </View>
-)}
-</View>
-        </LinearGradient>
-      </ImageBackground>
-    )}</Pressable>
-    <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
-      {product.title}
-    </Text>
-    <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">
-      {product.description.length > 1 ? product.description : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." }
-    </Text>
-    <View style={{width: 172.5}}>
-      <View style={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={styles.price}>${product.price?.toFixed(2)}</Text><Pressable style={{backgroundColor: '#BC6C25', paddingHorizontal: 6, paddingTop: 3, borderRadius: 12 }}><Text style={{color: 'white', fontSize: 12}}>Order Now</Text></Pressable></View>
-      {/* <FlexButton></FlexButton> */}
+        {product.images && isValidURL(product.images[0]) && (
+          <ImageBackground
+            style={styles.image}
+            imageStyle={{ borderRadius: 20 }}
+            source={{ uri: product.images[0] }}
+          >
+            {/* Apply LinearGradient as an overlay */}
+            <LinearGradient
+              colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']} // Customize gradient colors
+              style={styles.gradient}
+            >
+              <Pressable style={styles.minusButton} onPress={handleIncrement}>
+                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0ZM17 13H13V17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17V13H7C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11H11V7C11 6.44772 11.4477 6 12 6C12.5523 6 13 6.44772 13 7V11H17C17.5523 11 18 11.4477 18 12C18 12.5523 17.5523 13 17 13Z"
+                    fill="#283618"
+                  />
+                </Svg>
+              </Pressable>
+              {quantity > 0 && <View style={styles.textButton}><Text style={styles.price}>{quantity}</Text></View>}
+              {quantity > 0 && <Pressable disabled={quantity == 0} style={styles.addButton} onPress={quantity > 0 ? () => { handleDecrement(cartItems.findIndex(item => product.title === item.products[0].title)) } : () => { }}>
+                <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><Path fill="#283618" d="M432 256c0 13.3-10.7 24-24 24L40 280c-13.3 0-24-10.7-24-24s10.7-24 24-24l368 0c13.3 0 24 10.7 24 24z" /></Svg>
+              </Pressable>}
+              <View style={styles.detailsContainer}>
+                {product?.subCategory?.slice(0, 2).map((item, index) => (
+                  <View key={index} style={styles.pill}>
+                    <Text style={styles.pillText}>{item}</Text>
+                  </View>
+                ))}
+                {product?.subCategory?.length > 2 && (
+                  <View style={styles.pill}>
+                    <Text style={styles.pillText}>
+                      +{product.subCategory.length - 2}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </LinearGradient>
+          </ImageBackground>
+        )}</Pressable>
+      <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+        {product.title}
+      </Text>
+      <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">
+        {product.description.length > 1 ? product.description : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}
+      </Text>
+      <View style={{ width: 172.5 }}>
+        <View style={{ justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}><Text style={styles.price}>${product.price?.toFixed(2)}</Text><Pressable style={{ backgroundColor: '#283618', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 }}><Text style={{
+          color: 'white', fontSize: 12, fontFamily: 'SFPRO-Medium',
+          letterSpacing: 1.2,
+        }}>Order Now</Text></Pressable></View>
+        {/* <FlexButton></FlexButton> */}
+      </View>
     </View>
-  </View>
-     )
+  )
 }
 
 export default Product;
@@ -268,13 +271,13 @@ const styles = StyleSheet.create({
     // backgroundColor: "white",
     justifyContent: "center",
     // alignItems:'center',
-    
-    
+
+
   }, plus: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
-  },  image: {
+  }, image: {
     flex: 1,
     // backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
@@ -305,30 +308,44 @@ const styles = StyleSheet.create({
   },
   pillText: {
     fontSize: 12,
-    color: '#555', // Darker text for contrast
+    color: '#555',
+    fontFamily: 'SFPRO-Bold',
+    letterSpacing: 1,
   },
   name: {
-    fontSize: 13,
+    fontSize: 16,
     width: 172.5,
+    marginTop: 2,
     color: '#333',
     textAlign: 'left',
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
+    fontFamily: 'SFPRO-Bold',
+    letterSpacing: 1,
+    transform: [{ scaleY: 1.1 }]
   },
   description: {
-    fontSize: 10,
+    fontSize: 12,
     color: 'rgba(0,0,0,0.5)',
     width: 172.5,
+    marginVertical: 2,
     textAlign: 'left',
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
+    fontFamily: 'SFPRO-Medium',
+    letterSpacing: 1.2,
+    transform: [{ scaleY: 1.1 }]
+
   },
   price: {
-    fontSize: 15,
+    fontSize: 16,
     color: 'rgba(0,0,0,0.7)',
+    fontFamily: 'SFPRO-Bold',
+    letterSpacing: 1.2,
+    transform: [{ scaleY: 1.1 }]
   },
   card: {
     backgroundColor: "#EFF5E9",
     borderRadius: 35,
-    width: width/2.5,
+    width: width / 2.5,
     height: 150,
     alignItems: 'center',
     justifyContent: 'center',
@@ -340,7 +357,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
-    borderColor : '#aaa',
+    borderColor: '#aaa',
     borderRadius: 10,
     marginTop: 2,
     paddingTop: 0.5,
@@ -362,9 +379,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(255,255,255,0.8)', // Orange color for the button
+    // backgroundColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'rgba(255,255,255,0.8)',
     borderRadius: 50,
-    padding: 5,
+    padding: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -374,8 +392,8 @@ const styles = StyleSheet.create({
     right: 69,
     backgroundColor: 'rgba(255,255,255,0.8)', // Orange color for the button
     borderRadius: 50,
-    padding: 1,
-    paddingHorizontal: 13,
+    padding: 2,
+    paddingHorizontal: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -385,7 +403,7 @@ const styles = StyleSheet.create({
     left: 10,
     backgroundColor: 'rgba(255,255,255,0.8)', // Orange color for the button
     borderRadius: 50,
-    padding: 5,
+    padding: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
