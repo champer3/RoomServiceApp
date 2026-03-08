@@ -23,7 +23,7 @@ function RecieptScreen() {
     const route = useRoute()
     
     
-    const [cartItems, setCartItems] = useState([...route.params.items])
+    const [cartItems, setCartItems] = useState(Array.isArray(route.params?.items) ? [...route.params.items] : [])
     const calculateTotalPrice = (formObject) => {
         const productQuantity = formObject.products.length; // The quantity of the main product
         let totalPrice = formObject.products[0].price * productQuantity; // Start with the base product price times the quantity

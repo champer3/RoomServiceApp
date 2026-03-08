@@ -43,9 +43,7 @@ import axios from "axios";
 import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
 import { fetchProducts } from "../Data/Items"
 import ItemSmallCategory from "../components/Category/ItemSmallCategory";
-// const SERVER_URL = 'ws://192.168.179.1:3000';
-// const SERVER_URL = 'http://10.0.0.173:3000';
-const SERVER_URL = "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/"
+import { SERVER_URL } from "../config";
 
 const FadeOutView = (props) => {
   const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 1
@@ -360,7 +358,7 @@ function Home() {
       const token = await retrieveTokenFromAsyncStorage();
       console.log(token)
       const order = await axios.get(
-        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/orders/get-your-orders",
+        `${SERVER_URL}/api/v1/orders/get-your-orders`,
         // "http://10.0.0.173:3000/api/v1/orders",
 
         {

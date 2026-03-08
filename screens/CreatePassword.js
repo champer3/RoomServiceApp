@@ -20,6 +20,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SERVER_URL } from "../config";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 
@@ -140,7 +141,7 @@ function CreatePassword() {
   const createAccount = async () => {
     try {
       const response = await axios.post(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/signup`,
+        `${SERVER_URL}/api/v1/users/signup`,
         JSON.stringify(postData),
         {
           headers: {

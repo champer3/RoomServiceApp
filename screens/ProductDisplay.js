@@ -8,7 +8,7 @@ import {
   RefreshControl,
   TextInput,
   ImageBackground,
-  Animated, TouchableOpacity,FlatList
+  Animated, TouchableOpacity
 } from "react-native";
 import Text from '../components/Text';
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -199,10 +199,10 @@ const [price, setPrice] = useState(product.price);
   const handleQuantityChange = (item) => {
     const newExtra = [...formObject.extra];
     const isSelected = newExtra.findIndex(i => i.name === item.name) !== -1;
-    newValues = isSelected
-     ? newExtra.filter((val) => val.name !== item.name) 
-     : [...newExtra, item]; 
-   
+    const newValues = isSelected
+      ? newExtra.filter((val) => val.name !== item.name)
+      : [...newExtra, item];
+
     setFormObject(prevForm => ({
       ...prevForm,
       extra: newValues
@@ -323,14 +323,9 @@ const [price, setPrice] = useState(product.price);
       {items.required && <Text style={{marginBottom: 4}}>{`Pick ${items.quantity} item(s)`}</Text>}
       {!items.required && items.quantity && <Text style={{marginBottom: 4}}>{`Pick up to ${items.quantity} item(s)`}</Text>}
       <View style={styles.separator} />
-      <FlatList
-        data={items.value}
-        renderItem={({ item }) => renderOptionItem({ item, category: items.name, required: items.required })}
-        keyExtractor={(option) => option.name}
-      />
-
-      {/* Separator */}
-      {/* <View style={styles.separator} /> */}
+      {items.value.map((item) => (
+        <View key={item.name}>{renderOptionItem({ item, category: items.name, required: items.required })}</View>
+      ))}
     </View>
   };
 
@@ -349,47 +344,26 @@ const [price, setPrice] = useState(product.price);
     return (
       <View style = {{height: height/1.7, }}>
         <View style = {{height: height/1.2,}}>
-        <FlatList
-          data={[...product.images]}
+        <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={false}
           pagingEnabled
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <ImageBackground
-            style={[styles.productImage, { width: screenWidth  }]}
-            source={{ uri: item }}
-          >
-            {/* Apply LinearGradient as an overlay */}
-            <LinearGradient
-              colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']} // Customize gradient colors
-              style={styles.gradient}
-            >
-            {/* <TouchableOpacity style={styles.addButton} onPress={() => onAdd(product)}>
-                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0ZM17 13H13V17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17V13H7C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11H11V7C11 6.44772 11.4477 6 12 6C12.5523 6 13 6.44772 13 7V11H17C17.5523 11 18 11.4477 18 12C18 12.5523 17.5523 13 17 13Z"
-                    fill="#BC6C25"
-                  />
-                </Svg>
-              </TouchableOpacity> */}
-             
-              {/* <View style={styles.detailsContainer}>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>African</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>Sides</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>2+</Text>
-            </View>
-          </View> */}
-            </LinearGradient>
-          </ImageBackground>
-          )}
+          showsHorizontalScrollIndicator={false}
           onScroll={handleScroll}
-        />
+          scrollEventThrottle={16}
+        >
+          {(product.images || []).map((uri, index) => (
+            <ImageBackground
+              key={index.toString()}
+              style={[styles.productImage, { width: screenWidth  }]}
+              source={{ uri }}
+            >
+              <LinearGradient
+                colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']}
+                style={styles.gradient}
+              />
+            </ImageBackground>
+          ))}
+        </ScrollView>
         </View>
 
         {/* Dots indicator */}
@@ -527,21 +501,15 @@ return false
       {/* Extra Options */}
       {/* Ingredients List */}
       {product.components.length > 0 && <><Text style={[styles.sectionTitle, formObject.components.length <= 0 ? { color: '#A52A2A', fontSize: 18 }:{ color : 'black'}]}>Choose one</Text><View style={styles.separator} />
-        <FlatList
-          data={product.components}
-          renderItem={renderVariations}
-          keyExtractor={item => item}
-          scrollEnabled={false} // Disables scroll for FlatList since it's in ScrollView
-        /></>}
+        {product.components.map((item, index) => (
+          <View key={item}>{renderVariations({ item })}</View>
+        ))}</>}
       {product.extra && <><View style={styles.sectionTitle}><Text >Add extra Ingredients</Text><Text style={[styles.pill, {color: formObject.extra.length < 2 ? '#A52A2A': '#2E6F'}]}>Required</Text></View>
        <Text style={{marginBottom: 4}}>{`Pick 2 item(s)`}</Text>
        <View style={styles.separator} />
-        <FlatList
-          data={ingredients}
-          renderItem={renderIngredient}
-          keyExtractor={item => item.name}
-          scrollEnabled={false} // Disables scroll for FlatList since it's in ScrollView
-        /></>}
+        {ingredients.map((item) => (
+          <View key={item.name}>{renderIngredient({ item })}</View>
+        ))}</>}
       {/* {product.extra && <><Text style={styles.extraTitle}>Add Extra Additional</Text>
        {dummyData.extras.map((extra) => (
         <TouchableOpacity key={extra.name} onPress={() => handleExtraSelect(extra)} style={styles.extraOption}>
@@ -550,12 +518,9 @@ return false
         </TouchableOpacity>
       ))}</>} */}
       {/* Render each category and its options */}
-      <FlatList
-        data={product.options}
-        renderItem={({item})=>renderOptions({items: item})}
-        keyExtractor={(category) => category.name}
-        scrollEnabled={false} 
-      />
+      {product.options.map((option) => (
+        <View key={option.name}>{renderOptions({ items: option })}</View>
+      ))}
       {/* Notes Section */}
       {product.instructions && <TextInput
         style={styles.notesInput}

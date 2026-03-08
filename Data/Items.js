@@ -1,20 +1,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { SERVER_URL } from '../config';
+
+const API_BASE = SERVER_URL;
 
 // Async thunk to fetch products
 export const fetchProducts = createAsyncThunk('items/fetchProducts', async () => {
   try {
     const response = await axios.get(
-      `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/products`,
+      `${API_BASE}/api/v1/products`,
       {
         headers: {
           "Content-Type": "application/json",
         },
+        timeout: 15000,
       }
     );
-    return response.data.data.products;
+    const products = response?.data?.data?.products;
+    const list = Array.isArray(products) ? products : [];
+    if (list.length === 0 && products != null) {
+      console.warn('Products response was not an array:', products);
+    }
+    return list;
   } catch (err) {
-    console.log(err);
+    console.warn('Fetch products failed:', err?.message || err);
     throw err;
   }
 });
@@ -41,7 +50,7 @@ const items = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.ids = action.payload;
+        state.ids = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';
@@ -49,7 +58,6 @@ const items = createSlice({
       });
   },
 });
-console.log('here')
 
 export const { addReview } = items.actions;
 export default items.reducer;

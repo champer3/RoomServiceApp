@@ -27,6 +27,7 @@ import React, {
 } from "react";
 import Text from '../components/Text';
 import axios from "axios";
+import { SERVER_URL } from "../config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const height = Dimensions.get('screen').height
 WebBrowser.maybeCompleteAuthSession();
@@ -50,7 +51,7 @@ function NumberLogin() {
   const emailLogin = async (postData) => {
     try {
       const response = await axios.post(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/loginWithEmail`,
+        `${SERVER_URL}/api/v1/users/loginWithEmail`,
         JSON.stringify(postData),
         {
           headers: {
@@ -85,7 +86,7 @@ function NumberLogin() {
 
   async function checkEmail(email) {
     const userEmail = await axios.get(
-      `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getEmail/${email}`
+      `${SERVER_URL}/api/v1/users/getEmail/${email}`
     );
     return userEmail.data.data.user.length
   }
@@ -203,11 +204,11 @@ function NumberLogin() {
   const verifyNumber = async () => {
     try {
       const checkNumber = await axios.get(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getNumber/${phoneNumber}`
+        `${SERVER_URL}/api/v1/users/getNumber/${phoneNumber}`
       );
       if (checkNumber.data.data) {
         const response = await axios.get(
-          `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/getCode/${phoneNumber}`
+          `${SERVER_URL}/getCode/${phoneNumber}`
         );
         console.log("hdhdhh", response.data);
       }

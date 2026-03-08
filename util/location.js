@@ -1,4 +1,6 @@
-const api_key = 'AIzaSyADXr7hg4drpTrhKOMtGgWCmHBEI95a6Pg'
+import { GOOGLE_MAPS_API_KEY } from '../config';
+
+const api_key = GOOGLE_MAPS_API_KEY;
 
 export function getMapPreview(lat, lng){
     const url = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=14&size=600x300&maptype=roadmap&markers=color:#C91C1C%7Clabel:S%7C${lat},${lng}&key=${api_key}`
@@ -34,42 +36,51 @@ export const getDuration = async (startLoc, destinationLoc) => {
     return error;
   }
 };
-export async function getAddress(lat, lng){
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${api_key}&enable_address_descriptor=true`;
+export async function getAddress(lat, lng) {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${api_key}`;
     const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error('Failed to fetch address!')
-    }
-     const data = await response.json();
-     const address = data.results[0].formatted_address
-     return address
-}
-export async function searchAddress(address){
-    const url2 = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${address}&key=${api_key}`
-    const response2 = await fetch(url2);
-    const res = []
-    if (response2.ok) {
-        const data2 = await response2.json();
-        for (var i = 0 ; i < data2.results.length; i++){
-        res.push(data2.results[i].formatted_address)
-        }
-    }
-    
-    return res
-}
-export async function getPosition(address){
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${api_key}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-        return ('Failed to fetch address!')
-    }
-    
+    if (!response.ok) throw new Error('Failed to fetch address');
     const data = await response.json();
-    
-    if (data.results && data.results.length > 0) {
-        const position = data.results[0].geometry.location;
-        return position;
-    } else {
-        return ('No results found for the provided address.');
-    }
+    if (data.status === 'ZERO_RESULTS' || !data.results?.length) return '';
+    return data.results[0].formatted_address || '';
+  } catch (e) {
+    console.warn('getAddress error:', e?.message);
+    return '';
+  }
+}
+
+/** Address suggestions using Geocoding API (works without Places API). */
+export async function searchAddress(query) {
+  const trimmed = (query || '').trim();
+  if (trimmed.length < 2) return [];
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(trimmed)}&key=${api_key}`;
+    const response = await fetch(url);
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (data.status !== 'OK' || !Array.isArray(data.results)) return [];
+    return data.results.slice(0, 5).map((r) => r.formatted_address || '').filter(Boolean);
+  } catch (e) {
+    console.warn('searchAddress error:', e?.message);
+    return [];
+  }
+}
+
+/** Returns { lat, lng } or null on failure (so callers can use if (pos?.lat)). */
+export async function getPosition(address) {
+  const trimmed = (address || '').trim();
+  if (!trimmed) return null;
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(trimmed)}&key=${api_key}`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data.status !== 'OK' || !data.results?.length) return null;
+    const loc = data.results[0].geometry?.location;
+    return loc ? { lat: loc.lat, lng: loc.lng } : null;
+  } catch (e) {
+    console.warn('getPosition error:', e?.message);
+    return null;
+  }
 }

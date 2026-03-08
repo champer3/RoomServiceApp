@@ -29,18 +29,21 @@ import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 
 
+// Use your backend URL (same as Items.js). For device/emulator use your machine's IP.
+import { SERVER_URL } from '../config';
+
+const PAYMENTS_API_BASE = SERVER_URL;
+
 const retrieveTokenFromAsyncStorage = async () => {
   try {
     const storedToken = await AsyncStorage.getItem("authToken");
     if (storedToken !== null) {
-      console.log("Retrieved token:", storedToken);
-      return storedToken
-    } else {
-      console.log("Token not found in AsyncStorage.");
+      return storedToken;
     }
   } catch (error) {
     console.error("Error retrieving token:", error);
   }
+  return null;
 };
 
 const { width, height } = Dimensions.get("window");
@@ -113,53 +116,72 @@ function PaymentsDisplay() {
   const token = retrieveTokenFromAsyncStorage()
   // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YmQ2ZDgyZTVmYzlhMDJlYTM3YzAzMyIsImlhdCI6MTcwNjkxMzE1NywiZXhwIjoxNzA3Nzc3MTU3fQ.TwpnSDIBnTJPAB1BUjPkz8PPiDztuySl4JcqTHgruxU"
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const fetchPaymentSheet = async () => {
-    try {
-    const token = await retrieveTokenFromAsyncStorage()
-    const response = await axios.post(
-      "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-sheet",
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
-        },
-      }
-    );
-    console.log("got here");
-    const initPayment = await initPaymentSheet({
-      merchantDisplayName: "RoomService",
-      setupIntentClientSecret: response.data.setupIntent,
-      customerEphemeralKeySecret: response.data.ephemeralKey,
-      customerId: response.data.customer,
-      // defaultBillingDetails: {
-      //   name: 'Jane Doe',
-      // }
-    });
-    // console.log(initPayment)
+  const [paymentError, setPaymentError] = useState(null);
 
-    const { error } = await presentPaymentSheet();
-    if (error) {
-      // Alert.alert(`Error code: ${error.code}`, error.message);
-    } else {
-      const paymentMethods = await axios.post(
-        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/payment-methods",
-        null,
+  const fetchPaymentSheet = async () => {
+    setPaymentError(null);
+    const token = await retrieveTokenFromAsyncStorage();
+    if (!token) {
+      setIsLoading(false);
+      setPaymentError('Please sign in to add a payment method.');
+      return;
+    }
+    try {
+      const response = await axios.post(
+        `${PAYMENTS_API_BASE}/api/v1/payments/payment-sheet`,
+        {},
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // 'Content-Type': 'application/json',  // adjust the content type based on your API requirements
-          },
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 15000,
         }
       );
-      // handleUpdate(paymentMethods.data.paymentMethods)
-
-      
-    }} catch (error){}
-    navigation.goBack();
+      const data = response.data;
+      if (!data?.setupIntent || !data?.ephemeralKey || !data?.customer) {
+        setIsLoading(false);
+        setPaymentError('Invalid response from server. Please try again.');
+        return;
+      }
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: 'RoomService',
+        setupIntentClientSecret: data.setupIntent,
+        customerEphemeralKeySecret: data.ephemeralKey,
+        customerId: data.customer,
+      });
+      if (initError) {
+        setIsLoading(false);
+        setPaymentError(initError.message || 'Could not initialize payment sheet.');
+        return;
+      }
+      const { error: presentError } = await presentPaymentSheet();
+      setIsLoading(false);
+      if (presentError) {
+        if (presentError.code === 'Canceled') {
+          navigation.goBack();
+          return;
+        }
+        setPaymentError(presentError.message || 'Payment was not completed.');
+        return;
+      }
+      try {
+        await axios.post(
+          `${PAYMENTS_API_BASE}/api/v1/payments/payment-methods`,
+          null,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (e) {
+        console.warn('Fetch payment methods after add:', e?.message);
+      }
+      navigation.goBack();
+    } catch (error) {
+      setIsLoading(false);
+      const msg = error?.response?.data?.message || error?.message || 'Could not load payment form. Check your connection and try again.';
+      setPaymentError(msg);
+    }
   };
-    
-  useEffect(()=>{fetchPaymentSheet(); setTimeout(()=>{setIsLoading(false)}, 600)},[])
+
+  useEffect(() => {
+    fetchPaymentSheet();
+  }, []);
     
   // function handleUpdate(res) {
   //   const cards = []
@@ -414,9 +436,20 @@ function PaymentsDisplay() {
   // }
   return (
     <GestureHandlerRootView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-       {isLoading &&
-        // Render loading indicator while loading
-        <ActivityIndicator size="large" color="#0000ff" />}
+       {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
+       {!isLoading && paymentError && (
+        <View style={{ padding: 24, alignItems: 'center' }}>
+          <Text style={{ color: '#B22334', textAlign: 'center', marginBottom: 16 }}>{paymentError}</Text>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <Pressable onPress={() => navigation.goBack()} style={{ paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#eee', borderRadius: 8 }}>
+              <Text>Go back</Text>
+            </Pressable>
+            <Pressable onPress={() => { setPaymentError(null); setIsLoading(true); fetchPaymentSheet(); }} style={{ paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#283618', borderRadius: 8 }}>
+              <Text style={{ color: 'white' }}>Try again</Text>
+            </Pressable>
+          </View>
+        </View>
+       )}
       {/* <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
         <View>
           <ScrollView>

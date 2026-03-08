@@ -37,13 +37,14 @@ import { updateProfile } from "../Data/profile";
     const dispatch = useDispatch();
     const [results, setResults] = useState()
   const data = useSelector((state) => state.profileData.profile)
-  const address = [...data.address]
+  const address = Array.isArray(data?.address) ? [...data.address] : []
     const [position , setPosition] = useState(null)
     const [info, setInfo] = useState('Locating.....')
     const [show, setShow] = useState(false)
     const navigation = useNavigation()
     const [active, setActive] = useState(false)
     const ref = useRef(null);
+    const mapRef = useRef(null);
     const [form , setForm] = useState({
       id : address.length,
         name: '',
@@ -51,6 +52,8 @@ import { updateProfile } from "../Data/profile";
         address: '',
         number: '',
       })
+    const [saveError, setSaveError] = useState(null)
+    const suggestionTimeoutRef = useRef(null)
     ref?.current?.scrollTo(-765);
     const onPress = useCallback(() => {
       const isActive = ref?.current?.isActive();
@@ -102,86 +105,90 @@ import { updateProfile } from "../Data/profile";
       formattedNumber += cleanedInput[i];
     }
     value = formattedNumber
-    } 
-    else if (field == 'address'){
-      showSuggestion(value)
     }
-    
+    else if (field == 'address'){
+      setSaveError(null)
+      if (suggestionTimeoutRef.current) clearTimeout(suggestionTimeoutRef.current)
+      if ((value || '').trim().length >= 2) {
+        suggestionTimeoutRef.current = setTimeout(() => {
+          showSuggestion(value)
+        }, 300)
+      } else {
+        setResults([])
+      }
+    }
+
     setForm((prev) => ({...prev, [field]: value}));
-    
   }
 
-  async function showSuggestion(value){
+  async function showSuggestion(value) {
     const m = await searchAddress(value)
-    setResults(m)
+    setResults(Array.isArray(m) ? m : [])
   }
   const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
-  async function validateAddress(){
+  async function validateAddress() {
+    setSaveError(null)
+    const addr = (form.address || '').trim()
+    if (!addr) {
+      setSaveError('Please enter an address.')
+      return
+    }
     setIsLoading(true)
-    let locationT = await getPosition(form.address);
-    if (locationT.lat){
-      setPosition({latitude: locationT.lat, longitude: locationT.lng})
-      setLocation({coords: {longitude: locationT.lng, latitude: locationT.lat}});
-    const m = await getAddress(locationT.lat, locationT.lng)
-    handleFormChange('address',m)
-    if (active){
-      setActive(false)
-      var tempData = {...data, ['address'] : [{...form, ['address']: m}, ...data.address]} 
-      newData = { ...data, ['address'] : [] };
-      var j = 0
-      for (let i = 0; i < tempData.address.length; i++) {
-          newData.address.push({...tempData.address[i], ['id']: j})
-          j += 1
-      }
-    }
-    else {newData = {...data, ['address'] : [...data.address, {...form, ['address']: m}]} 
-  }
-  dispatch(updateProfile({id : newData}))
-  
-  setTimeout(async ()=>{
-      try{
-        await AsyncStorage.removeItem('essential')
-      } catch(error){
-        console.error('Error deleting item:', error);
-      }
-      try {
-        await AsyncStorage.setItem("essential", JSON.stringify({address: newData.address, orders:  orders}));
-        console.log("Essential saved successfully.");
-      } catch (error) {
-        console.error("Error saving token:", error);
-      }
+    const locationT = await getPosition(form.address)
+    if (!locationT?.lat) {
       setIsLoading(false)
-      navigation.navigate('Address')
-      setForm({
-          id : address.length,
-          name: '',
-          nameNo: '',
-          address: '',
-          number: '',
-        }) }, 0)
-  }
-    else{
-      return false
+      setSaveError('Address not found. Please check the address or try selecting a suggestion.')
+      return
     }
-    
+    const m = await getAddress(locationT.lat, locationT.lng) || form.address
+    let newData
+    if (active) {
+      setActive(false)
+      const tempData = { ...data, address: [{ ...form, address: m }, ...(data.address || [])] }
+      newData = { ...data, address: [] }
+      let j = 0
+      for (let i = 0; i < tempData.address.length; i++) {
+        newData.address.push({ ...tempData.address[i], id: j })
+        j += 1
+      }
+    } else {
+      newData = { ...data, address: [...(data.address || []), { ...form, address: m }] }
+    }
+    dispatch(updateProfile({ id: newData }))
+    try { await AsyncStorage.removeItem('essential') } catch (e) { }
+    try {
+      await AsyncStorage.setItem('essential', JSON.stringify({ address: newData.address, orders }))
+    } catch (e) { console.error('Error saving token:', e) }
+    setIsLoading(false)
+    navigation.navigate('Address')
+    setForm({ id: (data.address || []).length, name: '', nameNo: '', address: '', number: '' })
+    return
   }
-   
-    async function handleLocation(lat, lng){
-        
-         try{ handleFormChange('address',await getAddress(lat, lng))} catch (error){
-          console.error("Error saving :", error);
-         }
-        
-      }
-    async function findLocation(){
-        if (position){
-          handleFormChange('address',await getAddress(location.coords.latitude,location.coords.longitude))
-          setPosition({latitude: location.coords.latitude,
-            longitude: location.coords.longitude ,})
-            setShow(true)
-        }
-      }
+  async function handleLocation(lat, lng) {
+    try {
+      const addr = await getAddress(lat, lng)
+      if (addr) setForm((prev) => ({ ...prev, address: addr }))
+    } catch (e) {
+      console.warn('handleLocation:', e?.message)
+    }
+  }
+
+  async function findLocation() {
+    try {
+      const loc = await Location.getCurrentPositionAsync({})
+      const coords = loc?.coords
+      if (!coords) return
+      const addr = await getAddress(coords.latitude, coords.longitude)
+      if (addr) setForm((prev) => ({ ...prev, address: addr }))
+      setPosition({ latitude: coords.latitude, longitude: coords.longitude })
+      setLocation(loc)
+      setShow(true)
+    } catch (e) {
+      console.warn('findLocation:', e?.message)
+      setErrorMsg('Could not get your location. Check permissions or enter address manually.')
+    }
+  }
     
     let text = <ActivityIndicator size="large" color="#0000ff" />
     SplashScreen.preventAutoHideAsync();
@@ -189,24 +196,24 @@ import { updateProfile } from "../Data/profile";
       text = <Text>{errorMsg}</Text>;
       // navigation.goBack()
     } else if (position) {
-      
+      const region = {
+        latitude: position.latitude,
+        longitude: position.longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      }
       text =  <MapView
-      onPress={(e)=>{selectLocationHandler(e); onPress(); setShow(true);Keyboard.dismiss()}}
-      zoomEnabled= {true}
+        ref={mapRef}
+        onPress={(e)=>{selectLocationHandler(e); onPress(); setShow(true);Keyboard.dismiss()}}
+        zoomEnabled={true}
         style={styles.map}
-        //specify our coordinates.
-        initialRegion={{
-          latitude:  position.latitude - 0.002,
-          longitude: position.longitude,
-          latitudeDelta: 0.001422,
-          longitudeDelta: 0.004321,
-        }}
+        initialRegion={region}
         customMapStyle={styles.mapStyle}
       >
       {show && <Marker coordinate={{
         latitude: position.latitude,
         longitude: position.longitude,
-  
+
       }} pinColor="#C91C1C" style={{elevation: 2}}/>}
       
       </MapView>
@@ -233,15 +240,37 @@ import { updateProfile } from "../Data/profile";
               <View>
               <Input text={'Address'} onPress={()=>{findLocation(); Keyboard.dismiss()}} type="address" textInputConfig={{cursorColor: '#aaa',value: form.address, onChangeText: handleFormChange.bind(this, 'address')}}/>
               {results && results.length > 0 && <View style={{ zIndex: 2, backgroundColor: 'white' , width: '100%', paddingTop: 10, marginHorizontal: 10, alignSelf: 'center',  backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 10, marginTop: 7 }}>
-                          {results.slice(0, 4).map((address, index) => (<Pressable onPress={() => {handleFormChange('address', results[index]); Keyboard.dismiss()}} key={index} style={{flexDirection: 'row', gap: 10, marginBottom: 10,  width: '90%', padding: 10}}>
-                            <Octicons name="location" size={24} color="black" />
-                            {/* <ScrollView horizontal> */}
-                            <Text style={{fontSize: 16, fontWeight: 'bold',}} >{address}</Text>
-                            {/* </ScrollView> */}
+                          {results.slice(0, 4).map((address, index) => (
+                            <Pressable
+                              key={index}
+                              onPress={async () => {
+                                const selectedAddr = results[index]
+                                setForm((prev) => ({ ...prev, address: selectedAddr }))
+                                setResults([])
+                                Keyboard.dismiss()
+                                const pos = await getPosition(selectedAddr)
+                                if (pos?.lat) {
+                                  setPosition({ latitude: pos.lat, longitude: pos.lng })
+                                  setLocation({ coords: { latitude: pos.lat, longitude: pos.lng } })
+                                  setShow(true)
+                                  setTimeout(() => {
+                                    mapRef.current?.animateToRegion({
+                                      latitude: pos.lat,
+                                      longitude: pos.lng,
+                                      latitudeDelta: 0.005,
+                                      longitudeDelta: 0.005,
+                                    }, 350)
+                                  }, 100)
+                                }
+                              }}
+                              style={{ flexDirection: 'row', gap: 10, marginBottom: 10, width: '90%', padding: 10 }}
+                            >
+                              <Octicons name="location" size={24} color="black" />
+                              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{address}</Text>
                             </Pressable>
-                            
                           ))}
                         </View>}
+              {saveError ? <Text style={{ color: '#B22334', marginTop: 6 }}>{saveError}</Text> : null}
               </View>
               <Input text={'Contact Name'} textInputConfig={{cursorColor: '#aaa',value: form.nameNo, onChangeText: handleFormChange.bind(this, 'nameNo')}}/>
               <Input keyboard="number-pad" length={14} icon={<PhoneIcon/>} text={'Contact Number'} textInputConfig={{cursorColor: '#aaa',value: form.number, onChangeText: handleFormChange.bind(this, 'number')}}/>

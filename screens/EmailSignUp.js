@@ -26,6 +26,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
+import { SERVER_URL } from "../config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -47,7 +48,7 @@ function EmailSignUp() {
   const emailLogin = async (postData) => {
     try {
       const response = await axios.post(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/loginWithEmail`,
+        `${SERVER_URL}/api/v1/users/loginWithEmail`,
         JSON.stringify(postData),
         {
           headers: {
@@ -82,7 +83,7 @@ function EmailSignUp() {
 
   async function checkEmail(email) {
     const userEmail = await axios.get(
-      `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getEmail/${email}`
+      `${SERVER_URL}/api/v1/users/getEmail/${email}`
     );
     return userEmail.data.data.user.length
   }
@@ -223,7 +224,7 @@ function EmailSignUp() {
       // console.log(form);
       try {
         const checkEmail = await axios.get(
-          `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getEmail/${form.email}`
+          `${SERVER_URL}/api/v1/users/getEmail/${form.email}`
         );
         setIsLoading(true)
         setTimeout(() => {

@@ -19,6 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from 'react-redux'
 import axios from "axios";
 import Text from '../components/Text';
+import { SERVER_URL } from "../config";
 
 const { width, height } = Dimensions.get("window");
 function AccountDisplay() {
@@ -119,7 +120,7 @@ function AccountDisplay() {
       const token = await retrievePrivateTokenFromAsyncStorage();
       console.log(token)
       await axios.delete(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/${data.email}`,
+        `${SERVER_URL}/api/v1/users/${data.email}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

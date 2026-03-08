@@ -37,7 +37,10 @@ function LoadScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(()=>{setTimeout(()=>{dispatch(fetchProducts()); retrieveNewFromAsyncStorage()}, 3000) },[])
+  useEffect(() => {
+    dispatch(fetchProducts());
+    retrieveNewFromAsyncStorage();
+  }, []);
  const retrieveTokenFromAsyncStorage = async () => {
   try {
     let profile = await AsyncStorage.getItem("profile");

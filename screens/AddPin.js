@@ -10,6 +10,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import Text from '../components/Text';
+import { SERVER_URL } from "../config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
@@ -68,7 +69,7 @@ function AddPin() {
   const createAccount = async () => {
     try {
       const response = await axios.post(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/signup`,
+        `${SERVER_URL}/api/v1/users/signup`,
         JSON.stringify(postData),
         {
           headers: {
@@ -167,7 +168,7 @@ function AddPin() {
   const verifyNumber = async(code) =>{
     try{
       const response = await axios.get(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/verifyPhone/${phoneNumber}/${code}`
+        `${SERVER_URL}/verifyPhone/${phoneNumber}/${code}`
       );
       console.log(response.data.verification)
       return response.data.verification;
@@ -179,7 +180,7 @@ function AddPin() {
   const resendVerifyNumber = async() =>{
     try{
       console.log(phoneNumber)
-      const response = await axios.get(`https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/getCode/${phoneNumber}`);
+      const response = await axios.get(`${SERVER_URL}/getCode/${phoneNumber}`);
       // console.log("got here")
       console.log(response.data)
     } catch(err){

@@ -22,6 +22,7 @@ import { useSelector, useDispatch } from "react-redux";
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
+import { SERVER_URL } from "../config";
 
 function AddNumber() {
   function handleScreenPress() {
@@ -49,7 +50,7 @@ function AddNumber() {
     console.log(phoneNumber)
     try {
       const response = await axios.get(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/getCode/${phoneNumber}`
+        `${SERVER_URL}/getCode/${phoneNumber}`
       );
       console.log(response);
     } catch (err) {
@@ -86,7 +87,7 @@ function AddNumber() {
       try {
         console.log(phoneNumber)
         const checkNumber = await axios.get(
-          `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/getNumber/${phoneNumber}`
+          `${SERVER_URL}/api/v1/users/getNumber/${phoneNumber}`
         );
         console.log(checkNumber)
         if (checkNumber.data.data) {

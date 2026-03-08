@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SERVER_URL } from '../config';
 
 // Helper function to retrieve token from AsyncStorage
 const retrieveTokenFromAsyncStorage = async () => {
@@ -65,7 +66,7 @@ export const fetchOrders = createAsyncThunk(
 
       // Fetch the orders if the token is available
       const response = await axios.get(
-        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/orders/get-your-orders",
+        `${SERVER_URL}/api/v1/orders/get-your-orders`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

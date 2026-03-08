@@ -11,69 +11,64 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+
     "ios": {
-      "icon": "./assets/ios/icon.png",
       "supportsTablet": true,
-      "deploymentTarget": {
-        "iOS": "14.0"
-      },
       "bundleIdentifier": "com.anonymous.RS",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to take photos for user profile customization.",
-        "NSPrivacyAccessedAPITypes": "This app requires access to the camera to take photos for user profile customization.",
-        "NSLocationWhenInUseUsageDescription": "This app would like to access your location in order to make the delivery to you",
-        "CFBundleURLTypes": [
-          {
-            "CFBundleURLTypes": [
-              "com.googleusercontent.apps.595612958492-gp5rso1fjrccbv1bst08ej45tssvhu4b"
-            ]
-          }
-        ]
+        "NSLocationWhenInUseUsageDescription": "This app would like to access your location in order to make the delivery to you"
       }
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.RS",
-      "notification": {
-        "icon": "./assets/splash.png",
-        "color": "#FF0000" 
-      }
+      "package": "com.anonymous.RS"
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
     },
+
     "scheme": "room-service",
+
     "extra": {
-      "eas": {
-        "projectId": "7df9a269-6549-4677-bda2-3d9cc03c63e2"
-      }
+      "eas": { "projectId": "7df9a269-6549-4677-bda2-3d9cc03c63e2" }
     },
+
     "plugins": [
       [
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 31,
-            "targetSdkVersion": 31,
-            "buildToolsVersion": "31.0.0"
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
           },
           "ios": {
             "deploymentTarget": "15.1",
             "flipper": false
           }
         }
-      ]
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#FF0000"
+        }
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ]
+
+    "platforms": ["ios", "android", "web"]
   }
 }

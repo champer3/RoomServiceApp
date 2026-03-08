@@ -47,10 +47,12 @@ import {
 import ProductDescription from "../components/Product/ProductDescription";
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
+import { SERVER_URL } from '../config';
 const { width, height } = Dimensions.get("window");
 
 function CheckoutScreen() {
   const [visible, setVisible] = useState(false);
+  const lastOrderForReceipt = useRef({ items: [], total: 0 });
 
   // // const orders = useSelector((state) => state.orders.ids);
   // // console.log(orders);
@@ -125,9 +127,10 @@ function CheckoutScreen() {
     }
   }
   function press() {
+    const { items, total: receiptTotal } = lastOrderForReceipt.current;
     navigation.navigate("Order Receipt", {
-      total: total.toFixed(2),
-      items: temp,
+      total: (receiptTotal ?? total).toFixed(2),
+      items: items?.length ? items : temp,
     });
   }
   function move() {
@@ -168,7 +171,7 @@ const constructOrderDetails = (formObject) => {
 
       const token = await retrieveTokenFromAsyncStorage();
       const row = [...cartItems];
-      date = getTodaysDate();
+      let date = getTodaysDate();
       let orderDetails = []
       let productIds = []
       let instructions = ''
@@ -199,7 +202,7 @@ const constructOrderDetails = (formObject) => {
       // Log the payload for debugging
       console.log('Order Payload:', orderPayload);
       const createOrder = await axios.post(
-        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/orders",
+        `${SERVER_URL}/api/v1/orders`,
        orderPayload,
         {
           headers: {
@@ -270,7 +273,7 @@ const constructOrderDetails = (formObject) => {
   
       // Make API request to create checkout session
       const response = await axios.post(
-        "https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/payments/checkout-session",
+        `${SERVER_URL}/api/v1/payments/checkout-session`,
         {
           amount: total.toFixed(2), // Ensure total is correctly calculated
         },
@@ -304,10 +307,11 @@ const constructOrderDetails = (formObject) => {
         return;
       }
   
-      // Payment succeeded, proceed with creating the order
-      setIsLoading(false); // Stop loading after success
-      setVisible(true); // Show success or confirmation modal
-      tryCreateOrder(); // Call the function to create the order
+      // Payment succeeded – save items/total for receipt before cart is cleared
+      lastOrderForReceipt.current = { items: [...cartItems], total };
+      setIsLoading(false);
+      setVisible(true);
+      tryCreateOrder();
   
     } catch (error) {
       // Handle API request errors

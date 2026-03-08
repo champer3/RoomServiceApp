@@ -7,7 +7,7 @@ const { width, height } = Dimensions.get("window");
 import Text from '../components/Text';
 function AddressDisplay() {
   const navigation = useNavigation()
-  const address = useSelector((state) => state.profileData.profile).address
+  const address = useSelector((state) => state.profileData.profile)?.address || []
   function addHandler() {
     navigation.navigate('Add Address')
   }

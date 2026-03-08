@@ -23,6 +23,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SERVER_URL } from "../config";
 
 function NumberLogin() {
   const dispatch = useDispatch();
@@ -43,7 +44,7 @@ function NumberLogin() {
   const loginData = async () => {
     try {
       const response = await axios.post(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/loginWithNumber/`,
+        `${SERVER_URL}/api/v1/users/loginWithNumber/`,
         JSON.stringify({ phoneNumber }),
         {
           headers: {
@@ -134,7 +135,7 @@ function NumberLogin() {
   const verifyNumber = async (code) => {
     try {
       const response = await axios.get(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/verifyPhone/${phoneNumber}/${code}`
+        `${SERVER_URL}/verifyPhone/${phoneNumber}/${code}`
       );
       console.log(response.data.status);
       return response.data.status;
@@ -146,7 +147,7 @@ function NumberLogin() {
     try {
       console.log(phoneNumber);
       const response = await axios.get(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/getCode/${phoneNumber}`
+        `${SERVER_URL}/getCode/${phoneNumber}`
       );
       // console.log("got here")
       console.log(response.data);

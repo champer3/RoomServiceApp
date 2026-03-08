@@ -1,5 +1,6 @@
+import { STRIPE_PUBLISHABLE_KEY } from "./config";
 import { StatusBar } from "expo-status-bar";
-import { Button, Pressable, StyleSheet, Text, View, FlatList } from "react-native";
+import { Button, Pressable, StyleSheet, Text, View, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -65,7 +66,7 @@ import LoadScreen from "./screens/LoadScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import io from 'socket.io-client';
 import * as Font from 'expo-font';
-import AppLoading from 'expo-app-loading';
+// import AppLoading from 'expo-app-loading';
 import FalseHomeScreen from "./screens/FalseHomeScreen";
 import CartShow from "./screens/CartShow";
 const Tab = createBottomTabNavigator();
@@ -211,29 +212,30 @@ function Account() {
     </Stack.Navigator>
   );
 }
-function Notification(){
-  const notifications = useSelector(state => state.notifications.notification);
-
+function Notification() {
+  const dispatch = useDispatch();
+  const expoPushToken = useSelector((state) => state.notifications.expoPushToken);
+  const notificationList = useSelector((state) => state.notifications.notification);
+  const lastNotification = Array.isArray(notificationList) && notificationList.length > 0
+    ? notificationList[notificationList.length - 1]
+    : null;
+  const content = lastNotification?.request?.content;
+  useEffect(() => {
+    dispatch(registerPushNotifications());
+  }, [dispatch]);
   return (
-    <View style={styles.container}>
-      {notifications.length > 0 ? (
-        <FlatList
-          data={notifications}
-          keyExtractor={(item, index) => `${index}`}
-          renderItem={({ item }) => (
-            <View style={styles.notificationContainer}>
-              <Text style={styles.title}>{item.request.content.title}</Text>
-              <Text style={styles.body}>{item.request.content.body}</Text>
-            </View>
-          )}
-        />
-      ) : (
-        <Text style={styles.emptyText}>No notifications to show.</Text>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
+      <Text>Your Expo push token: {expoPushToken}</Text>
+      {content && (
+        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+          <Text>Title: {content.title ?? ''}</Text>
+          <Text>Body: {content.body ?? ''}</Text>
+          <Text>Data: {content.data ? JSON.stringify(content.data) : ''}</Text>
+        </View>
       )}
     </View>
   );
-};
-
+}
 function HomeTabs() {
   const cartItems = useSelector((state) => state.cartItems.ids);
   return (
@@ -245,7 +247,7 @@ function HomeTabs() {
         tabBarStyle: {
           position: 'absolute',
           bottom: 0,
-          height: "8%",
+          height: "9%",
           backgroundColor: 'white',
           shadowColor: 'black',
           shadowOffset: {
@@ -406,8 +408,7 @@ useEffect(() => {
   //   return <AppLoadin
   return (
     <Provider store={store}>
-      <StripeProvider publishableKey={"pk_live_51P6dMbP6ljIK4vM9ugD9DeeBJpItDsJ3kDMthFVXeEeKsUxIsIvvdLpoGMx1gVdA48uTZUXsBb9FLr8qPYfVSB0A00HPdPx6mC"}>
-      {/* <StripeProvider publishableKey={"pk_test_51ObTm2K5nIEAEdc3QUu6C68m34aYLTMHdhTGfejheKPDOJ7hqwjRxZ2uMcCubTPaCgLqUIjQxKdrCDm6Lc2e0HB100jZGNB0aV"}> */}
+      <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
         <NavigationContainer>
           <StatusBar style="light" />
           <Stack.Navigator>
@@ -549,26 +550,5 @@ const styles = StyleSheet.create({
     right: 10,
     left: 10,
     height: 92,
-  },
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  notificationContainer: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  body: {
-    fontSize: 16,
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 20,
   },
 });

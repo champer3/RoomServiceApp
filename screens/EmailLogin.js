@@ -23,6 +23,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SERVER_URL } from "../config";
 import Info from "../components/Info";
 
 function EmailLogin() {
@@ -131,7 +132,7 @@ function EmailLogin() {
   const createAccount = async () => {
     try {
       const response = await axios.post(
-        `https://afternoon-waters-32871-fdb986d57f83.herokuapp.com/api/v1/users/login`,
+        `${SERVER_URL}/api/v1/users/login`,
         JSON.stringify(postData),
         {
           headers: {

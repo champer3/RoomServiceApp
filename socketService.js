@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 
-const SERVER_URL = 'https://afternoon-waters-32871-fdb986d57f83.herokuapp.com'
+import { SERVER_URL } from './config';
 
 let socket;
 

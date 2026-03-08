@@ -1,4 +1,4 @@
-import { Image, StyleSheet, TextInput, View, Pressable, Dimensions, TouchableOpacity, FlatList, ScrollView } from "react-native";
+import { Image, StyleSheet, TextInput, View, Pressable, Dimensions, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef , useEffect} from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -317,12 +317,11 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
      </View>
     {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
      {cartItems.length > 0 && <>
-      <FlatList
-        data={cartItems}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={renderCartItem}
-      />
+      {cartItems.map((item, index) => (
+        <View key={index.toString()}>
+          {renderCartItem({ item, index })}
+        </View>
+      ))}
 
       {/* Order Summary */}
       <View style={styles.orderSummary}>
