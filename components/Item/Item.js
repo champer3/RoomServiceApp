@@ -4,9 +4,20 @@ import Text from '../Text';
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
+
+const IMAGE_SIZE = 30;
+
+const PLACEHOLDER = require("../../assets/food.png");
+
+function normalizeImageSource(image) {
+  if (image == null) return PLACEHOLDER;
+ 
+  return image;
+}
+
 const FadeOutView = (props) => {
-  const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 1
+  const [fadeAnim] = useState(new Animated.Value(1));
 
   useEffect(() => {
     Animated.timing(
@@ -14,7 +25,7 @@ const FadeOutView = (props) => {
       {
         toValue: 0,
         duration: 200,
-        useNativeDriver: true, // Add this line to improve performance
+        useNativeDriver: true,
       }
     ).start();
   }, []);
@@ -23,7 +34,7 @@ const FadeOutView = (props) => {
     <Animated.View
       style={{
         ...props.style,
-        opacity: fadeAnim, // Bind opacity to animated value
+        opacity: fadeAnim,
       }}
     >
       {props.children}
@@ -31,7 +42,7 @@ const FadeOutView = (props) => {
   );
 };
 const FadeInView = (props) => {
-  const [fadeAnim] = useState(new Animated.Value(0)); // Initial value for opacity: 0
+  const [fadeAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
     Animated.timing(
@@ -39,7 +50,7 @@ const FadeInView = (props) => {
       {
         toValue: 1,
         duration: 1000,
-        useNativeDriver: true, // Add this line to improve performance
+        useNativeDriver: true,
       }
     ).start();
   }, []);
@@ -47,8 +58,7 @@ const FadeInView = (props) => {
   return (
     <Animated.View
       style={[{
-
-        opacity: fadeAnim, // Bind opacity to animated value
+        opacity: fadeAnim,
       }]}
     >
       {props.children}
@@ -56,62 +66,95 @@ const FadeInView = (props) => {
   );
 };
 
-function Item({ text, image, onPress, color, show = true }) {
+function Item({ text, image, onPress, color, show = true, itemWidth }) {
+  const navigation = useNavigation();
+  const imageSource = normalizeImageSource(image);
 
-  const navigation = useNavigation()
   function pressHandler() {
-    navigation.navigate('Category', { cat: text })
+    if (typeof onPress === 'function') {
+      onPress();
+      return;
+    }
+    navigation.navigate('Category', { cat: text });
   }
-  // console.log(width)
+
   return (
-    <FadeInView>
-      <Pressable onPress={pressHandler} style={[styles.container, ({ pressed }) => pressed && { opacity: 0.5 }]}>
-
-        <Image style={styles.image} source={image} />
-        {show && <FadeInView><Text style={[styles.text, {
-          color: "black",
-          fontSize: 12,
-          fontFamily: 'SFPRO-Bold',
-          letterSpacing: 1,
-          transform: [{ scaleY: 1.1 }]
-        }]}>{text}</Text></FadeInView>}
-        {!show && <FadeOutView><Text style={[styles.text, { color: "white" ? color : "black", }]}>{text}</Text></FadeOutView>}
-
+    <View style={styles.wrap}>
+      <Pressable
+        onPress={pressHandler}
+        style={({ pressed }) => [
+          styles.pill,
+          pressed && styles.pillPressed,
+        ]}
+      >
+        <View style={styles.imageRing}>
+          <Image
+            style={styles.image}
+            source={imageSource}
+            resizeMode="cover"
+          />
+        </View>
+        {show ? (
+          <Text style={styles.label} numberOfLines={1} ellipsizeMode="tail">
+            {text}
+          </Text>
+        ) : null}
       </Pressable>
-    </FadeInView>
+    </View>
   );
 }
 
 export default Item;
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    alignItems: "center",
-    height: height / 10,
-    width: width / 6.2,
-    paddingTop: 10,
-    paddingBottom: 10,
-    borderRadius: 10,
+  wrap: {
+    flexShrink: 0,
   },
-  pressed: {
-    // width: "86%",
-    // height: "90%"
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F4F3F0",
+    borderRadius: 999,
+    paddingLeft: 2,
+    paddingRight: 16,
+    paddingVertical: 2,
+    maxWidth: width * 0.64,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.85)",
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  imageContainer: {
-    height: height / 14,
-    width: width / 6.5,
-    shadowColor: '#000',
+  pillPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
+  imageRing: {
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
+    borderRadius: IMAGE_SIZE / 2,
+    overflow: "hidden",
+    backgroundColor: "#e8ebe6",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.95)",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5, // Add elevation for Android shadow
-    marginVertical: 10,
-    justifyContent: "center",
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   image: {
-    width: width / 6.5, height: height / 16, resizeMode: 'cover',
-    borderRadius: 10, paddingVertical: 2,
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
   },
-  text: { fontSize: 10, textAlign: "center", },
+  label: {
+    marginLeft: 6,
+    fontSize: 12,
+    fontFamily: "Poppins-Medium",
+    color: "#111827",
+    flexShrink: 1,
+    letterSpacing: 0.15,
+  },
 });

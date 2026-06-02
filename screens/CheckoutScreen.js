@@ -6,7 +6,10 @@ import {
   Dimensions,
   TextInput,
   ActivityIndicator,
-  FlatList, Image, TouchableOpacity
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Keyboard,
 } from "react-native";
 import Svg, {Path} from 'react-native-svg';
 import Text from '../components/Text';
@@ -39,6 +42,7 @@ import {
 import {completeOrder} from "../Data/order"
 import OrderSuccess from "../components/Modals/OrderSuccess";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CheckoutPromoRow from "../components/promotions/CheckoutPromoRow";
 import BottomSheet from "../components/Modals/BottomSheet";
 import {
   GestureHandlerRootView,
@@ -48,10 +52,14 @@ import ProductDescription from "../components/Product/ProductDescription";
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
 import { SERVER_URL } from '../config';
+import RoomServiceAlert, { ROOM_SERVICE_ALERT_TYPES } from '../components/RoomServiceAlert';
+import { cartLineTotal } from "../utils/productCartForm";
 const { width, height } = Dimensions.get("window");
 
 function CheckoutScreen() {
   const [visible, setVisible] = useState(false);
+  const [showPaymentError, setShowPaymentError] = useState(false);
+  const [showAddPaymentAlert, setShowAddPaymentAlert] = useState(false);
   const lastOrderForReceipt = useRef({ items: [], total: 0 });
 
   // // const orders = useSelector((state) => state.orders.ids);
@@ -149,22 +157,121 @@ function CheckoutScreen() {
     }
   };
 const constructOrderDetails = (formObject) => {
-  console.log('object', formObject)
+  const products = Array.isArray(formObject?.products) ? formObject.products : [];
+  const firstProduct = products[0];
+
   return {
-    productName: formObject.products[0].title,  // Set the product name
-    component: formObject.components || '',  // Set the component or empty string if undefined
-    sides: formObject.extra?.map(item => JSON.stringify(item)),  // Convert each extra item to JSON string
-    flavor: formObject.options?.map(option => JSON.stringify(option)),  // Convert each option item to JSON string
-    dressing: formObject.products?.map(product => 
+    // Set the product name (fallback to empty to avoid crashes)
+    productName: firstProduct?.title || "",
+    component: formObject?.components || "",
+    sides: Array.isArray(formObject?.extra)
+      ? formObject.extra.map((item) => JSON.stringify(item))
+      : [],
+    flavor: Array.isArray(formObject?.options)
+      ? formObject.options.map((option) => JSON.stringify(option))
+      : [],
+    dressing: products.map((product) =>
       JSON.stringify({
-        title: product.title, 
-        images: product.images, 
-        price: product.price
+        title: product?.title,
+        images: product?.images,
+        price: product?.price,
       })
-    )  // Extract title, images, and price from each product and convert to JSON string
+    ),
   };
 };
-  useEffect(() => { retrieveTokenFromAsyncStorage() }, [])
+
+/** Line items for POST /orders (new schema) */
+function buildOrderItemsFromCart(cartLines, calculateTotalPrice) {
+  return cartLines.map((row) => {
+    const products = Array.isArray(row?.products) ? row.products : [];
+    const first = products[0];
+    const qty = Math.max(1, products.length);
+    const pid = first?._id ?? first?.id ?? first?.productId ?? first?.productID;
+    const unitPrice = Number(first?.price || 0);
+    const lineTotal = calculateTotalPrice(row);
+
+    const variants = [];
+    (row.options || []).forEach((opt) => {
+      try {
+        const p = typeof opt === "string" ? JSON.parse(opt) : opt;
+        (p.values || []).forEach((val) => {
+          variants.push({
+            groupName: p.name || "Option",
+            choiceName: val.name || "",
+            priceAdjustment: Number(val.price || 0),
+          });
+        });
+      } catch {
+        /* ignore malformed legacy option */
+      }
+    });
+
+    (row.variantSelections || []).forEach((g) => {
+      (g.selected || []).forEach((c) => {
+        variants.push({
+          groupName: g.groupName || "Option",
+          choiceName: c.name || "",
+          priceAdjustment: Number(c.priceDelta) || 0,
+        });
+      });
+    });
+
+    const addonsFromExtra = (row.extra || []).map((ex) => {
+      try {
+        const a = typeof ex === "string" ? JSON.parse(ex) : ex;
+        const up = Number(a.price || 0);
+        return {
+          addonId: a.id != null ? String(a.id) : null,
+          addonName: a.name || "Add-on",
+          unitPrice: up,
+          quantity: 1,
+          totalPrice: up * qty,
+        };
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+
+    const addonsFromSchema = (row.schemaAddonsSelected || []).map((ex) => {
+      const up = Number(ex.price || 0);
+      return {
+        addonId: ex.id != null ? String(ex.id) : null,
+        addonName: ex.name || "Add-on",
+        unitPrice: up,
+        quantity: 1,
+        totalPrice: up * qty,
+      };
+    });
+
+    const addons = [...addonsFromExtra, ...addonsFromSchema];
+
+    return {
+      productId: pid,
+      productName: first?.title || "Item",
+      productDescription: "",
+      productImageUrl:
+        Array.isArray(first?.images) && first.images[0] ? first.images[0] : "",
+      categoryName: "",
+      departmentName: "",
+      unitPrice,
+      quantity: qty,
+      lineSubtotal: unitPrice * qty,
+      lineTotal,
+      notes: row.instructions || "",
+      variants,
+      addons,
+    };
+  });
+}
+  useEffect(() => { retrieveTokenFromAsyncStorage(); }, []);
+  useEffect(() => {
+    if (fulfillmentType === "pickup") {
+      setShowAddPaymentAlert(false);
+      return;
+    }
+    if (address?.length === 0) setShowAddPaymentAlert(true);
+    if (address?.length >= 1) setShowAddPaymentAlert(false);
+  }, [address?.length, fulfillmentType]);
   const tryCreateOrder = async () => {
     console.log('got Hereeeeeeeeee')
     try {
@@ -172,32 +279,45 @@ const constructOrderDetails = (formObject) => {
       const token = await retrieveTokenFromAsyncStorage();
       const row = [...cartItems];
       let date = getTodaysDate();
-      let orderDetails = []
-      let productIds = []
-      let instructions = ''
+      let instructions = "";
       for (var i = 0; i < cartItems.length; i++) {
         row[i] = { ...cartItems[i], ["reviews"]: false };
-        cartItems[i].products.forEach((product) => productIds.push(product.id));
-
-      // Concatenate instructions from each cart item
-      instructions += (cartItems[i].instructions ?? '') + '\n';
-
-      // Construct order details and push to orderDetails array
-      orderDetails.push(constructOrderDetails(cartItems[i]));
+        instructions += (cartItems[i].instructions ?? "") + "\n";
       }
-      // Prepare the order object
+
+      const items = buildOrderItemsFromCart(cartItems, calculateTotalPrice);
+      const missingPid = items.some((it) => !it.productId);
+      if (missingPid) {
+        Alert.alert(
+          "Checkout error",
+          "We couldn't find products in your cart. Please try again."
+        );
+        return;
+      }
+
       const orderPayload = {
-        totalPrice: total,
-        paymentStatus: true,
-        date: date,
-        createdAt: date,
-        shippingAddress: address[0]?.address || 'No Address Provided', // Ensure address exists
+        orderType: fulfillmentType === "pickup" ? "pickup" : "delivery",
+        status: "placed",
+        paymentStatus: "paid",
         paymentMethod: "card",
-        productID: productIds,
-        orderInstruction: instructions.trim(), // Trim unnecessary line breaks
-        orderDetails: orderDetails,
-        orderStatus: 'Ordered',
+        subtotal: totalOrderPrice,
+        taxAmount: taxesAndFees,
+        deliveryFee,
+        discountAmount: 0,
+        totalAmount: total,
+        notes: instructions.trim(),
+        placedAt: date,
+        items,
       };
+
+      if (fulfillmentType === "delivery") {
+        const addr = address[0]?.address || "";
+        orderPayload.deliveryAddress = {
+          formattedAddress: addr,
+          addressLine1: addr,
+          city: "—",
+        };
+      }
   
       // Log the payload for debugging
       console.log('Order Payload:', orderPayload);
@@ -214,20 +334,27 @@ const constructOrderDetails = (formObject) => {
       if (createOrder) {
         const row = [...cartItems];
         date = getTodaysDate();
-        
+
         for (var i = 0; i < cartItems.length; i++) {
           row[i] = { ...cartItems[i], ["reviews"]: false };
         }
+        const created = createOrder.data?.data?.order;
+        const oid = created?._id || created?.id;
         dispatch(
           completeOrder({
             id: {
-              id: createOrder.data.data.order.id,
+              id: oid,
               order: row,
               date: date,
-              status: "Ordered",
-              address: address[0].address,
+              status: "placed",
+              address:
+                fulfillmentType === "pickup"
+                  ? "Pickup"
+                  : address[0]?.address || "",
               price: `$${total}`,
-              driver : ''
+              driver: "",
+              orderType:
+                fulfillmentType === "pickup" ? "Pickup" : "Delivery",
             },
           })
         );
@@ -266,6 +393,7 @@ const constructOrderDetails = (formObject) => {
   };
   const id = generateRandomId(8);
   const checkOut = async () => {
+    Keyboard.dismiss();
     console.log(total.toFixed(2))
     try {
       // Retrieve token from async storage
@@ -283,14 +411,23 @@ const constructOrderDetails = (formObject) => {
           },
         }
       );
-  
+
+      const { clientSecret, ephemeralKey, customer } = response.data || {};
+      if (!clientSecret || !ephemeralKey || !customer) {
+        const msg = response.data?.message || "Could not start payment. Please try again.";
+        throw new Error(msg);
+      }
+
+      // returnURL required for redirect-based payment methods (e.g. 3D Secure on iOS). Use your app's scheme from app.json/app.config.js.
+      const returnURL = "room-service://payment-completed";
+
       // Initialize the payment sheet with the response data
-      const initPayment = await initPaymentSheet({
+      await initPaymentSheet({
         merchantDisplayName: "RoomService",
-        paymentIntentClientSecret: response.data.clientSecret,
-        customerEphemeralKeySecret: response.data.ephemeralKey,
-        customerId: response.data.customer,
-        returnURL: 'yourapp://payment-completed',
+        paymentIntentClientSecret: clientSecret,
+        customerEphemeralKeySecret: ephemeralKey,
+        customerId: customer,
+        returnURL,
       });
   
       // Start the loading indicator
@@ -301,9 +438,9 @@ const constructOrderDetails = (formObject) => {
   
       // Handle any errors from the payment sheet
       if (error) {
-        console.log(error)
-        // Stop loading and return, because an error occurred
+        console.log(error);
         setIsLoading(false);
+        setShowPaymentError(true);
         return;
       }
   
@@ -314,9 +451,9 @@ const constructOrderDetails = (formObject) => {
       tryCreateOrder();
   
     } catch (error) {
-      // Handle API request errors
       console.error("API request error:", error);
-      setIsLoading(false); // Stop loading if an error occurs
+      setIsLoading(false);
+      setShowPaymentError(true);
     }
   };
   
@@ -486,7 +623,7 @@ function handleProductClick(item, index){
   const renderCartItem = ({ item, index }) => {
     const product = item.products[0]; // Assuming only one product per cart entry
     return (
-      <ProductAction component={item.components} instruction={item.instructions} onTap={()=> handleProductClick(item, index)} title={product.title} options={item.options} side={item.extra} image={product.images[0]}  price={calculateTotalPrice(item)} action={<Pressable onPress={()=>handleDeleteFromCart(index)} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={35} color="#B22334" /></Pressable>}><View
+      <ProductAction component={item.components} instruction={item.instructions} onTap={()=> handleProductClick(item, index)} title={product.title} options={item.options} variantSelections={item.variantSelections} schemaAddonsSelected={item.schemaAddonsSelected} side={item.extra} image={product.images[0]}  price={calculateTotalPrice(item)} action={<Pressable onPress={()=>handleDeleteFromCart(index)} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={35} color="#B22334" /></Pressable>}><View
       style={{
         backgroundColor: "black",
         width: 30,
@@ -504,41 +641,39 @@ function handleProductClick(item, index){
     );
   };
   const [isCoDelivery, setIsCoDelivery] = useState(false);
-  
-  const calculateTotalPrice = (formObject) => {
-    const productQuantity = formObject.products.length; // The quantity of the main product
-    let totalPrice = formObject.products[0].price * productQuantity; // Start with the base product price times the quantity
-  
-    // Calculate the total price of extra items
-    formObject.extra?.forEach((extraItem) => {
-      totalPrice += extraItem.price * productQuantity;
-    });
-  
-    // Calculate the total price of selected options
-    formObject.options.forEach((optionCategory) => {
-      if (optionCategory.required) {
-        // If the option category is required, multiply the price of each selected option by the product quantity
-        optionCategory.values.forEach((selectedOption) => {
-          totalPrice += selectedOption.price * productQuantity;
-      });
-      } else {
-        // If the option category is not required, just add the price of each selected option
-        optionCategory.values.forEach((selectedOption) => {
-            totalPrice += selectedOption.price;
-        });
+  const [fulfillmentType, setFulfillmentType] = useState("delivery");
+  const [checkoutPromo, setCheckoutPromo] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem("@checkout_promo_v1");
+        if (!raw || cancelled) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") setCheckoutPromo(parsed);
+      } catch {
+        /* ignore */
       }
-    });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   
-    return totalPrice;
-  };
+  const calculateTotalPrice = (formObject) => cartLineTotal(formObject);
   const handleQuantityChange = (id, change) => {
     // Logic to increase or decrease quantity
   };
 
   const totalOrderPrice = cartItems?.reduce((sum, item) => sum + calculateTotalPrice(item), 0);
-  
   const taxesAndFees = 0.3 * totalOrderPrice;
-  const total = totalOrderPrice + taxesAndFees + (num == 0 ?  2 : 0) ;
+  const deliveryFee = fulfillmentType === "delivery" ? (num == 0 ? 2 : 0) : 0;
+  const promoDiscount = Number(checkoutPromo?.appliedAmount || 0);
+  const total = Math.max(
+    0,
+    totalOrderPrice + taxesAndFees + deliveryFee - promoDiscount
+  );
   return (
     <View style={styles.container}>
        {isLoading ? (
@@ -546,6 +681,32 @@ function handleProductClick(item, index){
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#0000ff" /></View>
       ) : (<>
+      {showPaymentError && (
+        <RoomServiceAlert
+          type={ROOM_SERVICE_ALERT_TYPES.error}
+          title="Something went wrong"
+          message="We couldn't process your payment."
+          primaryActionLabel="Try again"
+          onPrimaryAction={() => setShowPaymentError(false)}
+          dismissible
+          onDismissed={() => setShowPaymentError(false)}
+        />
+      )}
+      {showAddPaymentAlert && (
+        <RoomServiceAlert
+          type={ROOM_SERVICE_ALERT_TYPES.info}
+          title="Add payment method"
+          message="Add a card to complete checkout."
+          primaryActionLabel="Add card"
+          onPrimaryAction={() => {
+            setShowAddPaymentAlert(false);
+            navigation.navigate("Payment");
+          }}
+          persistent
+          dismissible
+          onDismissed={() => setShowAddPaymentAlert(false)}
+        />
+      )}
       {/* Header Section */}
       <View style={styles.headerSection}>
       
@@ -553,6 +714,42 @@ function handleProductClick(item, index){
     
       {/* Delivery Section */}
       <View style={styles.deliverySection}>
+      <Text style={styles.text}>Order Type</Text>
+      <View style={{ flexDirection: "row", gap: 10, marginBottom: 14 }}>
+        <Pressable
+          onPress={() => setFulfillmentType("delivery")}
+          style={[
+            styles.fulfillmentPill,
+            fulfillmentType === "delivery" && styles.fulfillmentPillActive,
+          ]}
+        >
+          <Text
+            style={[
+              styles.fulfillmentPillText,
+              fulfillmentType === "delivery" && styles.fulfillmentPillTextActive,
+            ]}
+          >
+            Delivery
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setFulfillmentType("pickup")}
+          style={[
+            styles.fulfillmentPill,
+            fulfillmentType === "pickup" && styles.fulfillmentPillActive,
+          ]}
+        >
+          <Text
+            style={[
+              styles.fulfillmentPillText,
+              fulfillmentType === "pickup" && styles.fulfillmentPillTextActive,
+            ]}
+          >
+            Pickup
+          </Text>
+        </Pressable>
+      </View>
+
       <Text style={styles.text}>Delivery Mode</Text>
       <View
       style={{
@@ -572,20 +769,27 @@ function handleProductClick(item, index){
       ))}
     </View>
         <View style={styles.addressRow}>
-          {address.length > 0 && (
-              <AddressEditable
-                title={address[0].name}
-                address={address[0].address}
-                onPress={addressHandler}
-              />
-            )}
-            {!address.length && (
-              <View style={[{ height: 50, paddingHorizontal: 40, width: '100%' }]}>
-                <FlexButton onPress={onPress}>
-                  <Text style={{ fontSize: 18 }}>Add Address</Text>
-                </FlexButton>
-              </View>
-            )}
+          {fulfillmentType === "delivery" && address.length > 0 && (
+            <AddressEditable
+              title={address[0].name}
+              address={address[0].address}
+              onPress={addressHandler}
+            />
+          )}
+          {fulfillmentType === "delivery" && !address.length && (
+            <View style={[{ height: 50, paddingHorizontal: 40, width: '100%' }]}>
+              <FlexButton onPress={onPress}>
+                <Text style={{ fontSize: 18 }}>Add Address</Text>
+              </FlexButton>
+            </View>
+          )}
+          {fulfillmentType === "pickup" && (
+            <View style={{ width: "100%", borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, padding: 12 }}>
+              <Text style={{ fontSize: 14, color: "#6B7280" }}>
+                Pickup order - we will notify you when it is ready for pickup.
+              </Text>
+            </View>
+          )}
             <TouchableOpacity onPress={()=>setInstruct(prev=> !prev)} style={{ borderWidth: 2,
     borderColor: "#rgba(0,0,0,0.05)",
     borderRadius: 15,
@@ -611,20 +815,33 @@ function handleProductClick(item, index){
       </View>
       {/* Payment Section */}
       <View style={styles.paymentSection}>
+        {promoDiscount > 0 && checkoutPromo ? (
+          <CheckoutPromoRow
+            title={checkoutPromo.title || "Coupon"}
+            subtitle={checkoutPromo.subtitle}
+            amount={promoDiscount}
+          />
+        ) : null}
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Order</Text>
           <Text style={styles.summaryValue}>${totalOrderPrice.toFixed(2)}</Text>
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Delivery</Text>
-          <Text style={styles.summaryValue}>From free to $2</Text>
+          <Text style={styles.summaryValue}>
+            {fulfillmentType === "pickup"
+              ? "Pickup (No delivery fee)"
+              : (deliveryFee > 0 ? `$${deliveryFee.toFixed(2)}` : "Free")}
+          </Text>
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Taxes & Fees</Text>
           <Text style={styles.summaryValue}>${taxesAndFees.toFixed(2)}</Text>
         </View>
-        <TouchableOpacity onPress={(address.length && cartItems.length > 0) ? checkOut : () => { }} style={[styles.payButton,
-        {backgroundColor: !(address.length && cartItems.length > 0) ? "rgba(0,0,0,0.05)" : "white"}
+        <TouchableOpacity
+        onPress={((fulfillmentType === "pickup" || address.length) && cartItems.length > 0) ? checkOut : () => { }}
+        style={[styles.payButton,
+        {backgroundColor: !((fulfillmentType === "pickup" || address.length) && cartItems.length > 0) ? "rgba(0,0,0,0.05)" : "white"}
         ]}>
           <Text style={styles.payButtonText}>Pay</Text>
           <Text style={styles.totalText}>${total.toFixed(2)}</Text>
@@ -695,6 +912,25 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 22,
     paddingBottom: 20,
+  },
+  fulfillmentPill: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  fulfillmentPillActive: {
+    backgroundColor: "#283618",
+    borderColor: "#283618",
+  },
+  fulfillmentPillText: {
+    color: "#374151",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  fulfillmentPillTextActive: {
+    color: "#FFFFFF",
   },
   coDeliveryRow: {
     flexDirection: 'row',

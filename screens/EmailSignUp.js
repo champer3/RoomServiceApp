@@ -6,75 +6,96 @@ import {
   Keyboard,
   Pressable,
   KeyboardAvoidingView,
-  Dimensions,
-  Alert,
-  ActivityIndicator
+  Platform,
+  TextInput,
+  ScrollView,
+  ActivityIndicator,
 } from "react-native";
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import Text from '../components/Text';
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Input from "../components/Inputs/Input";
-import Button from "../components/Buttons/Button";
-import Info from "../components/Info";
-import BareButton from "../components/Buttons/BareButton";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Ionicons } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import Text from "../components/Text";
+import { useState, useEffect, useRef } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
-import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
-import { SERVER_URL } from "../config";
+import { SERVER_URL, GOOGLE_IOS_CLIENT_ID, GOOGLE_ANDROID_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from "../config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { useToast } from "../context/ToastContext";
 
 WebBrowser.maybeCompleteAuthSession();
+
+const GREEN = "#2d5c3c";
+const GREEN_GRADIENT = ["#4a8f5c", "#5a9f6a", "#6faf7a"];
+
 function EmailSignUp() {
   const navigation = useNavigation();
+  const route = useRoute();
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   const data = useSelector((state) => state.profileData.profile);
+  const hasPromptedGoogle = useRef(false);
   const [request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId: '1036326714736-ccfuoqkih54f50u5trqnffods76djkja.apps.googleusercontent.com',
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID || undefined,
+    webClientId: GOOGLE_WEB_CLIENT_ID || undefined,
   });
+
+  const [email, setEmail] = useState(data?.email || "");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [warning, setWarning] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // When opened via "Continue with Google" from CreateAccount or AddNumber, auto-prompt Google
+  useEffect(() => {
+    if (route.params?.promptGoogle && !hasPromptedGoogle.current && request) {
+      hasPromptedGoogle.current = true;
+      const t = setTimeout(() => {
+        promptAsync().catch((err) => {
+          console.warn("Google prompt error:", err);
+          showToast({ type: "error", title: "Google sign-in", message: "Could not open Google sign-in." });
+        });
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [route.params?.promptGoogle, request, promptAsync, showToast]);
+
   const saveTokenToAsyncStorage = async (authToken) => {
     try {
       await AsyncStorage.setItem("authToken", authToken);
-      console.log("Token saved successfully.");
     } catch (error) {
       console.error("Error saving token:", error);
     }
   };
+
   const emailLogin = async (postData) => {
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         `${SERVER_URL}/api/v1/users/loginWithEmail`,
         JSON.stringify(postData),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
-      const authToken = response.data.token;
-      console.log(authToken);
+      const authToken = res.data.token;
       await saveTokenToAsyncStorage(authToken);
-      return response.data.data.user;
+      return res.data.data.user;
     } catch (err) {
-      console.log(err.error);
+      console.log(err?.message || err);
     }
   };
 
   const getUsersProfile = async (token) => {
     if (!token) return null;
     try {
-      const response = await fetch("https://www.googleapis.com/userinfo/v2/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch("https://www.googleapis.com/userinfo/v2/me", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error("Failed to fetch user profile");
-      return await response.json();
+      if (!res.ok) throw new Error("Failed to fetch user profile");
+      return await res.json();
     } catch (err) {
       console.error("Error fetching user profile:", err);
       return null;
@@ -82,53 +103,48 @@ function EmailSignUp() {
   };
 
   async function checkEmail(email) {
-    const userEmail = await axios.get(
-      `${SERVER_URL}/api/v1/users/getEmail/${email}`
-    );
-    return userEmail.data.data.user.length
+    try {
+      const res = await axios.get(
+        `${SERVER_URL}/api/v1/users/getEmail/${email}`
+      );
+      return res.data?.data?.user?.length ?? 0;
+    } catch (err) {
+      return 0;
+    }
   }
 
-
   useEffect(() => {
-    if (response?.type === 'success') {
+    if (response?.type === "success") {
       const { authentication } = response;
       const token = authentication?.accessToken;
 
       (async () => {
-        const user = await getUsersProfile(token);
-        const postData = {
-          email: user.email,
-          googleID: user.id,
-        };
-
-        if (user && user.email) {
+        setIsLoading(true);
+        try {
+          const user = await getUsersProfile(token);
+          if (!user?.email) {
+            showToast({ type: "error", title: "Google sign-in failed", message: "Could not get your email from Google." });
+            return;
+          }
+          const postData = { email: user.email, googleID: user.id };
           const emailCheckResult = await checkEmail(user.email);
+          const storedToken = { address: [], orders: [] };
 
           if (emailCheckResult >= 1) {
-            let storedToken = { address: [], orders: [], }
-
-
             try {
               const userResponse = await emailLogin(postData);
-              if (userResponse && userResponse.firstName && userResponse.email) {
-                try {
-                  const address = storedToken?.address || '';
-                  await AsyncStorage.setItem(
-                    "profile",
-                    JSON.stringify({
-                      firstName: userResponse.firstName,
-                      lastName: userResponse.lastName,
-                      phoneNumber: userResponse.phoneNumber,
-                      email: userResponse.email,
-                      password: userResponse.password,
-                      address: address,
-                    })
-                  );
-                  console.log("Profile saved successfully.");
-                } catch (error) {
-                  console.error("Error saving profile to AsyncStorage:", error);
-                }
-
+              if (userResponse?.firstName && userResponse?.email) {
+                await AsyncStorage.setItem(
+                  "profile",
+                  JSON.stringify({
+                    firstName: userResponse.firstName,
+                    lastName: userResponse.lastName,
+                    phoneNumber: userResponse.phoneNumber,
+                    email: userResponse.email,
+                    password: userResponse.password,
+                    address: storedToken?.address || [],
+                  })
+                );
                 dispatch(
                   updateProfile({
                     id: {
@@ -137,355 +153,442 @@ function EmailSignUp() {
                       phoneNumber: userResponse.phoneNumber,
                       email: userResponse.email,
                       password: userResponse.password,
-                      address: storedToken?.address || '',
+                      address: storedToken?.address || [],
                     },
                   })
                 );
-
-                navigation.replace('Loader');
+                navigation.replace("Loader");
               } else {
-                setIsLoading(false);
-                Alert.alert("Invalid Input", "Check the email or password.");
+                showToast({ type: "error", title: "Invalid input", message: "Check the email or password." });
               }
             } catch (error) {
-              console.error("Error during email login:", error);
-              setIsLoading(false);
-              Alert.alert("Login Failed", "An unexpected error occurred.");
+              showToast({ type: "error", title: "Login failed", message: "An unexpected error occurred." });
             }
           } else {
-            dispatch(updateProfile({
-              id: {
-                firstName: user.family_name || "",
-                lastName: user.given_name || "",
-                email: user.email,
-                googleID: user.id,
-              },
-            }));
-            navigation.navigate("AddNumber");
+            dispatch(
+              updateProfile({
+                id: {
+                  firstName: user.family_name || "",
+                  lastName: user.given_name || "",
+                  email: user.email,
+                  googleID: user.id,
+                },
+              })
+            );
+            navigation.replace("CompleteProfile");
           }
-        } else {
-          console.error("User profile or email is missing");
+        } finally {
+          setIsLoading(false);
         }
       })();
     }
   }, [response]);
+
   function handleScreenPress() {
     Keyboard.dismiss();
   }
-  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
 
+  function handleEmailChange(value) {
+    setEmail(value.trim());
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (value.trim() && !emailRegex.test(value.trim())) {
+      setWarning("Provide a valid email address");
+    } else {
+      setWarning("");
+    }
+  }
+
+  function numberHandler() {
+    navigation.navigate("AddNumber");
+  }
 
   function signInHandler() {
     navigation.navigate("NumberLogin");
   }
 
-
-  const [warning, setWarning] = useState();
-  const [form, setForm] = useState(data);
-  function handleUpdate() {
-    dispatch(updateProfile({ id: form }));
-  }
-  function pressHandler() {
-    handleSubmit()
-  }
-  function handleFormChange(field, value) {
-    if (field == "number") {
-      // const cleanedInput = value.replace(/\D/g, '');
-      const cleanedInput = value.replace(/\D/g, "");
-
-      // Add brackets dynamically based on entered digits
-      let formattedNumber = "";
-      for (let i = 0; i < cleanedInput.length; i++) {
-        if (i === 0) {
-          formattedNumber += "(";
-        } else if (i === 3) {
-          formattedNumber += ") ";
-        } else if (i === 6) {
-          formattedNumber += "-";
-        }
-        formattedNumber += cleanedInput[i];
-      }
-      value = formattedNumber;
-    }
-    if (field == "email") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-      if (!emailRegex.test(value.trim())) {
-        setWarning("Provide a valid email address");
-      } else {
-        setWarning();
-      }
-    }
-    setForm((prev) => ({ ...prev, [field]: value.trim() }));
-  }
   async function handleSubmit() {
-    handleScreenPress()
-    if (!warning && form.email && form.firstName && form.lastName) {
-      // console.log(form);
-      try {
-        const checkEmail = await axios.get(
-          `${SERVER_URL}/api/v1/users/getEmail/${form.email}`
-        );
-        setIsLoading(true)
-        setTimeout(() => {
-          if (checkEmail.data.data.user.length > 0) {
-            Alert.alert(
-              "Email already exist",
-              "Go ahead and login with your email address"
-            );
-          } else {
-            console.log("bdhbsjbdv");
-            handleUpdate();
-            navigation.navigate("AddNumber");
-          }
-          setTimeout(() => { setIsLoading(false) }, 200)
-          // Set loading status to false after some time (simulating app loading)
-        }, 1000)
+    handleScreenPress();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      setWarning("Provide a valid email address");
+      return;
+    }
+    if (!emailRegex.test(email.trim())) {
+      setWarning("Provide a valid email address");
+      return;
+    }
+    setWarning("");
+    if (password.length < 8) {
+      showToast({ type: "error", title: "Invalid password", message: "Password must be at least 8 characters." });
+      return;
+    }
 
-      } catch (err) {
-        console.log(err);
+    try {
+      const existing = await checkEmail(email);
+      setIsLoading(true);
+      if (existing > 0) {
+        setIsLoading(false);
+        showToast({
+          type: "error",
+          title: "Email already exists",
+          message: "Go ahead and sign in with your email address.",
+        });
+        return;
       }
+      dispatch(
+        updateProfile({
+          id: {
+            ...data,
+            email: email.trim(),
+            password,
+            firstName: data?.firstName ?? "",
+            lastName: data?.lastName ?? "",
+          },
+        })
+      );
+      navigation.replace("CompleteProfile");
+    } catch (err) {
+      console.error(err);
+      showToast({ type: "error", title: "Error", message: "Something went wrong. Please try again." });
+    } finally {
+      setIsLoading(false);
     }
   }
-  console.log(form)
+
+  const canContinue = email.trim().length > 0 && password.length >= 8 && !warning;
+
   return (
-    <KeyboardAvoidingView onPress={handleScreenPress} style={{ flex: 1 }} >
-      {isLoading ? (
-        // Render loading indicator while loading
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color="#0000ff" /></View>
-      ) : (
-        <Pressable onPress={handleScreenPress} style={styles.container}>
-          <View style={styles.welcomeView}>
-            <Text style={styles.text}>Hello,</Text>
-            <Text style={styles.text}>Create An Account🤩</Text>
-            <View style={styles.lineContainer}>
-              <View
-                style={[styles.line, { backgroundColor: "#283618" }]}
-              ></View>
-              <View style={[styles.line]}></View>
-              <View style={styles.line}></View>
-            </View>
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.root}
+      >
+        <StatusBar style="dark" />
+        {isLoading ? (
+          <View style={styles.loadingWrap}>
+            <ActivityIndicator size="large" color={GREEN} />
           </View>
-          <View
-            style={{
-              //   flex: 4,
-              //   alignItems: "center",
-              width: "100%",
-              justifyContent: "start",
-              //   borderWidth: 2,
-              //   borderColor: "black",
-              marginTop: 35,
-            }}
+        ) : (
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
           >
-            <Input
-              text={"Email Address"}
-              keyboard="email-address"
-              icon={<MaterialIcons name="email" size={24} color="#aaa" />}
-              textInputConfig={{
-                cursorColor: "#aaa",
-                value: form.email,
-                autoComplete: 'email',
-                inputmode: 'email',
-                onChangeText: handleFormChange.bind(this, "email"),
-              }}
-            />
+            {/* Header: back + title (match image) */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Secure your account</Text>
+              
+            <Text style={styles.subtitle}>Enter your email address and password</Text>
+            </View>
 
-            {warning && (
-              <Info
-                text={`${warning}                                            `}
-              />
-            )}
-            <Input
-              text={"First Name"}
-              icon={<Ionicons name="person" size={24} color={"#aaa"} />}
-              onInteract={()=>{}}
-              textInputConfig={{
-                cursorColor: "#aaa",
-                value: form.firstName,
-                autoComplete: 'given-name',
-                autoCapitalize: 'words',
-                inputmode: 'text',
-                onChangeText: handleFormChange.bind(this, "firstName"),
-              }}
-            />
-            <Input
-              text={"Last Name"}
-              icon={<Ionicons name="person" size={24} color={"#aaa"} />}
-              textInputConfig={{
-                cursorColor: "#aaa",
-                value: form.lastName,
-                autoCapitalize: 'words',
-                autoComplete: 'given-name',
-                inputmode: 'text',
-                onChangeText: handleFormChange.bind(this, "lastName"),
-              }}
-            />
-
-            {/* <Text
-              style={{
-                textAlign: "right",
-                paddingRight: 8,
-                marginVertical: 8,
-                color: "#283618",
-              }}
-            >
-              Forgot Password?
-            </Text> */}
-
-            <View style={styles.buttonContainer}>
-              <Button onPress={handleSubmit} color={!(!warning && form.email && form.firstName && form.lastName) ? '#8A8888' : ''}  >
-                <Text style={{
-                  fontSize: 18, color: "white", letterSpacing: 1.5,
-                  fontFamily: 'SFPRO-Regular',
-                }}>Continue</Text>
-                <Image
-                  style={styles.vector}
-                  source={require("../assets/Vector.png")}
+            <View style={styles.formSection}>
+              {/* Email — envelope icon, light gray field */}
+              <View style={styles.inputRow}>
+                <MaterialIcons
+                  name="email"
+                  size={22}
+                  color="#888"
+                  style={styles.inputIcon}
                 />
-              </Button>
-            </View>
-            {/*
-            <Text
-              style={{
-                color: "#BC6C25",
-                fontSize: 16,
-                fontWeight: "500",
-                textAlign: "center",
-              }}
-            >
-              Login with your mobile number
-            </Text> */}
-          </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email Address"
+                  placeholderTextColor="#888"
+                  value={email}
+                  onChangeText={handleEmailChange}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                />
+              </View>
+              {warning ? (
+                <Text style={styles.warningText}>{warning}</Text>
+              ) : null}
 
-          <View
-            style={{
-              //   flex:2,
-              justifyContent: "flex-start",
-              height: "33%",
-              //   borderWidth: 2,
-              //   borderColor: "black",
-            }}
-          >
-            <View style={styles.threeContainer}>
-              <View style={{ width: "100%", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-                <View style={{
-                  height: 1.5,
-                  backgroundColor: "#B6B1B1",
-                  width: "40%",
-                }}></View>
-                <Text style={{
-                  marginHorizontal: 16, letterSpacing: 1, fontSize: 14,
-                  fontFamily: 'SFPRO-Regular',
-                }}>or</Text>
-                <View style={{
-                  height: 1.5,
-                  backgroundColor: "#B6B1B1",
-                  width: "40%",
-                }}></View>
+              {/* Password — lock icon, eye toggle */}
+              <View style={styles.inputRow}>
+                <MaterialIcons
+                  name="lock"
+                  size={22}
+                  color="#888"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  placeholderTextColor="#888"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoComplete="new-password"
+                />
+                <Pressable
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeButton}
+                  hitSlop={8}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={22}
+                    color="#888"
+                  />
+                </Pressable>
+              </View>
+
+              {/* Continue → — dark green */}
+              <View style={styles.ctaShadowWrap}>
+                <Pressable
+                  onPress={canContinue ? handleSubmit : undefined}
+                  style={[styles.ctaPressable, !canContinue && styles.ctaDisabled]}
+                  disabled={!canContinue}
+                >
+                  <LinearGradient
+                    colors={
+                      canContinue
+                        ? GREEN_GRADIENT
+                        : ["#9e9e9e", "#b0b0b0", "#c0c0c0"]
+                    }
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                    style={styles.ctaGradient}
+                  >
+                    <Text style={styles.ctaText}>Continue</Text>
+                    <Image
+                      source={require("../assets/Vector.png")}
+                      style={styles.ctaArrow}
+                    />
+                  </LinearGradient>
+                </Pressable>
+              </View>
+
+              {/* or */}
+            <View style={styles.orRow}>
+              <View style={styles.orLine} />
+              <Text style={styles.orText}>or</Text>
+              <View style={styles.orLine} />
+            </View>
+
+              {/* Continue with Google */}
+              <Pressable
+                style={[styles.googleButton, (!request || isLoading) && { opacity: 0.7 }]}
+                onPress={() => request && !isLoading && promptAsync()}
+                disabled={!request || isLoading}
+              >
+                <Image
+                  source={require("../assets/google.png")}
+                  style={styles.googleIcon}
+                />
+                <Text style={styles.googleLabel}>Continue with Google</Text>
+              </Pressable>
+
+              <Pressable onPress={numberHandler} style={styles.numberLinkWrap}>
+                <Text style={styles.numberLink}>Sign up with phone number</Text>
+              </Pressable>
+
+              {/* Footer */}
+              <View style={styles.footerRow}>
+                <Text style={styles.footerPrefix}>Already have an account?</Text>
+                <Pressable onPress={signInHandler} hitSlop={8}>
+                  <Text style={styles.footerSignIn}> Sign In</Text>
+                </Pressable>
               </View>
             </View>
-            <View style={[styles.buttonContainer]}>
-              <BareButton onPress={() => { promptAsync() }} borderRadius={24} color="#EEEEEE">
-                <Image
-                  style={styles.facebook}
-                  source={require("../assets/google.png")}
-                />
-                <Text style={{letterSpacing: 1, fontFamily: 'SFPRO-Regular', fontSize: 16}}> Continue with Google</Text>
-              </BareButton>
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={{ color: "#333333", opacity: 0.8, letterSpacing: 0.8, fontFamily: 'SFPRO-Regular', fontSize: 16, marginRight: 4}}>
-                Already have an account?
-              </Text>
-              <Pressable onPress={signInHandler}>
-                <Text
-                  style={{ color: "#BC6C25", fontWeight: "700", letterSpacing: 1, fontFamily: 'SFPRO-Regular', fontSize: 16 }}
-                >
-                  Sign In
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </Pressable>)}
-    </KeyboardAvoidingView>
+          </ScrollView>
+        )}
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
 export default EmailSignUp;
 
-const { width, height } = Dimensions.get("window");
-
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: "#fff",
-    marginHorizontal: "5%",
-    marginTop: height / 35,
-    // marginTop: 200
+    backgroundColor: "#f8faf8",
   },
-  welcomeView: {
-    // borderWidth: 2,
-    // borderColor: "black",
-    // flex: 1,
-    justifyContent: "flex-start",
-    height: height / 10,
-    // marginBottom: 42,
-    // marginTop: 40,
-  },
-  description: {
+  loadingWrap: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // marginBottom: 10,
+    backgroundColor: "#f8faf8",
   },
-  image: {
-    // flex: 1,
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+    paddingTop: 100,
+    paddingHorizontal: 24,
+  },
+  header: {
+    marginBottom: 28,
+    paddingTop: 24
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#f0f2f0",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    fontFamily: "Poppins-Regular",
+    marginBottom: 6
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "#6b7280",
+    fontFamily: "Poppins-Regular",
+  },
+  formSection: {
+    flex: 1,
+    backgroundColor: "#f8faf8",
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f2f0",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#e0e4e0",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginBottom: 16,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: "#1a1a1a",
+    fontFamily: "Poppins-Regular",
+    paddingVertical: 0,
+  },
+  eyeButton: {
+    padding: 4,
+  },
+  warningText: {
+    fontSize: 13,
+    color: "#b91c1c",
+    fontFamily: "Poppins-Regular",
+    marginTop: -8,
+    marginBottom: 8,
+  },
+  ctaShadowWrap: {
     width: "100%",
+    borderRadius: 999,
+    marginTop: 8,
+    marginBottom: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#0d2818",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 12,
+      },
+      android: { elevation: 10 },
+    }),
+  },
+  ctaPressable: {
+    borderRadius: 999,
+    overflow: "hidden",
+  },
+  ctaDisabled: {
+    opacity: 0.9,
+  },
+  ctaGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+  },
+  ctaText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "700",
+    fontFamily: "Poppins-Regular",
+  },
+  ctaArrow: {
+    width: 22,
+    height: 16,
+    marginLeft: 8,
     resizeMode: "contain",
+    tintColor: "#fff",
   },
-  buttonContainer: {
-    width: "100%",
-    height: 55,
+  orRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 20,
-    marginTop: 18,
   },
-  vector: {
-    width: 21.5,
-    height: 15,
-    marginLeft: 5,
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#d1d5d1",
+    maxWidth: "38%",
   },
-  facebook: {
-    width: "7%",
+  orText: {
+    marginHorizontal: 14,
+    fontSize: 14,
+    color: "#9ca3af",
+    fontFamily: "Poppins-Regular",
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 34,
+    borderWidth: 1,
+    borderColor: "#e0e4e0",
+    paddingVertical: 16,
+    marginBottom: 20,
+  },
+  googleIcon: {
+    width: 22,
+    height: 22,
     resizeMode: "contain",
-    marginRight: 3,
+    marginRight: 10,
   },
-  threeContainer: {
-    width: "100%",
+  googleLabel: {
+    fontSize: 16,
+    color: "#1a1a1a",
+    fontFamily: "Poppins-Regular",
+    fontWeight: "500",
+  },
+   numberLinkWrap: {
+    alignItems: "center",
+    marginBottom: 28,
+  },
+  numberLink: {
+    fontSize: 16,
+    color: "#BC6C25",
+    fontFamily: "Poppins-SemiBold",
+    fontWeight: "700",
+  },
+  footerRow: {
     flexDirection: "row",
     justifyContent: "center",
-    alignSelf: "center",
-    marginVertical: 26
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginTop: 21
   },
-  line: {
-    height: 2,
-    backgroundColor: "#EEEEEE",
-    width: "30%",
+  footerPrefix: {
+    fontSize: 13,
+    color: "#4b5563",
+    fontFamily: "Poppins-Regular",
   },
-  textContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  text: {
-    color: "#333333",
-    fontSize: 32,
-    letterSpacing: 2,
-    fontFamily: 'SFPRO-Regular',
-  },
-  lineContainer: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignSelf: "center",
-    marginVertical: 26
+  footerSignIn: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#BC6C25",
+    fontFamily: "Poppins-SemiBold",
   },
 });

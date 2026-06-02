@@ -1,6 +1,11 @@
 import { Image, StyleSheet, TextInput, View, Pressable, Dimensions, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef , useEffect} from 'react';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { postAppApplyCoupon } from "../api/appPromotions";
+import { cartLinesForPromoApi } from "../utils/cartPromoPayload";
+import CartPromotionSummary from "../components/promotions/CartPromotionSummary";
+import CouponEntrySection from "../components/promotions/CouponEntrySection";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Review from "../components/Reviews/Review"
 import Rating from "../components/Reviews/Rating"
@@ -191,6 +196,61 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
     setInstruction(display[index].instruction)
   }
     const navigation = useNavigation()
+    const [appliedCouponUi, setAppliedCouponUi] = useState(null);
+    const [promoSummaryLines, setPromoSummaryLines] = useState([]);
+    const [couponError, setCouponError] = useState(null);
+    const [couponLoading, setCouponLoading] = useState(false);
+
+    const promoDiscount = promoSummaryLines.reduce((s, l) => s + (Number(l.appliedAmount) || 0), 0);
+
+    const handleApplyCoupon = async (code) => {
+      setCouponLoading(true);
+      setCouponError(null);
+      try {
+        const items = cartLinesForPromoApi(cartItems);
+        const res = await postAppApplyCoupon({
+          code,
+          items,
+          orderType: "delivery",
+        });
+        const body = res.data;
+        if (res.status === 200 && body?.status === "success" && body?.data) {
+          const d = body.data;
+          setAppliedCouponUi(d.coupon);
+          const amt = Number(d.appliedAmount || 0);
+          setPromoSummaryLines([
+            {
+              id: d.coupon?.id,
+              title: d.coupon?.title || code,
+              subtitle: d.coupon?.pricing?.formattedDiscount,
+              appliedAmount: amt,
+            },
+          ]);
+          await AsyncStorage.setItem(
+            "@checkout_promo_v1",
+            JSON.stringify({
+              title: d.coupon?.title || code,
+              subtitle: d.coupon?.pricing?.formattedDiscount,
+              appliedAmount: amt,
+            })
+          );
+        } else {
+          const err = body?.error || body?.message;
+          setCouponError(
+            typeof err === "string" ? err : err?.message || "Could not apply coupon"
+          );
+        }
+      } catch (e) {
+        const msg =
+          e?.response?.data?.error?.message ||
+          e?.response?.data?.message ||
+          e?.message ||
+          "Network error";
+        setCouponError(msg);
+      } finally {
+        setCouponLoading(false);
+      }
+    };
     function pressHandler (){
       if (cartItems.length > 0){
         navigation.navigate('Checkout')}
@@ -306,7 +366,7 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
   const subtotal = calculateSubtotal();
   const taxesAndFees = 0.3 * subtotal;
   const deliveryFee = 5.00;
-  const total = subtotal + taxesAndFees + deliveryFee;
+  const total = Math.max(0, subtotal + taxesAndFees + deliveryFee - promoDiscount);
 
   return (
     <View style={styles.container}>
@@ -318,6 +378,13 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
     {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
      {cartItems.length > 0 && <>
      <View style={{marginTop: 20}}></View>
+      <CartPromotionSummary appliedLines={promoSummaryLines} />
+      <CouponEntrySection
+        appliedCoupon={appliedCouponUi}
+        onApply={handleApplyCoupon}
+        isApplying={couponLoading}
+        error={couponError}
+      />
       {cartItems.map((item, index) => (
         <View key={index.toString()}>
           {renderCartItem({ item, index })}

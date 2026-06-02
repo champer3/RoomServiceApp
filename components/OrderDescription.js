@@ -15,13 +15,12 @@ import FlexButton from "./Buttons/FlexButton";
 import { getAddress, getPosition, searchAddress, getDuration } from "../util/location";
 
 
-function OrderDescription({address, date, id,order, price, status = 'Ordered', press }) {
+function OrderDescription({address, date, id,order, price, status = 'Ordered', press, onPickedUp, orderType = 'Delivery' }) {
     const navigation = useNavigation()
   function pressHandler (){
     navigation.navigate('Delivery Status', {address: address})
   }
   const encodedAddress = encodeURIComponent('501 Main Street Nashville, TN 37206')
-
   const [time, setTime] = useState();
   
   const [position , setPosition] = useState(null)
@@ -79,6 +78,19 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
     })();
   }, []);
 
+    const normalizedStatus = (status || '').toLowerCase();
+    const isPickupOrder = (orderType || '').toLowerCase() === 'pickup';
+    const isReadyForPickup =
+      normalizedStatus === 'ready for pickup' ||
+      normalizedStatus === 'ready for pick up' ||
+      normalizedStatus === 'ready';
+    const isCompleted =
+      normalizedStatus === 'delivered' ||
+      normalizedStatus === 'completed' ||
+      status === 'Delivered' ||
+      status === 'Completed' ||
+      (isPickupOrder && normalizedStatus === 'picked_up');
+
     function formatDate(dateString) {
         const date = new Date(dateString);
         const currentDate = new Date();
@@ -88,25 +100,39 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
         if (date.toDateString() === currentDate.toDateString()) {
             const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
-        return status == 'Delivered' ?  `Delivered today at ${hours}:${minutes}` : `Ordered today at ${hours}:${minutes}`;        } 
+        return isCompleted ?  `Delivered today at ${hours}:${minutes}` : `Ordered today at ${hours}:${minutes}`;        } 
         else if (date.getDate() === currentDate.getDate() - 1) {
-            return status == 'Delivered' ? 'Delivered yesterday' : 'Ordered yesterday';
+            return isCompleted ? 'Delivered yesterday' : 'Ordered yesterday';
         } else {
-            return status == 'Delivered' ? `Delivered on ${month} ${day}` : `Ordered on ${month} ${day}`;
+            return isCompleted ? `Delivered on ${month} ${day}` : `Ordered on ${month} ${day}`;
         }
     }
-    const statuses = ['Ordered', 'Ready for Delivery', 'Out for Delivery', 'Delivered']
+    const statuses = isPickupOrder
+      ? ['Ordered', 'Ready for Pickup', 'Delivered']
+      : ['Ordered', 'Ready for Delivery', 'Out for Delivery', 'Delivered'];
+
+    const mapStatusToTimeline = (raw) => {
+      const s = String(raw || '').toLowerCase();
+      if (isPickupOrder) {
+        if (s === 'placed' || s === 'ordered' || s === 'preparing') return 'Ordered';
+        if (s === 'ready' || s === 'ready for pickup' || s === 'ready for delivery')
+          return 'Ready for Pickup';
+        if (s === 'picked_up' || s === 'delivered' || s === 'completed') return 'Delivered';
+        return 'Ordered';
+      }
+      if (s === 'placed' || s === 'ordered' || s === 'preparing') return 'Ordered';
+      if (s === 'ready' || s === 'ready for delivery' || s === 'ready for pickup')
+        return 'Ready for Delivery';
+      if (s === 'assigned' || s === 'picked_up' || s === 'out for delivery')
+        return 'Out for Delivery';
+      if (s === 'delivered' || s === 'completed') return 'Delivered';
+      return typeof raw === 'string' && raw ? raw : 'Ordered';
+    };
+
+    const timelineStatus = mapStatusToTimeline(status);
     const cost = {}
     let total = order.reduce((total, item)=> total + item.products.length , 0)
-    var rater = []
-    for (var i = 0; i < 3; i++ ){
-        if (i < statuses.indexOf(status)){
-            rater.push({'rate':'dot-fill', id:i})
-        }
-        else{
-            rater.push({'rate':'dot', id:i})
-        }
-    }
+    const currentStatusIndex = Math.max(0, statuses.indexOf(timelineStatus));
     function addQuantityToObjects(inputList) {
         const titleCountMap = {};
   
@@ -150,9 +176,6 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
   
         return filteredList;
     }
-    let lastStatus = <></>
-    if(statuses.indexOf(status) !== 3){lastStatus = <Octicons name={`dot`} size={24} color={ 'rgba(0,0,0,0.5)'} />
-   }else{ lastStatus = <Fontisto name="radio-btn-active" size={24} color= "#BC6C25" />} 
     const formattedDate = formatDate(date);
   return (
     <View style={[styles.container]}>
@@ -162,54 +185,45 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
         <Text style={{ fontSize: 16}}>{formattedDate}</Text>
         <Text style={{ fontSize: 17}}>{price}</Text>
      </View>
-     <View style={{ flexDirection: 'row' }}>
-  {rater.map(({ rate, id }, idx) => {
-    // Determine if the current status matches or not
-    if (statuses.indexOf(status) !== id) {
-      return (
-        <View key={`${id}-${idx}`} style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
-          <Octicons 
-            name={`${rate}`} 
-            size={24} 
-            color={rate === 'dot-fill' ? "#BC6C25" : 'rgba(0,0,0,0.5)'} 
+     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+  {statuses.map((step, idx) => {
+    const isLast = idx === statuses.length - 1;
+    const isDone = idx < currentStatusIndex;
+    const isCurrent = idx === currentStatusIndex;
+    return (
+      <React.Fragment key={`${step}-${idx}`}>
+        {isCurrent ? (
+          <Fontisto name="radio-btn-active" size={24} color="#BC6C25" />
+        ) : (
+          <Octicons
+            name={isDone ? 'dot-fill' : 'dot'}
+            size={24}
+            color={isDone ? '#BC6C25' : 'rgba(0,0,0,0.5)'}
           />
-          <View 
+        )}
+        {!isLast && (
+          <View
             style={{
+              flex: 1,
               height: 2,
-              width: '90%',
-              alignSelf: 'center',
-              backgroundColor: rate === 'dot-fill' ? "#BC6C25" : 'rgba(0,0,0,0.5)'
+              backgroundColor: idx < currentStatusIndex ? '#BC6C25' : 'rgba(0,0,0,0.5)'
             }}
           />
-        </View>
-      );
-    } else {
-      return (
-        <View key={`${id}-${idx}-active`} style={{ flexDirection: 'row', width: '27.3%' }}>
-          <Fontisto name="radio-btn-active" size={24} color="#BC6C25" />
-          <View 
-            style={{
-              height: 2,
-              width: '72%',
-              alignSelf: 'center',
-              backgroundColor: "#BC6C25"
-            }} 
-          />
-        </View>
-      );
-    }
+        )}
+      </React.Fragment>
+    );
   })}
-  {lastStatus}
 </View>
 
      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <Text style={{ fontSize: 9}}>Ordered</Text>
-        <Text style={{ fontSize: 9}}>Ready for Delivery</Text>
-        <Text style={{ fontSize: 9}}>Out for Delivery</Text>
-        <Text style={{ fontSize: 9}}>Delivered</Text>
+        {statuses.map((step, idx) => (
+          <Text key={`${step}-label-${idx}`} style={{ fontSize: 9}}>{step}</Text>
+        ))}
      </View>
      <View style={{height : 1,width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', alignSelf: 'center'}}></View>
-    {status == 'Out for Delivery' && <View style={{height: 45}}><FlexButton onPress={pressHandler} background={'#283618'} ><Text style={{ fontSize: 16, color: 'white',textAlign: 'center'}}>Track Order</Text></FlexButton></View>}
+    {isReadyForPickup && <Text style={{ fontSize: 15, color: '#283618', fontWeight: '700' }}>Ready for Pickup</Text>}
+    {(normalizedStatus === 'assigned' || normalizedStatus === 'picked_up' || status == 'Out for Delivery') && <View style={{height: 45}}><FlexButton onPress={pressHandler} background={'#283618'} ><Text style={{ fontSize: 16, color: 'white',textAlign: 'center'}}>Track Order</Text></FlexButton></View>}
+    {isReadyForPickup && <View style={{height: 45}}><FlexButton onPress={() => onPickedUp?.(id)} background={'#283618'} ><Text style={{ fontSize: 16, color: 'white',textAlign: 'center'}}>Picked Up</Text></FlexButton></View>}
      <Text style={{ fontSize: 13}}>{total} {`${total > 1 ? 'Items': 'Item'}`}</Text>
     
      <ScrollView horizontal>{order.map((item, idx)=><View key={idx} style={{marginRight: 3}} ><Image source={{uri: item.products[0].images[0]}} style={{width: 55, height: 55, borderRadius: 30}}/>{item.products.length > 1 && <View  style={{
@@ -229,7 +243,7 @@ function OrderDescription({address, date, id,order, price, status = 'Ordered', p
                 </View>)
                 }</ScrollView>
          <View style={{height : 1,width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', alignSelf: 'center'}}></View>
-         <View >{time && status == 'Out for Delivery' && <View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{ fontSize: 14}} >{`Driver is `}</Text><Text style={{ fontSize: 19, color: '#4F6B30'}}>{getTimeLeft(date, time)}</Text><Text style={{ fontSize: 14}}></Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton onPress={()=>press(order, id, price)}><Text style={{ fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
+         <View >{time && (normalizedStatus === 'assigned' || normalizedStatus === 'picked_up' || status == 'Out for Delivery') && <View style={{flexDirection: "row", alignItems:'flex-end'}}><Text style={{ fontSize: 14}} >{`Driver is `}</Text><Text style={{ fontSize: 19, color: '#4F6B30'}}>{getTimeLeft(date, time)}</Text><Text style={{ fontSize: 14}}></Text></View>}<View style={{height: 45,  alignSelf: 'flex-end'}} ><FlexButton onPress={()=>press(order, id, price)}><Text style={{ fontSize: 13, textAlign: 'center'}}>View order</Text></FlexButton></View></View>
         
      </View>
      

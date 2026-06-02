@@ -7,232 +7,388 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Dimensions,
-  Alert,
+  Platform,
+  TextInput,
+  ScrollView,
 } from "react-native";
-import Text from '../components/Text';
-import { useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Input from "../components/Inputs/Input";
-import Button from "../components/Buttons/Button";
-import Info from "../components/Info";
-import PhoneIcon from "../components/PhoneIcon";
+import { LinearGradient } from "expo-linear-gradient";
+import { StatusBar } from "expo-status-bar";
+import Text from "../components/Text";
 import { useSelector, useDispatch } from "react-redux";
-import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import { updateProfile } from "../Data/profile";
 import axios from "axios";
 import { SERVER_URL } from "../config";
+import { useToast } from "../context/ToastContext";
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
 function AddNumber() {
-  function handleScreenPress() {
-    Keyboard.dismiss();
-  }
-  function pressHandler (){
-    navigation.navigate('EmailSignUp')
-  }
-  function nextHandler(){
-    handleSubmit()
-  }
   const navigation = useNavigation();
-  const [warning, setWarning] = useState();
+  const { showToast } = useToast();
   const dispatch = useDispatch();
   const data = useSelector((state) => state.profileData.profile);
 
-  const [form, setForm] = useState(data);
-  function handleUpdate() {
-    dispatch(updateProfile({ id: form }));
+  function handleScreenPress() {
+    Keyboard.dismiss();
   }
-  const phoneNumberString = form.number !== undefined || null ? form.number.replace(/[^0-9]/g, '') : null;
-  // const phoneNumberString = form.number;
+
+  const [number, setNumber] = useState("");
+  const phoneNumberString = number.replace(/[^0-9]/g, "");
   const phoneNumber = "+1" + phoneNumberString;
+  const canContinue = number.length === 14;
+
+  const formatPhoneNumber = (input) => {
+    const cleanedInput = input.replace(/\D/g, "");
+    let formattedNumber = "";
+    for (let i = 0; i < cleanedInput.length; i++) {
+      if (i === 0) formattedNumber += "(";
+      else if (i === 3) formattedNumber += ") ";
+      else if (i === 6) formattedNumber += "-";
+      formattedNumber += cleanedInput[i];
+    }
+    setNumber(formattedNumber);
+  };
+
   const verifyNumber = async () => {
-    console.log(phoneNumber)
     try {
-      const response = await axios.get(
-        `${SERVER_URL}/getCode/${phoneNumber}`
-      );
-      console.log(response);
+      const response = await axios.get(`${SERVER_URL}/getCode/${phoneNumber}`);
+      return response.data;
     } catch (err) {
-      console.log(err.error);
+      console.log(err?.error || err);
     }
   };
-  function handleFormChange(field, value) {
-    if (field == "number") {
-      // const cleanedInput = value;
-      const cleanedInput = value.replace(/\D/g, "");
 
-      // Add brackets dynamically based on entered digits
-      let formattedNumber = "";
-      for (let i = 0; i < cleanedInput.length; i++) {
-        if (i === 0) {
-          formattedNumber += "(";
-        } else if (i === 3) {
-          formattedNumber += ") ";
-        } else if (i === 6) {
-          formattedNumber += "-";
-        }
-        formattedNumber += cleanedInput[i];
-      }
-      value = formattedNumber;
-      if (value.length == 14) {
-        setWarning();
-      }
+  async function pressHandler() {
+    Keyboard.dismiss();
+    if (!canContinue) {
+      return;
     }
-    setForm((prev) => ({ ...prev, [field]: value }));
-  }
-  async function handleSubmit() {
-    
-    if (form && form.number && form.number.length == 14) {
-      try {
-        console.log(phoneNumber)
-        const checkNumber = await axios.get(
-          `${SERVER_URL}/api/v1/users/getNumber/${phoneNumber}`
-        );
-        console.log(checkNumber)
-        if (checkNumber.data.data) {
-          Alert.alert(
-            "Phone Number already exist",
-            "Go ahead and login with your Phone Number"
-          );
-        } else {
-          console.log("bdhbsjbdv");
-          handleUpdate();
-          verifyNumber();
-          navigation.navigate("AddPin", { phoneNumber });
-        }
-      } catch (err) {
-        console.log(err);
+    try {
+      const checkNumber = await axios.get(
+        `${SERVER_URL}/api/v1/users/getNumber/${phoneNumber}`
+      );
+      if (checkNumber.data.data) {
+        showToast({
+          type: "error",
+          title: "Phone number already exists",
+          message: "Go ahead and login with your phone number.",
+        });
+        return;
       }
-    } else {
-      setWarning("Provide a valid number");
+
+      const updatedProfile = { ...data, number };
+      dispatch(updateProfile({ id: updatedProfile }));
+      await verifyNumber();
+      navigation.navigate("AddPin", { phoneNumber });
+    } catch (err) {
+      console.log(err);
     }
   }
-  const [active, setActive] = useState(false);
+
+  function emailHandler() {
+    navigation.navigate("EmailSignUp");
+  }
+
+  function signInHandler() {
+    navigation.navigate("NumberLogin");
+  }
+
   return (
-    <KeyboardAvoidingView   style={{flex: 1}} >
-       <Pressable onPress={handleScreenPress} style={styles.container} >
-          <View style={styles.welcomeView}>
-            <Text style={styles.text}>Awesome,</Text>
-            <Text style={styles.text}>Add Your Number😉</Text>
-            <View style={styles.lineContainer}>
-              <View style={styles.line}></View>
-              <View
-                style={[styles.line, { backgroundColor: "#283618" }]}
-              ></View>
-              <View style={styles.line}></View>
-            </View>
-            <View style={{ }}>
-            <Input
-              text={"Contact Number"}
-              icon={<PhoneIcon />}
-              keyboard="number-pad"
-              length={14}
-              textInputConfig={{
-                cursorColor: "#aaa",
-                autoComplete: 'tel',
-                inputmode: 'tel',
-                value: form.number,
-                onChangeText: handleFormChange.bind(this, "number"),
-              }}
-            />
-            {warning && (
-              <Info
-                text={`${warning}                                            `}
-              />
-            )}
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.root}
+      >
+        <StatusBar style="dark" />
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Form area — off-white / white */}
+          <View style={styles.formSection}>
+            <Text style={styles.welcomeTitle}>Secure your account</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Enter your phone number
+            </Text>
 
-            {/* {!warning && (
-              <>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
-                  <Pressable onPress={() => setActive((prev) => !prev)}>
-                    <Ionicons
-                      name={`${
-                        active ? "md-radio-button-on" : "md-radio-button-off"
-                      }`}
-                      size={24}
-                      color="#aaa"
-                    />
-                  </Pressable>
-                  <Text style={{ marginVertical: 24 , fontSize: 13 }}>
-                    Send me promotional discount and promos via SMS
-                  </Text>
-                </View>
-                <Info text="By selecting this option, you are agreeing to receive promotional discounts, exclusive offers, and marketing promotions via Short Message Service (SMS) to the mobile number provided. " />
-              </>
-            )} */}
-          </View>
-          </View>
-            <View style={styles.buttonContainer}>
-              <Button onPress={handleSubmit} color={(form && form.number && form.number.length == 14) ? '' : '#aaa'}>
-                <Text style={{ fontSize: 16, color: "white" }}>Send Code </Text>
+            {/* Phone row: light gray field, flag + +1 + input */}
+            <View style={styles.phoneField}>
+              <View style={styles.phonePrefix}>
                 <Image
-                  style={styles.vector}
-                  source={require("../assets/Vector.png")}
+                  source={require("../assets/dsBuffer.bmp1.png")}
+                  style={styles.flag}
                 />
-              </Button>
+                <Text style={styles.prefixText}>+1</Text>
+              </View>
+              <TextInput
+                style={styles.phoneInput}
+                placeholder="Phone Number"
+                placeholderTextColor="#888"
+                keyboardType="number-pad"
+                maxLength={14}
+                value={number}
+                onChangeText={formatPhoneNumber}
+                autoComplete="tel"
+              />
             </View>
-          </Pressable>
-          </KeyboardAvoidingView>
+
+            {/* Continue — gradient + shadow */}
+            <View style={styles.ctaShadowWrap}>
+              <Pressable
+                onPress={canContinue ? pressHandler : undefined}
+                style={[styles.ctaPressable, !canContinue && styles.ctaDisabled]}
+                disabled={!canContinue}
+              >
+                <LinearGradient
+                  colors={
+                    canContinue
+                      ? ["#4a8f5c", "#5a9f6a", "#6faf7a"]
+                      : ["#9e9e9e", "#b0b0b0", "#c0c0c0"]
+                  }
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={styles.ctaGradient}
+                >
+                  <Text style={styles.ctaText}>Continue</Text>
+                  <Image
+                    source={require("../assets/Vector.png")}
+                    style={styles.ctaArrow}
+                  />
+                </LinearGradient>
+              </Pressable>
+            </View>
+
+            <Text style={styles.verifyHint}>
+              We'll send a one-time verification code to confirm your phone
+              number.
+            </Text>
+
+            {/* or */}
+            <View style={styles.orRow}>
+              <View style={styles.orLine} />
+              <Text style={styles.orText}>or</Text>
+              <View style={styles.orLine} />
+            </View>
+
+            {/* Google — white pill, gray border */}
+            <Pressable
+              style={styles.googleButton}
+              onPress={() => navigation.navigate("EmailSignUp", { promptGoogle: true })}
+            >
+              <Image
+                source={require("../assets/google.png")}
+                style={styles.googleIcon}
+              />
+              <Text style={styles.googleLabel}>Continue with Google</Text>
+            </Pressable>
+
+            <Pressable onPress={emailHandler} style={styles.emailLinkWrap}>
+              <Text style={styles.emailLink}>Sign up with email</Text>
+            </Pressable>
+
+            <View style={styles.footerRow}>
+              <Text style={styles.footerPrefix}>
+                Already have an account?
+              </Text>
+              <Pressable onPress={signInHandler}>
+                <Text style={styles.footerSignUp}> Sign In</Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
 export default AddNumber;
-const { width, height } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: "#fff",
-    marginHorizontal: "5%",
-    marginTop: height/35,
-    // marginTop: 200
+    backgroundColor: "#f8faf8",
   },
-  welcomeView: {
-    // flex: 1,
-    // marginBottom: 42,
-    justifyContent: "flex-start",
-    // marginTop: -70,
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+    paddingTop: 100,
   },
-  description: {
-  },
-  image: {
+  formSection: {
     flex: 1,
-    width: "100%",
-    resizeMode: "contain",
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    backgroundColor: "#f8faf8",
   },
-  buttonContainer: {
-    width: "100%",
-    height: 50,
-    marginBottom: 25,
-    marginTop: 58,
-    alignSelf: 'flex-end'
+  welcomeTitle: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    fontFamily: "Poppins-Regular",
+    marginBottom: 6,
   },
-  vector: {
-    width: 21.5,
-    height: 15,
-    // resizeMode: 'center',
-    marginLeft: 5,
+  welcomeSubtitle: {
+    fontSize: 15,
+    color: "#6b7280",
+    fontFamily: "Poppins-Regular",
+    marginBottom: 24,
   },
-  text: {
-    color: "#333333",
-    fontSize: 28,
-    fontWeight: "500",
-    letterSpacing: 2,
-  },
-  lineContainer: {
+  phoneField: {
     flexDirection: "row",
-    marginVertical: height/35,
-    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#f0f2f0",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#e0e4e0",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginBottom: 20,
   },
-  line: {
-    height: 2,
-    width: "30%",
-    backgroundColor: "#D9D9D9",
+  phonePrefix: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  flag: {
+    width: 28,
+    height: 20,
+    borderRadius: 4,
+    marginRight: 8,
+    resizeMode: "cover",
+  },
+  prefixText: {
+    fontSize: 16,
+    color: "#333",
+    fontFamily: "Poppins-Regular",
+    fontWeight: "600",
+  },
+  phoneInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#1a1a1a",
+    fontFamily: "Poppins-Regular",
+    paddingVertical: 0,
+  },
+  ctaShadowWrap: {
+    width: "100%",
+    borderRadius: 999,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#0d2818",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 12,
+      },
+      android: { elevation: 10 },
+    }),
+  },
+  ctaPressable: {
+    borderRadius: 999,
+    overflow: "hidden",
+  },
+  ctaDisabled: {
+    opacity: 0.9,
+  },
+  ctaGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+  },
+  ctaText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "700",
+    fontFamily: "Poppins-Regular",
+  },
+  ctaArrow: {
+    width: 22,
+    height: 16,
+    marginLeft: 8,
+    resizeMode: "contain",
+    tintColor: "#fff",
+  },
+  verifyHint: {
+    fontSize: 13,
+    color: "#9ca3af",
+    lineHeight: 19,
+    fontFamily: "Poppins-Regular",
+    marginVertical: 8,
+    marginBottom: 28,
+    paddingHorizontal: 4,
+    textAlign: "center",
+  },
+  orRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#d1d5d1",
+    maxWidth: "38%",
+  },
+  orText: {
+    marginHorizontal: 14,
+    fontSize: 14,
+    color: "#9ca3af",
+    fontFamily: "Poppins-Regular",
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 34,
+    borderWidth: 1,
+    borderColor: "#e0e4e0",
+    paddingVertical: 16,
+    marginBottom: 20,
+  },
+  googleIcon: {
+    width: 22,
+    height: 22,
+    resizeMode: "contain",
+    marginRight: 10,
+  },
+  googleLabel: {
+    fontSize: 16,
+    color: "#1a1a1a",
+    fontFamily: "Poppins-Regular",
+    fontWeight: "500",
+  },
+  emailLinkWrap: {
+    alignItems: "center",
+    marginBottom: 28,
+  },
+  emailLink: {
+    fontSize: 16,
+    color: "#BC6C25",
+    fontFamily: "Poppins-SemiBold",
+    fontWeight: "500",
+  },
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginTop: 21,
+  },
+  footerPrefix: {
+    fontSize: 13,
+    color: "#4b5563",
+    fontFamily: "Poppins-Regular",
+  },
+  footerSignUp: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#BC6C25",
+    fontFamily: "Poppins-SemiBold",
   },
 });

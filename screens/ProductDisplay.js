@@ -1,106 +1,62 @@
 import {
-  Image,
   StyleSheet,
   View,
   Pressable,
   Dimensions,
   ScrollView,
-  RefreshControl,
   TextInput,
   ImageBackground,
-  Animated, TouchableOpacity
+  TouchableOpacity,
+  Keyboard,
 } from "react-native";
 import Text from '../components/Text';
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, {Path} from 'react-native-svg';
-import { addToCart, removeFromCart, deleteFromCart } from "../Data/cart";
+import { addToCart } from "../Data/cart";
 import IncrementDecrementBton from "../components/Buttons/IncrementDecrementBtn copy";
 import { LinearGradient } from "expo-linear-gradient";
-const {width:screenWidth, height} = Dimensions.get('window');
+import { useToast } from "../context/ToastContext";
+import {
+  getCategoryLabel,
+  getDepartmentLabel,
+  getMetadataRows,
+  getStockMessage,
+  formatPrice,
+} from "../utils/productDisplayFormat";
+import {
+  buildDefaultFormObject,
+  mergeCartFormWithProduct,
+  cartLineTotal,
+  canAddCartLine,
+} from "../utils/productCartForm";
+import { fetchAppProduct } from "../api/appPromotions";
+import ProductPromoBadgeRow from "../components/promotions/ProductPromoBadgeRow";
+import ProductInlinePromotion from "../components/promotions/ProductInlinePromotion";
+
+const { width: screenWidth, height: windowHeight } = Dimensions.get("window");
+
+/** ~42% of screen, capped so tall phones are not dominated by the hero image */
+const HERO_IMAGE_HEIGHT = Math.min(Math.round(windowHeight * 0.42), 380);
+
 function ProductDisplay() {
   const route = useRoute();
-  
-  const {product, productData} = route.params
-  const [formObject, setFormObject] = useState({...productData})
-  const dummyData = {
-    id: 1,
-    title: "Classic Cheese Burger",
-    image: "https://example.com/cheese-burger.jpg", // Replace with your own image URL
-    description: "Juicy beef patty topped with melted cheese, fresh lettuce, tomato, pickles, and our special sauce, all nestled in a toasted bun.",
-    price: 15.50,
-    rating: 4.8,
-    time: 12, // in minutes
-    calories: 145, // in kcal
-    extras: [
-      {
-        name: "More Ham",
-        price: 4.50,
-      },
-      {
-        name: "Spicy",
-        price: 0.50,
-      },
-      {
-        name: "Add Egg",
-        price: 2.00,
-      },
-    ],
-    options: [{'name': 'Flavors', 'value': [
-      {
-        name: 'Barbeque',
-        price: 0
-      },
-      {
-        name: 'Lemon Hot',
-        price: 0
-      },
-      {
-        name: 'Hot',
-        price: 0
-      },
-      {
-        name: 'Mild Hot',
-        price: 0
-      },
-    ] ,  'required': false,
-    'quantity': 2
-  },{'name': 'Drinks', 'value': [
-      {
-        name: 'Coca Cola',
-        price: 2,
-        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
-      },
-      {
-        name: 'Smirnoff',
-        price: 1,
-        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
-      },
-      {
-        name: 'Pepsi',
-        price: 2,
-        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
-      },
-      {
-        name: 'Lemonade',
-        price: 3,
-        images: ['https://res.cloudinary.com/dvxcif0nt/image/upload/v1725432157/x7jxtxiy3fwhnxp4v51f.webp']
-      },
-    ],
-    'required': false,
-    'quantity': 4
-  }]
-  };
-  
-  const title = route.params.title;
-  const [animatedValue] = useState(new Animated.Value(0));
+  const insets = useSafeAreaInsets();
+  const params = route.params || {};
+  const product = params.product || {};
+  const productData = params.productData || buildDefaultFormObject(product);
+
+  const [formObject, setFormObject] = useState(() =>
+    mergeCartFormWithProduct(productData, product)
+  );
+  const [appProductPromos, setAppProductPromos] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [option, setOption] = useState();
-  const { width, height } = Dimensions.get("window");
   const [textShown, setTextShown] = useState(false); //To show ur remaining Text
   const [lengthMore, setLengthMore] = useState(false); //to show the "Read more & Less Line"
   const toggleNumberOfLines = () => {
@@ -115,26 +71,6 @@ function ProductDisplay() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids);
   const productItems = useSelector((state) => state.productItems.ids);
-  const categoryObject = {};
-  function findPrice(foodName) {
-    for (let i = 0; i < route.params.extras.length; i++) {
-      if (route.params.extras[i][0] === foodName) {
-        return route.params.extras[i][1];
-      }
-    }
-    return "Item not found in the menu";
-  }
-  productItems.forEach((item) => {
-    const category = item.category;
-
-    if (!categoryObject[category]) {
-      categoryObject[category] = [item];
-    } else {
-      categoryObject[category].push(item);
-    }
-  });
-const [notes, setNotes] = useState('');
-const [price, setPrice] = useState(product.price);
   const ingredients = productItems.filter(product => 
     product?.subCategory?.some(sub => /side/i.test(sub)) || /side/i.test(product?.category)
   ).map(product => ({
@@ -143,14 +79,40 @@ const [price, setPrice] = useState(product.price);
     price: product.price    // Extract price
   }));
 
+  const imageUrls = (Array.isArray(product.images) ? product.images : []).filter(
+    (u) =>
+      typeof u === "string" &&
+      (u.startsWith("http://") || u.startsWith("https://"))
+  );
+  const carouselSlides = imageUrls.length > 0 ? imageUrls : [null];
+
   useEffect(() => {
     const timer = setTimeout(() => setRefresh(false), 1000);
   }, [refresh]);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const id = product?._id;
+    if (!id) return undefined;
+    let cancelled = false;
+    fetchAppProduct(String(id))
+      .then((d) => {
+        if (!cancelled) setAppProductPromos(d?.promotions ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [product?._id]);
+  const { showToast } = useToast();
   const [activeIndex, setActiveIndex] = useState(0); 
   const handleScroll = (event) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.floor(offsetX / (screenWidth - 50));
+    const pageW = screenWidth || 1;
+    const index = Math.min(
+      Math.max(0, Math.round(offsetX / pageW)),
+      Math.max(0, carouselSlides.length - 1)
+    );
     setActiveIndex(index);
   };
   const [selectedIngredients, setSelectedIngredients] = useState([]);
@@ -178,15 +140,15 @@ const [price, setPrice] = useState(product.price);
     }
   };
   function handleIncrement() {
-    const newExtra = [...formObject.products];
+    const newExtra = [...(Array.isArray(formObject.products) ? formObject.products : [])];
     newExtra.push(product);
     setFormObject(prevForm => ({
       ...prevForm,
       products: newExtra
     }));
    }
-   function handleDecrement(product){
-    const newExtra = [...formObject.products];
+   function handleDecrement(){
+    const newExtra = [...(Array.isArray(formObject.products) ? formObject.products : [])];
     const currentQuantity = newExtra.length; 
     if (currentQuantity > 1) {
       newExtra.splice(0, 1);
@@ -197,7 +159,7 @@ const [price, setPrice] = useState(product.price);
     }));
    }
   const handleQuantityChange = (item) => {
-    const newExtra = [...formObject.extra];
+    const newExtra = [...(Array.isArray(formObject.extra) ? formObject.extra : [])];
     const isSelected = newExtra.findIndex(i => i.name === item.name) !== -1;
     const newValues = isSelected
       ? newExtra.filter((val) => val.name !== item.name)
@@ -209,53 +171,81 @@ const [price, setPrice] = useState(product.price);
     }));
   };
   const renderIngredient = ({ item }) => {
-    const quantity = formObject.extra.filter(i => i.name === item.name).length;
+    const extraList = Array.isArray(formObject.extra) ? formObject.extra : [];
+    const quantity = extraList.filter((i) => i.name === item.name).length;
     return <View style={styles.optionRow}>
     <View style={{flexDirection: 'row', width: 150, alignItems: 'center'}}>{item?.images?.length > 0 && <ImageBackground style={{height: 30, width: 32, marginRight:12,}} imageStyle={{borderRadius: 6, backgroundColor: '#666'}} source={{uri: item.images[0]}}/>}
     <Text style={styles.optionName}>{item.name}</Text></View>
     {item.price > 0 && <Text style={styles.ingredientDetails}>+${item.price.toFixed(2)}</Text>}
-    <Pressable onPress={()=> handleQuantityChange(item)}><Ionicons name={`${ formObject.extra.findIndex((opt) => opt.name === item.name) !== -1 ? "radio-button-on" : "radio-button-off"  }`} size={24} color="black" /></Pressable>
+    <Pressable onPress={()=> handleQuantityChange(item)}><Ionicons name={`${ extraList.findIndex((opt) => opt.name === item.name) !== -1 ? "radio-button-on" : "radio-button-off"  }`} size={24} color="black" /></Pressable>
 
   </View>
   };
   const [selectedOptions, setSelectedOptions] = useState({});
-  const calculateTotalPrice = () => {
-    const productQuantity = formObject.products.length; // The quantity of the main product
-    let totalPrice = product.price * productQuantity; // Start with the base product price times the quantity
-  
-    // Calculate the total price of extra items
-    formObject.extra?.forEach((extraItem) => {
-      totalPrice += extraItem.price * productQuantity;
-    });
-  
-    // Calculate the total price of selected options
-    formObject.options.forEach((optionCategory) => {
-      if (optionCategory.required) {
-        // If the option category is required, multiply the price of each selected option by the product quantity
-        optionCategory.values.forEach((selectedOption) => {
-          totalPrice += selectedOption.price * productQuantity;
-      });
+  const calculateTotalPrice = () => cartLineTotal(formObject);
+
+  const toggleVariantChoice = useCallback((groupIndex, choice) => {
+    setFormObject((prev) => {
+      const vs = [...(prev.variantSelections || [])];
+      if (!vs[groupIndex]) return prev;
+      const g = { ...vs[groupIndex] };
+      let sel = Array.isArray(g.selected) ? [...g.selected] : [];
+      const idx = sel.findIndex((s) => s.id === choice.id);
+      const pick = {
+        id: choice.id,
+        name: choice.name,
+        priceDelta: Number(choice.priceDelta) || 0,
+      };
+      if (g.selectionType === "multiple") {
+        if (idx >= 0) sel.splice(idx, 1);
+        else sel.push(pick);
+      } else if (idx >= 0) {
+        sel = g.required ? [pick] : [];
       } else {
-        // If the option category is not required, just add the price of each selected option
-        optionCategory.values.forEach((selectedOption) => {
-            totalPrice += selectedOption.price;
+        sel = [pick];
+      }
+      g.selected = sel;
+      vs[groupIndex] = g;
+      return { ...prev, variantSelections: vs };
+    });
+  }, []);
+
+  const toggleSchemaAddonPick = useCallback((addon) => {
+    setFormObject((prev) => {
+      const list = [...(prev.schemaAddonsSelected || [])];
+      const id = String(addon.id ?? addon.name ?? "");
+      const i = list.findIndex((a) => String(a.id) === id);
+      if (i >= 0) list.splice(i, 1);
+      else {
+        list.push({
+          id: addon.id != null ? String(addon.id) : id,
+          name: addon.name || "Add-on",
+          price: Number(addon.price) || 0,
         });
       }
+      return { ...prev, schemaAddonsSelected: list };
     });
-  
-    return totalPrice;
-  };
+  }, []);
   const scrollViewRef = useRef(null);
   function fuflfilCart(){
+    Keyboard.dismiss();
     if (canAddToCart()){
-    dispatch(addToCart({id : formObject }))
-    setFormObject({...productData})
-    navigation.replace("Cart");
+    dispatch(addToCart({ id: formObject }));
+    setFormObject({
+      ...buildDefaultFormObject(product),
+      products: [product],
+    });
+    showToast({
+      type: "success",
+      title: "Item added to cart",
+      actionLabel: "View Cart →",
+      onAction: () => navigation.navigate("CartShow"),
+    });
   }else{
       if (scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({ x: 500, animated: true });
+        scrollViewRef.current.scrollTo({ y: HERO_IMAGE_HEIGHT, animated: true });
       }
-      alert("Choose all required options")
+      showToast({ type: "error", title: "Required options", message: "Choose all required options." });
     }
   }
   const handleSelectOption = (category, item, required, change = 0) => {
@@ -323,7 +313,7 @@ const [price, setPrice] = useState(product.price);
       {items.required && <Text style={{marginBottom: 4}}>{`Pick ${items.quantity} item(s)`}</Text>}
       {!items.required && items.quantity && <Text style={{marginBottom: 4}}>{`Pick up to ${items.quantity} item(s)`}</Text>}
       <View style={styles.separator} />
-      {items.value.map((item) => (
+      {(Array.isArray(items.value) ? items.value : []).map((item) => (
         <View key={item.name}>{renderOptionItem({ item, category: items.name, required: items.required })}</View>
       ))}
     </View>
@@ -339,11 +329,9 @@ const [price, setPrice] = useState(product.price);
     </View>
   );
 
-    console.log("testing formObject",formObject)
   const renderImageCarousel = () => {
     return (
-      <View style = {{height: height/1.7, }}>
-        <View style = {{height: height/1.2,}}>
+      <View style={{ height: HERO_IMAGE_HEIGHT }}>
         <ScrollView
           horizontal
           pagingEnabled
@@ -351,66 +339,204 @@ const [price, setPrice] = useState(product.price);
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
-          {(product.images || []).map((uri, index) => (
-            <ImageBackground
-              key={index.toString()}
-              style={[styles.productImage, { width: screenWidth  }]}
-              source={{ uri }}
-            >
-              <LinearGradient
-                colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']}
-                style={styles.gradient}
-              />
-            </ImageBackground>
+          {carouselSlides.map((uri, index) => (
+            <View key={uri || `placeholder-${index}`} style={{ width: screenWidth, height: HERO_IMAGE_HEIGHT }}>
+              {uri ? (
+                <ImageBackground
+                  style={[styles.productImage, { width: screenWidth, height: HERO_IMAGE_HEIGHT }]}
+                  source={{ uri }}
+                >
+                  <LinearGradient
+                    colors={["rgba(0,0,0,0.25)", "rgba(0,0,0,0)"]}
+                    style={styles.gradient}
+                  />
+                </ImageBackground>
+              ) : (
+                <View style={[styles.imagePlaceholder, { width: screenWidth, height: HERO_IMAGE_HEIGHT }]}>
+                  <Ionicons name="image-outline" size={48} color="#9CA3AF" />
+                  <Text style={styles.imagePlaceholderText} numberOfLines={2}>
+                    {product.title || "Product"}
+                  </Text>
+                </View>
+              )}
+            </View>
           ))}
         </ScrollView>
-        </View>
 
-        {/* Dots indicator */}
-        <View style={styles.dotsContainer}>
-          <View style={{ flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 2,
-    borderRadius: 25,
-    marginTop: 10,  backgroundColor: 'rgba(255,255,255,0.8)', }}>
-          {[...product.images,].map((_, index) => (
+        {carouselSlides.length > 1 ? (
+          <View style={styles.dotsContainer}>
             <View
-              key={index}
-              style={[
-                styles.dot,
-                activeIndex === index ? styles.activeDot : styles.inactiveDot
-              ]}
-            />
-          ))}
-        </View>
-        </View>
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 2,
+                borderRadius: 25,
+                marginTop: 10,
+                backgroundColor: "rgba(255,255,255,0.85)",
+              }}
+            >
+              {carouselSlides.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    activeIndex === index ? styles.activeDot : styles.inactiveDot,
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
       </View>
     );
   };
-  const canAddToCart = () => {
-    // Check if there are at least 2 items in the extra array
-    if (formObject.extra?.length < 2) {
-      return false; // Cannot add to cart if there are fewer than 2 extra items
-    } if (formObject.components?.length == 0){
-return false
-    }
-    for (let optionCategory of formObject.options) {
-      if (optionCategory.required) {
-        const selectedCount = optionCategory.values.length;
-  
-        // Check if the selected count meets the required quantity
-        if (selectedCount < optionCategory.quantity) {
-          return false; // Cannot add to cart if any required category doesn't meet the required quantity
-        }
-      }
-    }
-  
-    return true; // All conditions met, can add to cart
+
+  const renderSchemaVariantGroups = () => {
+    const groups = Array.isArray(formObject.variantSelections)
+      ? formObject.variantSelections
+      : [];
+    if (!groups.length) return null;
+    return (
+      <>
+        <View style={styles.separator} />
+        {groups.map((g, gi) => (
+          <View key={g.groupId || `vg-${gi}`} style={styles.optionSection}>
+            <View style={styles.sectionTitle}>
+              <Text>{g.groupName}</Text>
+              <Text
+                style={[
+                  styles.pill,
+                  {
+                    color:
+                      (g.selected?.length || 0) < 1 && g.required
+                        ? "#A52A2A"
+                        : "#654321",
+                  },
+                ]}
+              >
+                {g.required ? "Required" : "Optional"}
+              </Text>
+            </View>
+            <Text style={{ marginBottom: 4 }}>
+              {g.selectionType === "multiple"
+                ? "Pick any that apply"
+                : "Pick one"}
+            </Text>
+            <View style={styles.separator} />
+            {(g.choices || []).map((c) => {
+              const on = (g.selected || []).some((s) => s.id === c.id);
+              return (
+                <View key={c.id} style={styles.optionRow}>
+                  <Text style={styles.optionName}>{c.name}</Text>
+                  {Number(c.priceDelta) > 0 ? (
+                    <Text style={styles.ingredientDetails}>
+                      +${Number(c.priceDelta).toFixed(2)}
+                    </Text>
+                  ) : (
+                    <View style={{ minWidth: 48 }} />
+                  )}
+                  <Pressable onPress={() => toggleVariantChoice(gi, c)}>
+                    <Ionicons
+                      name={
+                        g.selectionType === "multiple"
+                          ? on
+                            ? "checkbox-outline"
+                            : "square-outline"
+                          : on
+                            ? "radio-button-on"
+                            : "radio-button-off"
+                      }
+                      size={24}
+                      color="black"
+                    />
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+        ))}
+      </>
+    );
   };
 
+  const renderSchemaAddonsPickers = () => {
+    const addons = Array.isArray(product?.addons) ? product.addons : [];
+    if (!addons.length) return null;
+    const picked = formObject.schemaAddonsSelected || [];
+    return (
+      <>
+        <View style={styles.separator} />
+        <View style={styles.optionSection}>
+          <View style={styles.sectionTitle}>
+            <Text>Add-ons</Text>
+            <Text style={[styles.pill, { color: "#654321" }]}>Optional</Text>
+          </View>
+          <Text style={{ marginBottom: 4 }}>Extras for this item</Text>
+          <View style={styles.separator} />
+          {addons.map((a) => {
+            const id = String(a.id ?? a.name ?? "");
+            const on = picked.some((p) => String(p.id) === id);
+            return (
+              <View key={id} style={styles.optionRow}>
+                <Text style={styles.optionName}>{a.name || "Add-on"}</Text>
+                {Number(a.price) > 0 ? (
+                  <Text style={styles.ingredientDetails}>
+                    +${Number(a.price).toFixed(2)}
+                  </Text>
+                ) : (
+                  <View style={{ minWidth: 48 }} />
+                )}
+                <Pressable onPress={() => toggleSchemaAddonPick(a)}>
+                  <Ionicons
+                    name={on ? "checkbox-outline" : "square-outline"}
+                    size={24}
+                    color="black"
+                  />
+                </Pressable>
+              </View>
+            );
+          })}
+        </View>
+      </>
+    );
+  };
+
+  const canAddToCart = () => canAddCartLine(product, formObject);
+
+  const basePrice = Number(product?.price) || 0;
+  const priceParts = basePrice.toFixed(2).split(".");
+  const compareRaw = Number(product?.comparePrice);
+  const showCompare =
+    Number.isFinite(compareRaw) && compareRaw > basePrice + 0.001;
+  const categoryLabel = getCategoryLabel(product);
+  const departmentLabel = getDepartmentLabel(product);
+  const metadataRows = getMetadataRows(product);
+  const stockMsg = getStockMessage(product);
+  const tagList = Array.isArray(product?.tags)
+    ? product.tags.map((t) => String(t).trim()).filter(Boolean)
+    : [];
+  const subCats = Array.isArray(product?.subCategory) ? product.subCategory : [];
+  const pillLabels = [...new Set([...subCats, ...tagList])];
+  const ratingAvg = Number(product?.ratingsAverage);
+  const ratingQty = Number(product?.ratingsQuantity);
+  const hasRatings = Number.isFinite(ratingQty) && ratingQty > 0;
+  const skuText =
+    product?.sku != null && String(product.sku).trim()
+      ? String(product.sku).trim()
+      : null;
+  const longDescription = String(product?.description || "").trim();
+  const shortDesc = String(product?.shortDescription || "").trim();
+
   return (<>
-    <ScrollView  ref={scrollViewRef}  style={styles.container}>
+    <ScrollView
+      ref={scrollViewRef}
+      style={styles.container}
+      contentContainerStyle={{
+        paddingBottom: insets.bottom + 88,
+      }}
+      keyboardShouldPersistTaps="handled"
+    >
       {/* Header Section */}
 
       {/* Product Image Carousel */}
@@ -418,12 +544,12 @@ return false
         {renderImageCarousel()}
       </View>
       <View style={styles.detailsContainer}>
-  {product?.subCategory?.map((item, index) => (
-    <View key={index} style={styles.pill}>
-      <Text style={styles.pillText}>{item}</Text>
-    </View>
-  ))}
-</View>
+        {pillLabels.map((item, index) => (
+          <View key={`${item}-${index}`} style={styles.pill}>
+            <Text style={styles.pillText}>{item}</Text>
+          </View>
+        ))}
+      </View>
       {/* Product Title and Quantity Selector */}
       <View style={{  borderTopRightRadius: 25,
   borderTopLeftRadius: 25,
@@ -439,86 +565,227 @@ return false
   // Android elevation
   elevation: 6,}}>
       <View style={styles.titleSection}>
-        <View>
-        <Text style={styles.productTitle}>{product.title}</Text>
+        <View style={{ flex: 1, marginRight: 8 }}>
+          <Text style={styles.productTitle}>{product.title}</Text>
+          {(product.chefSpecial || product.isFeatured) && (
+            <View style={styles.badgeRow}>
+              {product.chefSpecial ? (
+                <View style={styles.badgeChef}>
+                  <Text style={styles.badgeChefText}>Chef's special</Text>
+                </View>
+              ) : null}
+              {product.isFeatured ? (
+                <View style={styles.badgeFeatured}>
+                  <Text style={styles.badgeFeaturedText}>Featured</Text>
+                </View>
+              ) : null}
+            </View>
+          )}
+          {appProductPromos?.badgeArea?.length ? (
+            <View style={{ marginTop: 8 }}>
+              {appProductPromos.badgeArea.map((p) => (
+                <ProductPromoBadgeRow key={p.id} promotion={p} />
+              ))}
+            </View>
+          ) : null}
         </View>
-          {/* Price Section */}
-      <View style={styles.priceSection}>
-        <View style={styles.priceContainer}>
-          <Text style={styles.dollarSign}>$</Text>
-          <Text style={styles.priceInteger}>{product.price.toFixed(2).split('.')[0]}</Text>
-          <Text style={styles.priceDecimal}>.{product.price.toFixed(2).split('.')[1]}</Text>
+        <View style={styles.priceSection}>
+          <View style={{ alignItems: "flex-end" }}>
+            {showCompare ? (
+              <Text style={styles.compareAtPrice}>
+                ${formatPrice(compareRaw)}
+              </Text>
+            ) : null}
+            <View style={styles.priceContainer}>
+              <Text style={styles.dollarSign}>$</Text>
+              <Text style={styles.priceInteger}>{priceParts[0]}</Text>
+              <Text style={styles.priceDecimal}>.{priceParts[1]}</Text>
+            </View>
+          </View>
         </View>
       </View>
-      </View>
-      <View style={{flexDirection: 'row',
-    alignItems: 'flex-start', paddingRight: 15,}}>
-      <View style={styles.verticalLine} />
-      <View style={{ flexDirection:'column'}}><Text
-                  onTextLayout={onTextLayout}
-                  numberOfLines={textShown ? undefined : 4}
-                  style={styles.aboutDescription}
+      {stockMsg ? (
+        <Text
+          style={[
+            styles.stockNotice,
+            product.availability === false || /out of stock/i.test(stockMsg)
+              ? styles.stockNoticeWarn
+              : null,
+          ]}
+        >
+          {stockMsg}
+        </Text>
+      ) : null}
+      {appProductPromos?.inline?.length ? (
+        <View style={{ marginTop: 8 }}>
+          {appProductPromos.inline.map((p) => (
+            <ProductInlinePromotion
+              key={p.id}
+              promotion={p}
+              navigation={navigation}
+              products={productItems}
+            />
+          ))}
+        </View>
+      ) : null}
+      {hasRatings ? (
+        <Text style={styles.ratingLine}>
+          {Number.isFinite(ratingAvg) ? ratingAvg.toFixed(1) : "—"} ★ ·{" "}
+          {ratingQty} review{ratingQty === 1 ? "" : "s"}
+        </Text>
+      ) : null}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "flex-start",
+          paddingRight: 15,
+        }}
+      >
+        <View style={styles.verticalLine} />
+        <View style={{ flexDirection: "column", flex: 1 }}>
+          {shortDesc ? (
+            <Text style={styles.shortDescription}>{shortDesc}</Text>
+          ) : null}
+          {longDescription ? (
+            <>
+              <Text
+                onTextLayout={onTextLayout}
+                numberOfLines={textShown ? undefined : 4}
+                style={[
+                  styles.aboutDescription,
+                  shortDesc ? { marginTop: 8 } : null,
+                ]}
+              >
+                {longDescription}
+              </Text>
+              {lengthMore ? (
+                <Text
+                  onPress={toggleNumberOfLines}
+                  style={styles.readMoreLink}
                 >
-                 {product.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam non blandit metus, non posuere elit. Proin vitae vehicula purus. Nullam id dui sodales, elementum sem dictum, pellentesque urna. Nullam mattis efficitur vehicula. Donec mollis eleifend tempus. Morbi rutrum viverra egestas. Etiam ut nisl erat. Proin semper lectus non justo commodo varius. In purus nibh, volutpat gravida scelerisque luctus, pharetra eget ipsum. Donec nibh augue, vulputate quis ipsum lacinia, volutpat sollicitudin massa."}
-      </Text>
-      {lengthMore && (
-                  <Text
-                    onPress={toggleNumberOfLines}
-                    style={{
-                      textAlign: "right",
-                      color: "#BC6C25",
-                      fontSize: 13
-                    }}
-                  >
-                    {textShown ? "Read less..." : "Read more..."}
-                  </Text>
-                )}</View>
-    </View>
-    <View style={styles.separator} />
-    <View 
-  horizontal 
-  showsHorizontalScrollIndicator={false} 
-  style={{
-    paddingHorizontal: 10,
-    width: screenWidth,
-    flexDirection: 'row',
-    justifyContent: 'space-around'
-  }}
->
-  {product.nutrients?.map((nutrient, index) => (
-    <React.Fragment key={index}>
-      <View style={styles.nutritionItem}>
-        <Text style={styles.label}>{nutrient.name}</Text>
-        <Text style={styles.value}>{`${nutrient.value} ${nutrient.unit}`}</Text>
+                  {textShown ? "Read less…" : "Read more…"}
+                </Text>
+              ) : null}
+            </>
+          ) : !shortDesc ? (
+            <Text style={styles.aboutDescriptionMuted}>
+              No description provided.
+            </Text>
+          ) : null}
+        </View>
       </View>
-      {index < product.nutrients.length - 1 && (
-        <View style={{ borderRightWidth: 1, borderRightColor: 'rgba(0,0,0,0.2)' }} />
-      )}
-    </React.Fragment>
-  ))}
-</View>
     <View style={styles.separator} />
+    {categoryLabel ||
+    departmentLabel ||
+    skuText ||
+    metadataRows.length > 0 ? (
+      <>
+        <Text style={styles.productInfoHeading}>Product information</Text>
+        {departmentLabel ? (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Department</Text>
+            <Text style={styles.infoValue}>{departmentLabel}</Text>
+          </View>
+        ) : null}
+        {categoryLabel ? (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Category</Text>
+            <Text style={styles.infoValue}>{categoryLabel}</Text>
+          </View>
+        ) : null}
+        {skuText ? (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>SKU</Text>
+            <Text style={styles.infoValue}>{skuText}</Text>
+          </View>
+        ) : null}
+        {metadataRows.map((row) => (
+          <View key={row.key} style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{row.label}</Text>
+            <Text style={styles.infoValue}>{row.value}</Text>
+          </View>
+        ))}
+        <View style={styles.separator} />
+      </>
+    ) : null}
+    {renderSchemaVariantGroups()}
+    {renderSchemaAddonsPickers()}
+    {Array.isArray(product.nutrients) && product.nutrients.length > 0 ? (
+      <>
+        <View
+          style={{
+            paddingHorizontal: 10,
+            width: screenWidth,
+            flexDirection: "row",
+            justifyContent: "space-around",
+          }}
+        >
+          {product.nutrients.map((nutrient, index) => (
+            <React.Fragment key={index}>
+              <View style={styles.nutritionItem}>
+                <Text style={styles.label}>{nutrient.name}</Text>
+                <Text style={styles.value}>{`${nutrient.value} ${nutrient.unit}`}</Text>
+              </View>
+              {index < product.nutrients.length - 1 ? (
+                <View
+                  style={{
+                    borderRightWidth: 1,
+                    borderRightColor: "rgba(0,0,0,0.2)",
+                  }}
+                />
+              ) : null}
+            </React.Fragment>
+          ))}
+        </View>
+        <View style={styles.separator} />
+      </>
+    ) : null}
       {/* Extra Options */}
       {/* Ingredients List */}
-      {product.components.length > 0 && <><Text style={[styles.sectionTitle, formObject.components.length <= 0 ? { color: '#A52A2A', fontSize: 18 }:{ color : 'black'}]}>Choose one</Text><View style={styles.separator} />
-        {product.components.map((item, index) => (
-          <View key={item}>{renderVariations({ item })}</View>
-        ))}</>}
-      {product.extra && <><View style={styles.sectionTitle}><Text >Add extra Ingredients</Text><Text style={[styles.pill, {color: formObject.extra.length < 2 ? '#A52A2A': '#2E6F'}]}>Required</Text></View>
-       <Text style={{marginBottom: 4}}>{`Pick 2 item(s)`}</Text>
-       <View style={styles.separator} />
-        {ingredients.map((item) => (
-          <View key={item.name}>{renderIngredient({ item })}</View>
-        ))}</>}
-      {/* {product.extra && <><Text style={styles.extraTitle}>Add Extra Additional</Text>
-       {dummyData.extras.map((extra) => (
-        <TouchableOpacity key={extra.name} onPress={() => handleExtraSelect(extra)} style={styles.extraOption}>
-          <Text>{extra.name}</Text>
-          <Text>${extra.price.toFixed(2)}</Text>
-        </TouchableOpacity>
-      ))}</>} */}
-      {/* Render each category and its options */}
-      {product.options.map((option) => (
+      {Array.isArray(product.components) && product.components.length > 0 ? (
+        <>
+          <Text
+            style={[
+              styles.sectionTitle,
+              (!formObject.components || String(formObject.components).trim() === "")
+                ? { color: "#A52A2A", fontSize: 18 }
+                : { color: "black" },
+            ]}
+          >
+            Choose one
+          </Text>
+          <View style={styles.separator} />
+          {product.components.map((item) => (
+            <View key={item}>{renderVariations({ item })}</View>
+          ))}
+        </>
+      ) : null}
+      {product.extra ? (
+        <>
+          <View style={styles.sectionTitle}>
+            <Text>Add extra Ingredients</Text>
+            <Text
+              style={[
+                styles.pill,
+                {
+                  color:
+                    (Array.isArray(formObject.extra) ? formObject.extra.length : 0) < 2
+                      ? "#A52A2A"
+                      : "#2E6F",
+                },
+              ]}
+            >
+              Required
+            </Text>
+          </View>
+          <Text style={{ marginBottom: 4 }}>{`Pick 2 item(s)`}</Text>
+          <View style={styles.separator} />
+          {ingredients.map((item) => (
+            <View key={item.name}>{renderIngredient({ item })}</View>
+          ))}
+        </>
+      ) : null}
+      {(Array.isArray(product.options) ? product.options : []).map((option) => (
         <View key={option.name}>{renderOptions({ items: option })}</View>
       ))}
       {/* Notes Section */}
@@ -537,9 +804,9 @@ return false
       </View>
     </ScrollView>
     <View>
-    <View style={styles.cartSection}>
+    <View style={[styles.cartSection, { bottom: Math.max(insets.bottom, 8) + 4 }]}>
   <IncrementDecrementBton
-                  minValue={formObject.products.length}
+                  minValue={Math.max(1, Array.isArray(formObject.products) ? formObject.products.length : 1)}
                   onIncrease ={
               handleIncrement
                 }
@@ -560,10 +827,23 @@ return false
     </TouchableOpacity>
       </View>
       </View>
-      <View style={{marginTop: 45, padding: 10, flexDirection: 'row', alignItems: 'center', position: 'absolute'}}>
-        <TouchableOpacity onPress={navigation.goBack}><Svg width={43} height={43} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><Path class="fa-secondary" fill={'#F0F0F0'} opacity=".8" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zm112 0c0-6.1 2.3-12.3 7-17L231 127c4.7-4.7 10.8-7 17-7s12.3 2.3 17 7c9.4 9.4 9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9c-4.7 4.7-10.8 7-17 7s-12.3-2.3-17-7L119 273c-4.7-4.7-7-10.8-7-17z"/><Path fill={'black'} class="fa-primary" d="M119 273c-9.4-9.4-9.4-24.6 0-33.9L231 127c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L119 273z"/></Svg>
+      <View
+        style={{
+          position: "absolute",
+          top: insets.top + 8,
+          left: 10,
+          zIndex: 20,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <TouchableOpacity onPress={navigation.goBack} accessibilityRole="button" accessibilityLabel="Go back">
+          <Svg width={43} height={43} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <Path fill="#F0F0F0" opacity=".8" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zm112 0c0-6.1 2.3-12.3 7-17L231 127c4.7-4.7 10.8-7 17-7s12.3 2.3 17 7c9.4 9.4 9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9c-4.7 4.7-10.8 7-17 7s-12.3-2.3-17-7L119 273c-4.7-4.7-7-10.8-7-17z" />
+            <Path fill="black" d="M119 273c-9.4-9.4-9.4-24.6 0-33.9L231 127c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L119 273z" />
+          </Svg>
         </TouchableOpacity>
-     </View>
+      </View>
     </>
   );
 };
@@ -613,8 +893,19 @@ const styles = StyleSheet.create({
   carouselContainer: {
   },
   productImage: {
-    height: height/1.2,
-    // resizeMode: 'stretch',
+    // height set inline with HERO_IMAGE_HEIGHT
+  },
+  imagePlaceholder: {
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  imagePlaceholderText: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    paddingHorizontal: 24,
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -832,9 +1123,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   gradient: {
-    flex: 1,
-    width: screenWidth,
-
+    ...StyleSheet.absoluteFillObject,
   },
   quantityText: {
     marginHorizontal: 10,
@@ -902,6 +1191,107 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  compareAtPrice: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textDecorationLine: 'line-through',
+    marginBottom: 2,
+  },
+  stockNotice: {
+    fontSize: 13,
+    color: '#166534',
+    marginTop: 6,
+    marginBottom: 2,
+  },
+  stockNoticeWarn: {
+    color: '#B91C1C',
+  },
+  ratingLine: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 6,
+  },
+  badgeChef: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  badgeChefText: {
+    fontSize: 11,
+    color: '#92400E',
+    fontWeight: '600',
+  },
+  badgeFeatured: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  badgeFeaturedText: {
+    fontSize: 11,
+    color: '#166534',
+    fontWeight: '600',
+  },
+  productInfoHeading: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 10,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 8,
+    paddingRight: 4,
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    width: '34%',
+  },
+  infoValue: {
+    fontSize: 13,
+    color: '#111827',
+    flex: 1,
+    textAlign: 'right',
+  },
+  shortDescription: {
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 20,
+  },
+  aboutDescriptionMuted: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    fontStyle: 'italic',
+  },
+  readMoreLink: {
+    textAlign: 'right',
+    color: '#BC6C25',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  optionGroupTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  optionChoiceLine: {
+    fontSize: 13,
+    color: '#4B5563',
+    marginLeft: 4,
+    marginBottom: 2,
   },
 });
 

@@ -5,49 +5,59 @@ import React, { useState } from 'react'
 import Carousel, { Pagination } from 'react-native-snap-carousel'
 
 const { width, height } = Dimensions.get("window");
-const ItemPreview = ({item, index }) => {
-    const { width, height } = Dimensions.get("window");
+const ItemPreview = ({ item, index }) => {
+  const { width, height } = Dimensions.get("window");
+  const uri =
+    typeof item === "string"
+      ? item
+      : item?.image ?? item?.uri ?? item?.url ?? "";
   return (
     <View style={styles.container} key={index}>
+      {uri ? (
         <Image
-          style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
-          source={item.image}
+          style={{ width: "100%", height: "100%", resizeMode: "contain" }}
+          source={{ uri }}
         />
-  </View>
+      ) : (
+        <View style={{ width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.03)" }} />
+      )}
+    </View>
   )
 }
 
 
 function ProductPreview({data}){
-    const isCarousel = React.useRef(null)
-    const [index, setIndex] = useState(0);
-    console.log(index, '2nd')
-    return <View>
-        <Carousel
-          ref={isCarousel}
-          data={data}
-          renderItem={ItemPreview}
-          sliderWidth={width}
-          itemWidth={width}
-          onSnapToItem={(index) => setIndex(index)}
-          useScrollView={true}
-        />
-        <Pagination
-          dotsLength={data.length}
-          activeDotIndex={index}
-          carouselRef={isCarousel}
-          dotStyle={{
-            width: 15,
-            height: 15,
-            borderRadius: 10,
-            marginHorizontal: 0,
-            backgroundColor: '#BC6C25'
-          }}
-          inactiveDotOpacity={0.4}
-          inactiveDotScale={0.6}
-          tappableDots={true}
-        />
-      </View>
+  const isCarousel = React.useRef(null)
+  const [index, setIndex] = useState(0);
+  const safeData = Array.isArray(data) ? data : [];
+  return (
+    <View>
+      <Carousel
+        ref={isCarousel}
+        data={safeData}
+        renderItem={ItemPreview}
+        sliderWidth={width}
+        itemWidth={width}
+        onSnapToItem={(index) => setIndex(index)}
+        useScrollView={true}
+      />
+      <Pagination
+        dotsLength={safeData.length}
+        activeDotIndex={index}
+        carouselRef={isCarousel}
+        dotStyle={{
+          width: 15,
+          height: 15,
+          borderRadius: 10,
+          marginHorizontal: 0,
+          backgroundColor: '#BC6C25'
+        }}
+        inactiveDotOpacity={0.4}
+        inactiveDotScale={0.6}
+        tappableDots={true}
+      />
+    </View>
+  );
 }
 
 export default ProductPreview

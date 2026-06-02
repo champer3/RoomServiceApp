@@ -3,6 +3,28 @@ import axios from 'axios';
 import { SERVER_URL } from '../config';
 
 const API_BASE = SERVER_URL;
+console.log(SERVER_URL)
+const normalizeProduct = (p) => {
+  const product = p ?? {};
+  return {
+    ...product,
+    images: Array.isArray(product.images) ? product.images : [],
+    description: typeof product.description === "string" ? product.description : "",
+    // Keep legacy UI code safe even if backend does not provide these fields.
+    options: Array.isArray(product.options) ? product.options : [],
+    components: Array.isArray(product.components) ? product.components : [],
+    extras: Array.isArray(product.extras) ? product.extras : [],
+    subCategory: Array.isArray(product.subCategory) ? product.subCategory : [],
+    // Availability defaults to true when missing.
+    availability: typeof product.availability === "boolean" ? product.availability : true,
+    // Common numeric fallbacks used by cards.
+    price: product.price != null ? product.price : 0,
+    comparePrice: product.comparePrice != null ? product.comparePrice : null,
+    cost: product.cost != null ? product.cost : null,
+    stock: product.stock != null ? product.stock : 0,
+    lowStockThreshold: product.lowStockThreshold != null ? product.lowStockThreshold : null,
+  };
+};
 
 // Async thunk to fetch products
 export const fetchProducts = createAsyncThunk('items/fetchProducts', async () => {
@@ -50,7 +72,7 @@ const items = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.ids = Array.isArray(action.payload) ? action.payload : [];
+        state.ids = (Array.isArray(action.payload) ? action.payload : []).map(normalizeProduct);
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';

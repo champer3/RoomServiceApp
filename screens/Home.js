@@ -3,21 +3,21 @@ import {
   View,
   TextInput,
   Pressable,
-  Image,
   Dimensions,
   StatusBar,
   Button,
   Animated,
+  Easing,
   FlatList,
+  Platform,
 } from "react-native";
 import Text from '../components/Text';
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, EvilIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import ItemCategory from "../components/Category/ItemCategory";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Svg, { Path } from 'react-native-svg';
 import { triggerNotification } from '../Data/notify';
@@ -37,6 +37,7 @@ import { fetchOrders, updateOrder } from "../Data/order"
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from "../components/Modals/BottomSheet";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
 import io from 'socket.io-client';
@@ -46,6 +47,11 @@ import { initializeSocket, getSocket, disconnectSocket } from '../socketService'
 import { fetchProducts } from "../Data/Items"
 import ItemSmallCategory from "../components/Category/ItemSmallCategory";
 import { SERVER_URL } from "../config";
+import { fetchAppHome } from "../api/appPromotions";
+import PromotionHomeSection from "../components/promotions/PromotionHomeSection";
+import RoomServiceAlert, { ROOM_SERVICE_ALERT_TYPES } from "../components/RoomServiceAlert";
+import { useToast } from "../context/ToastContext";
+import FloatingCartFab from "../components/FloatingCartFab";
 
 const FadeOutView = (props) => {
   const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 1
@@ -98,7 +104,19 @@ const FadeInView = (props) => {
   );
 };
 
+/** Rotating primary + hint lines for the home search affordance */
+const SEARCH_BAR_ROTATION_MS = 4600;
+const SEARCH_BAR_PHRASES = [
+  { lead: "Search food & groceries", hint: 'Try "Jollof rice" or "Groceries"' },
+  { lead: "What sounds good today?", hint: "Meals, snacks, pantry staples…" },
+  { lead: "Find flavors you'll love", hint: "Spicy, vegan, quick dinners…" },
+  { lead: "Browse stores & dishes", hint: "Search by name or category" },
+  { lead: "Stock the kitchen fast", hint: "Produce, dairy, household…" },
+  { lead: "Craving something new?", hint: "Trending picks & local favorites" },
+];
+
 function Home() {
+  const insets = useSafeAreaInsets();
 
   const [socket, setSocket] = useState(null);
   const address = useSelector((state) => state.profileData.profile)?.address[0]
@@ -284,16 +302,77 @@ function Home() {
 
   const [barStyle, setBarStyle] = useState("light-content");
   function getGreeting() {
-    var currentTime = new Date();
-    var hours = currentTime.getHours();
+    const currentTime = new Date();
+    const hours = currentTime.getHours();
 
     if (hours < 12) {
-      return "Good Morning";
+      return "Good morning";
     } else if (hours < 18) {
-      return "Good Afternoon";
-    } else {
-      return "Good Evening";
+      return "Good afternoon";
     }
+    return "Good evening";
+  }
+  function getHeaderGlowMood() {
+    const hours = new Date().getHours();
+
+    if (hours < 12) {
+      return {
+        mistColors: ["rgba(255,220,160,0.28)", "rgba(255,240,210,0.14)", "rgba(255,255,255,0)"],
+        glowColor: "rgba(245,166,91,0.16)",
+      };
+    }
+    if (hours < 18) {
+      return {
+        mistColors: ["rgba(168,214,141,0.22)", "rgba(216,236,198,0.12)", "rgba(255,255,255,0)"],
+        glowColor: "rgba(111,179,95,0.13)",
+      };
+    }
+    return {
+      mistColors: ["rgba(147,166,255,0.22)", "rgba(214,220,255,0.12)", "rgba(255,255,255,0)"],
+      glowColor: "rgba(120,142,231,0.13)",
+    };
+  }
+  function getDynamicGreetingSubline({ cartCount, activeDeliveryCount, orders: ordersHint, firstName: nameHint }) {
+    const seed = ((nameHint || "a").length + (cartCount || 0)) % 1000;
+
+    if (activeDeliveryCount > 0) {
+      return `${activeDeliveryCount} ${activeDeliveryCount === 1 ? "order is" : "orders are"} heading your way`;
+    }
+    if (cartCount > 0) {
+      return `${cartCount} ${cartCount === 1 ? "item is" : "items are"} in your cart — ready when you are`;
+    }
+
+    const orderList = Array.isArray(ordersHint) ? ordersHint : [];
+    const firstProductTitle = orderList[0]?.products?.[0]?.title;
+    if (firstProductTitle && typeof firstProductTitle === "string") {
+      const t = firstProductTitle.trim();
+      const short = t.length > 24 ? `${t.slice(0, 22)}…` : t;
+      if (orderList.length >= 2) {
+        return `Your usual favorites — reorder ${short}?`;
+      }
+      return `${short} hit the spot last time?`;
+    }
+
+    const hour = new Date().getHours();
+    const daytime = [
+      "Craving something spicy today?",
+      "Fresh groceries or comfort food?",
+      "Discover something new for lunch.",
+    ];
+    const evening = [
+      "Tonight's cravings are one tap away.",
+      "Wind down with something delicious.",
+    ];
+    if (hour >= 21 || hour < 5) {
+      return evening[seed % evening.length];
+    }
+    if (hour < 12) {
+      return daytime[seed % daytime.length];
+    }
+    if (hour < 17) {
+      return "Take a break — ideas for lunch inside.";
+    }
+    return evening[seed % evening.length];
   }
   const orders = useSelector((state) => state.orders.ids)
   const [isVisible, setIsVisible] = useState(false);
@@ -378,6 +457,9 @@ function Home() {
 
   // deliveringOrdersCount = countDeliveringOrders(orders);
   useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+  useEffect(() => {
     setBlink(true)
     setDeliveringOrdersCount(countDeliveringOrders(orders))
   }, [orders])
@@ -389,6 +471,28 @@ function Home() {
 
 
   const productItems = useSelector((state) => state.productItems.ids);
+  const menuLoadStatus = useSelector((state) => state.productItems.status);
+  const [homeAppData, setHomeAppData] = useState(null);
+  const [showMenuLoadError, setShowMenuLoadError] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchAppHome()
+      .then((d) => {
+        if (!cancelled) setHomeAppData(d);
+      })
+      .catch((e) => {
+        console.warn("fetchAppHome", e?.message || e);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (menuLoadStatus === "failed") setShowMenuLoadError(true);
+  }, [menuLoadStatus]);
+
   const categoryObject = {};
 
   productItems.forEach((item) => {
@@ -418,7 +522,22 @@ function Home() {
       return array
     })
   }
-  var greeting = getGreeting();
+  const firstName =
+    data?.firstName?.charAt(0).toUpperCase() + data?.firstName?.slice(1).toLowerCase() || "there";
+  const addressHeadline =
+    address?.address != null && String(address.address).trim() !== ""
+      ? String(address.address).split(",")[0].trim()
+      : "";
+  const greeting = getGreeting();
+  const departmentCategoryItems =
+    homeAppData?.departments?.map((dept) => ({
+      text: dept?.name || "Category",
+      slug: dept?.slug || "",
+      image: dept?.iconUrl ? { uri: dept.iconUrl } : require("../assets/food.png"),
+    })).slice(0, 5) || [];
+  const categoryKeys = Object.keys(categoryObject);
+  const upperCategoryKeys = categoryKeys.slice(0, 2);
+  const lowerCategoryKeys = categoryKeys.slice(2);
   const navigation = useNavigation();
   function pressHandler(cat) {
     navigation.navigate("Category", { cat });
@@ -469,34 +588,6 @@ function Home() {
     setFoodDictionary(foodStore)
     dispatch(addToCart({ id: { title: pro.title, ...{ ...pro, ...newItem, ['oldPrice']: pro.oldPrice + price } } }))
   }
-  const scrollViewRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const animatedValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      let nextIndex = currentIndex + 1;
-      if (nextIndex >= 5) {
-        nextIndex = 0;
-      }
-      setCurrentIndex(nextIndex);
-      Animated.spring(animatedValue, {
-        toValue: nextIndex * (width + 5),
-        useNativeDriver: true,
-      }).start();
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, [currentIndex, 5, animatedValue]);
-
-  useEffect(() => {
-    animatedValue.addListener(({ value }) => {
-      if (scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({ x: value, animated: true });
-      }
-    });
-  }, [animatedValue]);
-
   function handleBuy() {
     let price = 0;
     let newItem = {}
@@ -536,7 +627,122 @@ function Home() {
   //         setFoodDictionary(foodStore)
   //     }
   // },[plus])
-  const [blink, setBlink] = useState(true)
+  const [blink, setBlink] = useState(true);
+  const [showOrderSuccessAlert, setShowOrderSuccessAlert] = useState(false);
+  const { showToast } = useToast();
+  const headerScrollY = useRef(new Animated.Value(0)).current;
+  const greetingAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(greetingAnim, {
+          toValue: 1,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(greetingAnim, {
+          toValue: 0,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+
+    return () => {
+      loop.stop();
+    };
+  }, [greetingAnim]);
+
+  const [searchPhraseIndex, setSearchPhraseIndex] = useState(0);
+  const searchTextOpacity = useRef(new Animated.Value(1)).current;
+  const searchTextTranslateY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    let cancelled = false;
+    const advance = () => {
+      if (cancelled) return;
+      Animated.parallel([
+        Animated.timing(searchTextOpacity, {
+          toValue: 0,
+          duration: 300,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(searchTextTranslateY, {
+          toValue: -6,
+          duration: 300,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        if (!finished || cancelled) return;
+        setSearchPhraseIndex(
+          (i) => (i + 1) % SEARCH_BAR_PHRASES.length
+        );
+        searchTextTranslateY.setValue(7);
+        Animated.parallel([
+          Animated.timing(searchTextOpacity, {
+            toValue: 1,
+            duration: 380,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(searchTextTranslateY, {
+            toValue: 0,
+            duration: 380,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
+    };
+    const id = setInterval(advance, SEARCH_BAR_ROTATION_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [searchTextOpacity, searchTextTranslateY]);
+
+  const greetingAnimatedStyle = {
+    transform: [
+      {
+        translateY: greetingAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -2],
+        }),
+      },
+    ],
+    opacity: greetingAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.92, 1],
+    }),
+  };
+  const headerPrimaryBlockStyle = {
+    opacity: headerScrollY.interpolate({
+      inputRange: [0, 55, 80],
+      outputRange: [1, 0.35, 0],
+      extrapolate: "clamp",
+    }),
+    transform: [
+      {
+        translateY: headerScrollY.interpolate({
+          inputRange: [0, 80],
+          outputRange: [0, -14],
+          extrapolate: "clamp",
+        }),
+      },
+      {
+        scaleY: headerScrollY.interpolate({
+          inputRange: [0, 80],
+          outputRange: [1, 0.02],
+          extrapolate: "clamp",
+        }),
+      },
+    ],
+    overflow: "hidden",
+  };
   function getTodaysDate() {
     const today = new Date();
     const year = today.getFullYear();
@@ -562,6 +768,12 @@ function Home() {
       setBlink(false)
     } else {
       dispatch(addToCart({ id: product }));
+      showToast({
+        type: "success",
+        title: "Item added to cart",
+        actionLabel: "View Cart →",
+        onAction: () => navigation.navigate("CartShow"),
+      });
       // const deliveringOrders = orders.filter(order => order.status === "Delivering");
 
       // if (deliveringOrders.length === 0) {
@@ -588,246 +800,228 @@ function Home() {
   }
 
   function handleScroll(event) {
-    setIsVisible(event.nativeEvent.contentOffset.y > 223);
+    const y = event.nativeEvent.contentOffset.y;
+    setIsVisible(y > 223);
+    headerScrollY.setValue(y);
   }
   reg?.current?.scrollTo(-1 * height / 4.7)
   return (
-    <SafeAreaProvider>
-      {/* <StatusBar hidden={false} barStyle={barStyle} /> */}
-      <GestureHandlerRootView style={{ flex: 1, marginBottom: '5%' }}>
-        <LinearGradient
-          // colors={["#19171A", "#01418D", "#2873CC"]}
-          // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-          style={{ flex: 1 }}
-          locations={[0.05, 0.1, 0.15, 0.2, 0.6,]}
-          colors={['#283618', "#354820", "#425928", "#4F6B30", '#F0F0F0']}><View
-            // colors={["#19171A", "#01418D", "#2873CC"]}
-            // colors={["#19171A", "#2F5A8C", "#2873CC"]}
-            // locations={[0.1375, 0.275, 0.3125, 0.80, 1]}
-            // colors={[]}
-            style={{ justifyContent: 'center', height: 170 }}
-          >
-            <SafeAreaView onTouchStart={() => { ref?.current?.scrollTo(0); setBlink(true) }} style={styles.top}>
-              <View
-                style={[styles.top, {
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: 'center',
-                  paddingHorizontal: "4%",
-                  paddingTop: "3%",
-                }]}
-              >
-
-                {<View style={{ justifyContent: 'center', }}>
-                  <Text style={{ color: 'white', fontSize: 16, letterSpacing: 1, fontFamily: 'SFPRO-Medium', }}>{greeting} {data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1).toLowerCase()}</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  </View>
-                  <View style={{ flexDirection: "row", justifyContent: "flex-start", alignItems: "center", marginTop: 4, marginLeft: -4 }}>
-                    <Entypo style={{marginTop: 2, marginRight: 6}}  name="location-pin" size={16} color="white" />
-                    <Pressable onPress={() => { navigation.navigate("Address") }}>{address ? (
-                      <Text style={styles.textStyle}>{address?.address}</Text>
-                    ) : (
-                      <Text style={styles.textStyle}>1615 17th Avenue North</Text>
-                    )}</Pressable>
-                    <MaterialIcons style={{marginTop: 2, marginLeft: 6}} name="keyboard-arrow-down" size={24} color="white" />
-                  </View>
-
-                  {/* >{`${data.firstName} ${data.secondName}`}</Text> */}
-                </View>}
-                <View style={{ flexDirection: 'row', gap: 12 }}>
-                  <View style={[styles.cart, {
-                    width: 40, height: 40,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 10, height: 7 },
-                    shadowOpacity: 0.8,
-                    shadowRadius: 2,
-                    elevation: 5, // Ad
-                  }]}>
-                    <Pressable
-                      onPress={notifyHandler}
-                    >
-                      <View>
-                        <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><Path fill={"#425928"} d="M282.6 40.1C214 15.1 138 50.4 112.8 119L98.2 159C84 197.8 57.6 231 23 253.7L14.9 259C4.7 265.7-.8 277.5 .6 289.5s9.4 22.2 20.8 26.3l230.5 83.9 1.1-3.9c2.6-9.1 4.4-18.4 5.4-27.7l-226-82.3 8.2-5.4c40.3-26.5 71.1-65.2 87.7-110.4l14.7-40c18.7-51 74.5-77.7 125.7-60.9c8.4-8.6 17.7-16.3 27.9-23c-4.5-2.2-9.1-4.2-13.9-6zm71.1 48.4c54.8-19.9 115.4 8.3 135.5 63L508 202.6c16.3 44.6 46.4 82.8 85.9 109.2l13.7 9.2s0 0 0 0L310.1 429.3l4.6-15.8c13.1-45.6 11.3-94.1-5-138.7l-18.8-51.2c-20.1-54.7 8.1-115.2 62.8-135.2zm165.5 52C493.2 69.2 414.1 32.5 342.8 58.4s-108 104.8-81.9 176.2l18.8 51.2c14 38.2 15.5 79.8 4.3 118.9l-4.6 15.8c-3.3 11.6 .1 24 9 32.2s21.5 10.8 32.8 6.7L618.6 351.1c11.3-4.1 19.4-14.2 20.8-26.2s-4-23.7-14-30.4l-13.7-9.2c-33.8-22.7-59.6-55.4-73.6-93.6l-18.8-51.2zM434.8 437.6c-6.7 5.8-7.4 15.9-1.6 22.6C450.5 480.1 479 488 505 477.8s41.5-35.5 40.5-61.8c-.3-8.8-7.7-15.7-16.6-15.4s-15.7 7.7-15.4 16.6c.5 13.2-7.3 25.8-20.3 30.9s-27.2 1.2-35.9-8.8c-5.8-6.7-15.9-7.4-22.6-1.6zM179.9 406.7c-8.7 10-23 13.9-35.9 8.8s-20.7-17.7-20.3-30.9c.3-8.8-6.6-16.2-15.4-16.6s-16.2 6.6-16.6 15.4c-.9 26.3 14.6 51.6 40.5 61.8s54.5 2.3 71.8-17.6c5.8-6.7 5.1-16.8-1.6-22.6s-16.8-5.1-22.6 1.6z" /></Svg>
-                      </View>
-
-                      {deliveringOrdersCount > 0 && (
-                        <View
-                          style={{
-                            height: "85%",
-                            minWidth: "35%",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            position: "absolute",
-                            zIndex: 2,
-                            top: -15,
-                            left: -13,
-                            width: 25,
-                            height: 25,
-                            shadowColor: 'black',
-                            shadowOffset: {
-                              width: 0,
-                              height: 1,
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 2,
-                            elevation: 3,
-                            borderRadius: 100,
-                            backgroundColor: "#425928",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: "white",
-                              fontSize: 12,
-                              fontWeight: 900,
-                            }}
-                          >
-                            {deliveringOrdersCount}
-                          </Text>
-                        </View>
-                      )}
-                    </Pressable>
-                  </View>
-                  <View style={[styles.cart, {
-                    width: 40, height: 40,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 10, height: 7 },
-                    shadowOpacity: 0.8,
-                    shadowRadius: 2,
-                    elevation: 5, // Ad
-                  }]}>
-                    <Pressable
-                      onPress={cartHandler}
-                    >
-                      <View>
-                        <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><Path fill={"#425928"} d="M16 0C7.2 0 0 7.2 0 16s7.2 16 16 16l37.9 0c7.6 0 14.2 5.3 15.7 12.8l58.9 288c6.1 29.8 32.3 51.2 62.7 51.2L496 384c8.8 0 16-7.2 16-16s-7.2-16-16-16l-304.8 0c-15.2 0-28.3-10.7-31.4-25.6L152 288l314.6 0c29.4 0 55-20 62.1-48.5L570.6 71.8c5-20.2-10.2-39.8-31-39.8L99.1 32C92.5 13 74.4 0 53.9 0L16 0zm90.1 64l433.4 0L497.6 231.8C494 246 481.2 256 466.5 256l-321.1 0L106.1 64zM168 456a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zm80 0a56 56 0 1 0 -112 0 56 56 0 1 0 112 0zm200-24a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm0 80a56 56 0 1 0 0-112 56 56 0 1 0 0 112z" /></Svg>
-                      </View>
-
-                      {cartItems.length > 0 && (
-                        <View
-                          style={{
-                            justifyContent: "center",
-                            alignItems: "center",
-                            position: "absolute",
-                            zIndex: 2,
-                            top: -15,
-                            left: -13,
-                            width: 25,
-                            height: 25,
-                            shadowColor: 'black',
-                            shadowOffset: {
-                              width: 0,
-                              height: 1,
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 2,
-                            elevation: 3,
-                            borderRadius: 100,
-                            backgroundColor: "#425928",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: "white",
-                              fontSize: 12,
-                              fontWeight: 900,
-                            }}
-                          >
-                            {cartItems.length}
-                          </Text>
-                        </View>
-                      )}
-                    </Pressable>
-                  </View>
-                </View>
-              </View>
-              <Pressable
-                style={[styles.search, { marginTop: 10 }]}
-                onPress={() => navigation.navigate("Search")}
-                // onPress={() => handleSendNotification("Order Update", message)}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 10,
-                    borderColor: "white",
-                    borderWidth: 1,
-                    borderRadius: 12,
-                    backgroundColor: "white",
-                    alignItems: "center",
-                    paddingVertical: 8,
-                    paddingHorizontal: 12,
-                  }}
-                >
-                  <Feather name="search" size={20} color="black" />
-                  <Text
-                    style={{ color: "black", fontSize: 18, fontFamily: 'SFPRO-Medium' }}
-
-                  >
-                    Search Room Service
-                  </Text>
-                </View>
-              </Pressable>
-            </SafeAreaView>
-          </View>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#f8faf8' }}>
+        <View
+          onTouchStart={() => { ref?.current?.scrollTo(0); setBlink(true) }}
+          style={[
+            styles.homeSafeRoot,
+            { paddingTop: insets.top, paddingBottom: 0, marginBottom: 0 },
+          ]}
+        >
+          <FloatingCartFab count={cartItems.length} onPress={cartHandler} bottomOffset={102} />
           <View style={{ flex: 1, }}>
             <ScrollView
+              stickyHeaderIndices={[1]}
               scrollEventThrottle={16}
               onScroll={(e) => handleScroll(e)}
               bounces={false}
+              showsVerticalScrollIndicator={false}
               style={{}}
+              contentContainerStyle={{ paddingBottom: 120 }}
               onTouchStart={() => { ref?.current?.scrollTo(0) }}
             >
-
-              <View style={{ backgroundColor: '#F0F0F0', }}>
-                <ScrollView
-                  ref={scrollViewRef}
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.scrollViewContent}
-                >
-                  <View style={{ flexDirection: "row", flexWrap: "nowrap", gap: 5 }}>
-                    {[
-                      require('../assets/deal1.jpg'),
-                      require('../assets/deal3.jpg'),
-                      require('../assets/deal2.jpg'),
-                      require('../assets/deal4.jpg'),
-                      require('../assets/deal5.jpg'),
-                      require('../assets/deal1.jpg'),
-                    ].map((image, index) => (
-                      <Pressable key={index}>
-                        <View style={styles.imageContainer}>
-                          <Image
-                            style={styles.image}
-                            source={image}// or "contain", depending on the effect you want
-                          />
-                        </View>
+              <View style={styles.homeIntroSection}>
+              <View style={styles.stickyHeaderWrap}>
+              {/* <LinearGradient
+                    pointerEvents="none"
+                    style={styles.headerTopMist}
+                    colors={headerGlowMood.mistColors}
+                    locations={[0, 0.38, 1]}
+                  /> */}
+                <View style={styles.homeHeader}>
+                 
+                  <View style={styles.headerContent}>
+                  <Animated.View style={headerPrimaryBlockStyle}>
+                    <View style={styles.headerTopRow}>
+                      <Pressable style={styles.locationPill} onPress={() => { navigation.navigate("Address") }}>
+                        <Text style={styles.locationPillText} numberOfLines={1}>
+                          {addressHeadline || "Locate me..."}
+                        </Text>
+                        <MaterialIcons name="keyboard-arrow-down" size={18} color="#111827" />
                       </Pressable>
-                    ))}
+                      <View style={styles.headerRightActions}>
+                        <Pressable style={styles.headerIconButton} onPress={notifyHandler}>
+                          <Feather name="bell" size={18} color="#111827" />
+                          {deliveringOrdersCount > 0 && (
+                            <View style={styles.headerCountBadge}>
+                              <Text style={styles.headerCountText}>{deliveringOrdersCount}</Text>
+                            </View>
+                          )}
+                        </Pressable>
+
+                        <Pressable style={styles.headerIconButton} onPress={cartHandler}>
+                          <Feather name="shopping-cart" size={18} color="#111827" />
+                          {cartItems.length > 0 && (
+                            <View style={styles.headerCountBadge}>
+                              <Text style={styles.headerCountText}>{cartItems.length}</Text>
+                            </View>
+                          )}
+                        </Pressable>
+                      </View>
+                    </View>
+
+                   
+                    </Animated.View>
+
+                    
                   </View>
-                </ScrollView>
+                </View>
+              </View>
+              <Animated.View style={greetingAnimatedStyle}>
+                      <Text style={styles.headerGreetingText}>{`${greeting}, ${firstName}`}</Text>
+                      <Text style={styles.headerGreetingSubText}>
+                        {getDynamicGreetingSubline({
+                          cartCount: cartItems.length,
+                          activeDeliveryCount: deliveringOrdersCount,
+                          orders: orders || [],
+                          firstName,
+                        })}
+                      </Text>
+              </Animated.View>
               </View>
 
-              <View style={{ marginBottom: 10 }}>
-                <ItemCategory
-                  items={[
-                    { text: "Alcohol", image: require("../assets/Alcohol.png") },
-                    {
-                      text: "Ice Cream",
-                      image: require("../assets/icecream.png"),
-                    },
-                    { text: "Food", image: require("../assets/food.png") },
-                    { text: "Snacks", image: require("../assets/snack.png") },
-                  ]}
-                  color="white"
-                  show={!isVisible}
-                />
+              <View style={styles.stickySearchCategoriesWrap} collapsable={false}>
+                <Animated.View style={styles.headerSearchBackdrop}>
+                  <View style={styles.headerSearchGlassOuter}>
+                    <BlurView
+                      intensity={Platform.OS === "ios" ? 40 : 32}
+                      tint="light"
+                      style={styles.headerSearchBlur}
+                    />
+                    <View style={styles.headerSearchGlassWash} pointerEvents="none" />
+                    <LinearGradient
+                      pointerEvents="none"
+                      colors={["rgba(255,255,255,0.5)", "rgba(255,255,255,0)"]}
+                      style={styles.headerSearchInnerShine}
+                    />
+                    <LinearGradient
+                      pointerEvents="none"
+                      colors={["transparent", "rgba(17, 24, 39, 0.04)"]}
+                      style={styles.headerSearchInnerFloor}
+                    />
+                    <View style={styles.headerSearchRow}>
+                      <Pressable
+                        style={styles.headerSearchMainHit}
+                        onPress={() => navigation.navigate("CategorySearch", { cat: "" })}
+                        accessibilityLabel={`Search. ${SEARCH_BAR_PHRASES[searchPhraseIndex].lead}. ${SEARCH_BAR_PHRASES[searchPhraseIndex].hint}`}
+                      >
+                        <Feather
+                          name="search"
+                          size={19}
+                          color="#111827"
+                          style={styles.headerSearchIconMinimal}
+                        />
+                        <Animated.View
+                          style={[
+                            styles.headerSearchTextBlock,
+                            {
+                              opacity: searchTextOpacity,
+                              transform: [{ translateY: searchTextTranslateY }],
+                            },
+                          ]}
+                        >
+                          <Text style={styles.headerSearchLead} numberOfLines={1}>
+                            {SEARCH_BAR_PHRASES[searchPhraseIndex].lead}
+                          </Text>
+                          {/* <Text style={styles.headerSearchHint} numberOfLines={1}>
+                          {SEARCH_BAR_PHRASES[searchPhraseIndex].hint}
+                        </Text> */}
+                        </Animated.View>
+                      </Pressable>
+                    </View>
+                  </View>
+                  {deliveringOrdersCount > 0 ? (
+                    <Pressable
+                      style={styles.orderStatusPill}
+                      onPress={orderHandler}
+                      accessibilityRole="button"
+                      accessibilityLabel="Track active deliveries"
+                    >
+                      <MaterialIcons name="local-shipping" size={18} color="#425928" />
+                      <Text style={styles.orderStatusPillText}>
+                        {deliveringOrdersCount} on the way · Track
+                      </Text>
+                      <Feather name="chevron-right" size={16} color="#6b7280" />
+                    </Pressable>
+                  ) : null}
+                </Animated.View>
+                <View style={styles.stickyCategoryBelowSearch}>
+                  <ItemCategory
+                    items={departmentCategoryItems}
+                    itemWidth={width}
+                    show={true}
+                    color={"#BC6C25"}
+                    onPress={(item) => {
+                      if (item?.slug) navigation.navigate("Department", { slug: item.slug });
+                    }}
+                  />
+                </View>
               </View>
-              <View style={{ gap: 10, marginBottom: 50 }}>
-                {Object.keys(categoryObject).map((categoryKey) => (
+
+              {menuLoadStatus === "failed" && showMenuLoadError && (
+                <RoomServiceAlert
+                  type={ROOM_SERVICE_ALERT_TYPES.error}
+                  title="Could not load menu"
+                  message="Something went wrong. Please try again."
+                  primaryActionLabel="Retry"
+                  onPrimaryAction={() => dispatch(fetchProducts())}
+                  dismissible
+                  onDismissed={() => setShowMenuLoadError(false)}
+                />
+              )}
+              {showOrderSuccessAlert && (
+                <RoomServiceAlert
+                  type={ROOM_SERVICE_ALERT_TYPES.success}
+                  title="Order placed successfully"
+                  message="Your groceries are being prepared. Track your delivery in real time."
+                  primaryActionLabel="Track order"
+                  onPrimaryAction={() => {
+                    setShowOrderSuccessAlert(false);
+                    navigation.navigate("Order History");
+                  }}
+                  autoDismissDuration={5000}
+                  showProgressBar
+                  onDismissed={() => setShowOrderSuccessAlert(false)}
+                />
+              )}
+              <PromotionHomeSection
+                homeData={homeAppData}
+                navigation={navigation}
+                products={productItems}
+                buckets={['hero']}
+              />
+
+              <PromotionHomeSection
+                homeData={homeAppData}
+                navigation={navigation}
+                products={productItems}
+                buckets={['featuredStrip']}
+              />
+              <View style={{ gap: 20, marginBottom: 28 }}>
+                {upperCategoryKeys.map((categoryKey, idx) => (
                   <ProductHorizontal
                     key={categoryKey}
+                    titleOverride={idx === 0 ? "Popular near you" : "Deals for you"}
+                    categoryName={categoryKey}
+                    items={categoryObject[categoryKey]}
+                  />
+                ))}
+                <PromotionHomeSection
+                  homeData={homeAppData}
+                  navigation={navigation}
+                  products={productItems}
+                  buckets={['tiles']}
+                />
+                {lowerCategoryKeys.map((categoryKey) => (
+                  <ProductHorizontal
+                    key={categoryKey}
+                    titleOverride="Recommended for you"
                     categoryName={categoryKey}
                     items={categoryObject[categoryKey]}
                   />
@@ -850,24 +1044,389 @@ function Home() {
             </Pressable>}</LinearGradient>
 
           </TransparentSheet>}
-        </LinearGradient>
-      </GestureHandlerRootView>
-    </SafeAreaProvider>
+        </View>
+        </GestureHandlerRootView>
   );
 }
 
 export default Home;
 
 const styles = StyleSheet.create({
+  homeSafeRoot: {
+    flex: 1,
+    position: "relative",
+    backgroundColor: "#f8f6f2",
+  },
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#f8faf8",
     // backgroundColor: "#283618",
     // borderWidth: 4,
   },
   top: {
     // backgroundColor: "white",
     // borderWidth: 4,
+  },
+  homeHeader: {
+    // marginHorizontal: 10,
+    // marginTop: 8,
+    // borderRadius: 30,
+    backgroundColor: "rgba(255,255,255,0)",
+    // paddingTop: 14,
+    // paddingBottom: 7,
+    paddingHorizontal: 0,
+    overflow: "hidden",
+    zIndex: 3,
+    // backgroundColor: "#EEF4E9",
+    // borderWidth: 1,
+    borderColor: "#DDE8D5",
+  },
+  headerTopMist: {
+    // position: "absolute",
+    // top: 0,
+    // left: 0,
+    // right: 0,
+    // height: 180,
+  },
+  headerGlow: {
+    position: "absolute",
+    top: -50,
+    right: -20,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(178, 156, 29, 0.08)",
+  },
+  headerContent: {
+    gap: 12,
+    zIndex: 2,
+  },
+  homeIntroSection: {
+    backgroundColor: "#f8f6f2",
+  },
+  stickySearchCategoriesWrap: {
+    backgroundColor: "#f8f6f2",
+    zIndex: 2,
+    paddingTop: 1,
+    marginBottom: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(17, 24, 39, 0.07)",
+  },
+  stickyCategoryBelowSearch: {
+    paddingTop: 8,
+  },
+  stickyHeaderWrap: {
+    backgroundColor: "rgba(255,255,255,0)",
+    // paddingBottom: 8,
+    zIndex: 5,
+  },
+  stickyHeaderFade: {
+    // position: "absolute",
+    // left: 0,
+    // right: 0,
+    // bottom: 0,
+    // height: 24,
+    // zIndex: 2,
+  },
+  headerTopRow: {
+    marginTop: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    alignSelf: "center",
+    marginBottom: 8,
+    paddingHorizontal: 20,
+  },
+  headerRightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginLeft: 10,
+    flexShrink: 0,
+  },
+  headerIconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 22,
+    backgroundColor: "#FEFCF8",
+    borderWidth: 1,
+    borderColor: "rgba(17,24,39,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  locationPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    // backgroundColor: "rgba(255, 255, 255, 0.4)",
+    borderRadius: 999,
+    // paddingHorizontal: 16,
+    paddingRight: 10,
+    paddingVertical: 6,
+    flex: 1,
+    width: 200,
+    minWidth: 0,
+    gap: 8,
+    // shadowColor: "#0f1a0b",
+    // shadowOffset: { width: 0, height: 3 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: 6,
+    // elevation: 7
+    // borderWidth: 1,
+    // borderColor: "#DDE7D5",
+  },
+  locationPillText: {
+    color: "#111827",
+    fontSize: 13,
+    fontFamily: "Poppins-SemiBold",
+    opacity: 0.95,
+    flexShrink: 1,
+  },
+  headerGreetingText: {
+    color: "#121212",
+    fontSize: 26,
+    fontFamily: "Poppins-Bold",
+    marginBottom: 2,
+    // marginTop: 4,
+    width: "100%",
+    paddingHorizontal: 20,
+    alignSelf: "center",
+    letterSpacing: 0.1,
+  },
+  headerGreetingSubText: {
+    color: "#6B7280",
+    // display: "none",
+    fontSize: 14,
+    fontFamily: "Poppins-Medium",
+    width: "100%",
+    paddingHorizontal: 20,
+    alignSelf: "center",
+    marginBottom: 12
+   
+  },
+  headerSearchGlassOuter: {
+    width: "100%",
+    alignSelf: "center",
+    borderRadius: 999,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.78)",
+    shadowColor: "#111827",
+    // marginVertical: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  headerSearchBlur: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  headerSearchGlassWash: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(254, 252, 248, 0.36)",
+  },
+  headerSearchInnerShine: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 6,
+    borderTopLeftRadius: 999,
+    borderTopRightRadius: 999,
+  },
+  headerSearchInnerFloor: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 12,
+    borderBottomLeftRadius: 999,
+    borderBottomRightRadius: 999,
+  },
+  headerSearchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    // paddingVertical: 7,
+    paddingLeft: 14,
+    paddingRight: 8,
+    minHeight: 48,
+  },
+  headerSearchMainHit: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    minWidth: 0,
+    paddingRight: 12,
+  },
+  headerSearchIconMinimal: {
+    marginLeft: 2,
+  },
+  headerSearchTextBlock: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: "center",
+    gap: 3,
+  },
+  headerSearchLead: {
+    color: "rgba(55, 65, 81, 0.82)",
+    fontSize: 12,
+    // fontFamily: "Poppins",
+    letterSpacing: 0.08,
+  },
+  headerSearchHint: {
+    color: "rgba(156, 163, 175, 0.62)",
+    fontSize: 12,
+    fontFamily: "Poppins-Regular",
+    letterSpacing: 0.08,
+  },
+  orderStatusPill: {
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    alignSelf: "flex-start",
+    marginLeft: 2,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: "rgba(66, 89, 40, 0.09)",
+    borderWidth: 1,
+    borderColor: "rgba(66, 89, 40, 0.22)",
+  },
+  orderStatusPillText: {
+    flex: 1,
+    color: "#1f2937",
+    fontSize: 13,
+    fontFamily: "Poppins-SemiBold",
+    letterSpacing: 0.15,
+  },
+  headerSearchBackdrop: {
+    width: "100%",
+    paddingVertical: 2,
+    paddingTop: 0,
+    // marginTop: 10,
+    paddingHorizontal: 20,
+    
+  },
+  headerCountBadge: {
+    position: "absolute",
+    top: -5,
+    right: -4,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 10,
+    backgroundColor: "#BC6C25",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  headerCountText: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: 10,
+    fontFamily: "Poppins-SemiBold",
+    fontWeight: "700",
+  },
+  heroCard: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  heroMain: {
+    flex: 1,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    // padding: 14,
+  },
+  heroTitle: {
+    color: "white",
+    fontSize: 20,
+    fontFamily: "SFPRO-Medium",
+    marginBottom: 4,
+  },
+  heroSubtitle: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 12,
+    marginBottom: 16,
+  },
+  heroFooter: {
+    gap: 12,
+  },
+  heroAvatarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  heroAvatar: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.55)",
+    backgroundColor: "#f3f4f6",
+  },
+  heroItemsPill: {
+    marginLeft: 8,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  heroItemsText: {
+    color: "white",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  orderNowButton: {
+    backgroundColor: "white",
+    borderRadius: 999,
+    height: 44,
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  orderNowArrowCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#4F6B30",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  orderNowText: {
+    color: "#111827",
+    fontSize: 16,
+    fontFamily: "SFPRO-Medium",
+    marginLeft: 10,
+    flex: 1,
+  },
+  orderNowDoubleChevron: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 6,
+  },
+  newListRail: {
+    width: 50,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.16)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.16)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+  },
+  newListRailText: {
+    color: "white",
+    fontSize: 12,
+    fontFamily: "SFPRO-Medium",
+    transform: [{ rotate: "-90deg" }],
   },
   search: {
     justifyContent: "space-between",
@@ -891,23 +1450,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderColor: "white",
   }, 
-  imageContainer: {
-    width: width,
-    maxHeight: 160,
-  },
-  image: {
-    width: '100%',
-    borderRadius: 10,
-    maxHeight: "100%",
-    resizeMode: "stretch",
-    padding: "2%",
-    borderRadius: 8,
-  },
-  scrollViewContent: {
-    borderRadius: 10,
-
-    alignItems: 'center',
-  },
   deals: {
     marginVertical: 16,
     marginHorizontal: "2%",
@@ -917,7 +1459,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 15,
     letterSpacing: 1,
-    fontFamily: 'SFPRO-Medium',
+    fontFamily: "Poppins-Regular",
   },
   horizontalCat: {
     width: "100%",

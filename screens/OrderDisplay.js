@@ -16,7 +16,8 @@ import { RotateInDownLeft } from "react-native-reanimated";
 import {useSelector, useDispatch} from 'react-redux'
 import { addReview } from "../Data/Items";
 import {clearCart} from '../Data/cart'
-import {completeOrder, fetchOrders} from "../Data/order"
+import {completeOrder, fetchOrders, updateOrder} from "../Data/order"
+import RoomServiceAlert, { ROOM_SERVICE_ALERT_TYPES } from "../components/RoomServiceAlert";
 import OrderDescription from "../components/OrderDescription";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -24,15 +25,16 @@ import Text from '../components/Text';
 
 const { width, height } = Dimensions.get("window");
 function OrderDisplay(){
-  
-  const orders = useSelector((state) => state.orders.ids)
+  const dispatch = useDispatch();
+  const orders = useSelector((state) => state.orders.ids);
+  const ordersLoadStatus = useSelector((state) => state.orders.status);
+  const [showOrderLoadError, setShowOrderLoadError] = useState(true);
 
   const navigation = useNavigation()
     const [index, setIndex] = useState(0);
     
     const [rating, setrating] = useState(0);
     const data = useSelector((state) => state.profileData.profile)
-    const dispatch = useDispatch();
     const [form , setForm] = useState({title : '',
   reviews: {user: `${data.firstName} ${data.secondName}`, rating : rating, comment : '', days: '0 day ago'}})
     var rate = []
@@ -107,6 +109,12 @@ function OrderDisplay(){
   }
     var newList;
     const ref = useRef(null);
+    useEffect(() => {
+      dispatch(fetchOrders());
+    }, [dispatch]);
+    useEffect(() => {
+      if (ordersLoadStatus === "failed") setShowOrderLoadError(true);
+    }, [ordersLoadStatus]);
     const onPress = useCallback(() => {
         const isActive = ref?.current?.isActive();
         // ref?.current?.scrollTo(0);
@@ -126,11 +134,29 @@ function OrderDisplay(){
       setForm((prev) => {return { ...prev, ['reviews']: {...prev.reviews, ['comment'] : value}}});
 
     }
-    const deliveredOrders = orders.filter(order => order.status === 'Delivered');
+    const completedStatuses = new Set([
+      'Delivered',
+      'Completed',
+      'delivered',
+      'completed',
+      'picked_up',
+    ]);
+    const deliveredOrders = orders.filter(order => completedStatuses.has(order.status));
     console.log("Delivered Orders:");
     console.log(deliveredOrders);
 
-    const undeliveredOrders = orders.filter(order => order.status !== 'Delivered');
+    const undeliveredOrders = orders.filter(order => !completedStatuses.has(order.status));
+    function handlePickedUp(orderId) {
+      dispatch(
+        updateOrder({
+          id: {
+            uid: orderId,
+            act: 'status',
+            perform: 'picked_up'
+          }
+        })
+      );
+    }
     function handleFormSubmit(){
       dispatch(addReview({id: form}))
       updateReviews(form.title)
@@ -150,8 +176,18 @@ function OrderDisplay(){
       }
       dispatch(completeOrder({id: menuItems}))
     }
-    return  <GestureHandlerRootView style={{ flex: 1 }}><View style={{flex: 1}}>
-    
+return  <GestureHandlerRootView style={{ flex: 1 }}><View style={{flex: 1}}>
+    {ordersLoadStatus === "failed" && showOrderLoadError && (
+      <RoomServiceAlert
+        type={ROOM_SERVICE_ALERT_TYPES.error}
+        title="Could not load order"
+        message="Something went wrong. Please try again."
+        primaryActionLabel="Retry"
+        onPrimaryAction={() => dispatch(fetchOrders())}
+        dismissible
+        onDismissed={() => setShowOrderLoadError(false)}
+      />
+    )}
     <View style={[{flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, marginHorizontal: '5%', gap: 20, borderBottomColor: 'rgba(0,0,0,0.075)'}]}>
         
         <View style={[{width: 'auto',alignItems: 'center', padding: '3%'}, index == 0 ? styles.active : undefined]}>
@@ -179,8 +215,8 @@ function OrderDisplay(){
         <ProductAction quantity={1}><Pill text={"Delivering"} type="null"/></ProductAction>
     </View>} */}
     <View style={styles.recommendedView}>
-    {index == 0 && undeliveredOrders.reverse().map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} /></View>)}
-    {index == 1 && deliveredOrders.reverse().map(({address, date, id, order, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} /></View>)}
+    {index == 0 && undeliveredOrders.reverse().map(({address, date, id, order, orderType, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} orderType={orderType} onPickedUp={handlePickedUp} /></View>)}
+    {index == 1 && deliveredOrders.reverse().map(({address, date, id, order, orderType, price, status}, idx)=> <View style={{ flex: 1,  gap: 10 }}   key={id}><Text style={{fontWeight:900, fontSize: 12, }} >{formatDate(date)}</Text><OrderDescription status={status} price={price} press={press} address={address} order={order} id={id} date={date} orderType={orderType} onPickedUp={handlePickedUp} /></View>)}
        
     </View>
     </View>

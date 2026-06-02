@@ -8,7 +8,7 @@ const { width, height } = Dimensions.get("window");
 
 
 
-function ProductAction({title, image, price, reviews, category, component, instruction,quantity, action,side, options, onTap, children }) {
+function ProductAction({title, image, price, reviews, category, component, instruction,quantity, action,side, options, variantSelections, schemaAddonsSelected, onTap, children }) {
   const navigation = useNavigation()
   const [visible,setVisible] = useState(false)
   function pressHandler (){
@@ -147,7 +147,32 @@ function ProductAction({title, image, price, reviews, category, component, instr
             <Text key={valIndex}>{value.name + " , "}</Text>
         ))}</Text></Text>
   <View style={{backgroundColor: 'rgba(0,0,0,0.5)', width: "100%", height: 3}}></View>
-</View>))}  
+</View>))}
+              {variantSelections?.map((g, idx) =>
+                g.selected?.length > 0 ? (
+                  <View key={g.groupId || `vs-${idx}`} style={{ alignItems: "center", marginTop: 6 }}>
+                    <Text style={{ fontSize: 11.5, textAlign: "center" }}>
+                      {g.groupName}:{" "}
+                      <Text style={{ fontSize: 10 }}>
+                        {g.selected.map((s) => s.name).join(", ")}
+                      </Text>
+                    </Text>
+                    <View style={{ backgroundColor: "rgba(0,0,0,0.5)", width: "100%", height: 3, marginTop: 6 }} />
+                  </View>
+                ) : null
+              )}
+              {schemaAddonsSelected?.length > 0 ? (
+                <View style={{ alignItems: "center", marginTop: 6 }}>
+                  <Text style={{ fontSize: 11.5 }}>Add-ons</Text>
+                  {schemaAddonsSelected.map((a, i) => (
+                    <Text key={a.id || i} style={{ fontSize: 10, textAlign: "center" }}>
+                      + {a.name}
+                      {Number(a.price) > 0 ? ` ($${Number(a.price).toFixed(2)})` : ""}
+                    </Text>
+                  ))}
+                  <View style={{ backgroundColor: "rgba(0,0,0,0.5)", width: "100%", height: 3, marginTop: 6 }} />
+                </View>
+              ) : null}
 {instruction && (
       <View style={{ alignItems: 'center', marginTop: 8 }}>
         <Text style={{  fontSize: 12 }}>Instructions</Text>

@@ -1,54 +1,91 @@
-import { ScrollView, StyleSheet, View, Dimensions, FlatList } from "react-native"
-import Item from "../Item/Item"
+import { ScrollView, StyleSheet, View, Dimensions } from "react-native";
 import Text from "../Text";
-import Product from "../Product/Product"
+import Product from "../Product/Product";
 
-const { width, height } = Dimensions.get("window");
+const { width: SCREEN_W } = Dimensions.get("window");
 
-function ProductHorizontal({ items,categoryName}) {
-  // Split the items into rows with 5 items each
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function computeDefaultColumns() {
+  // Keeps "3-5 columns" behavior stable across devices.
+  if (SCREEN_W >= 420) return 5;
+  if (SCREEN_W >= 380) return 4;
+  return 3;
+}
+
+function ProductHorizontal({
+  items,
+  categoryName,
+  titleOverride,
+  columnsPerRow,
+  productLayout = "rail",
+}) {
+  const cols = clamp(columnsPerRow ?? computeDefaultColumns(), 3, 5);
+  const safeItems = Array.isArray(items) ? items : [];
+
+  // Split the items into rows with N items each.
   const rows = [];
-  for (let i = 0; i < items?.length; i += 5) {
-    rows.push(items.slice(i, i + 5)); // Slice items into chunks of 5
+  for (let i = 0; i < safeItems.length; i += cols) {
+    rows.push(safeItems.slice(i, i + cols));
   }
 
   return (
-    <View style={{marginBottom: 15, borderRadius: 15, overflow: 'hidden', backgroundColor: 'white', 
- }}>
-    <Text style={{ paddingLeft: '3%',      fontSize: 24,
-          // color: '#BC6C25',
-          color: '#333333',
-          textDecorationStyle: "solid",
-          textDecorationColor: "#BC6C25",
-          fontFamily: 'SFPRO-Bold',
-          paddingTop: 5,
-          letterSpacing: 1.2,
-          transform: [{ scaleY: 1.2 }],
-          // backgroundColor: '#BC6C25', // Light background to make it stand out
-          paddingLeft: 15 }}>
-        {categoryName}
-      </Text>
-      <View style={{  backgroundColor: 'white'  }}>
-      {rows.map((row, rowIndex) => (
-        <ScrollView key={rowIndex} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listContainer} horizontal={true}>
-        <View key={rowIndex} style={styles.rowContainer}>
-          {row.map((product, index) => (
-            <Product key={product.id} product={product} />
-          ))}
-        </View>
-        </ScrollView>
-      ))}
+    <View style={styles.sectionWrap}>
+      <Text style={styles.sectionTitle}>{titleOverride || categoryName}</Text>
+
+      <View style={styles.railWrap}>
+        {rows.map((row, rowIndex) => (
+          <ScrollView
+            key={rowIndex}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.listContainer}
+            horizontal
+          >
+            <View key={rowIndex} style={styles.rowContainer}>
+              {row.map((product, index) => (
+                <Product
+                  key={
+                    product._id != null
+                      ? String(product._id)
+                      : product.id != null
+                        ? String(product.id)
+                        : `p-${rowIndex}-${index}`
+                  }
+                  product={product}
+                  layout={productLayout}
+                />
+              ))}
+            </View>
+          </ScrollView>
+        ))}
       </View>
     </View>
-  
   );
 }
 
 export default ProductHorizontal
 const styles = StyleSheet.create({
+  sectionWrap: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    paddingHorizontal: 15,
+    paddingTop: 4,
+    paddingBottom: 12,
+    fontSize: 20,
+    color: '#111827',
+    fontFamily: "Poppins-Medium",
+    letterSpacing: 0.2,
+  },
+  railWrap: {
+    backgroundColor: 'transparent',
+  },
   listContainer: {
-    // paddingRight: 10,
-    backgroundColor: 'white', 
+    backgroundColor: 'transparent',
+    paddingLeft: 10,
+    paddingRight: 12,
   },
   rowContainer: {
     flexDirection: 'row',

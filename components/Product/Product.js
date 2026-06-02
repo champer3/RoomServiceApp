@@ -1,4 +1,4 @@
-import { Image, Pressable, Dimensions, ImageBackground } from "react-native";
+import { Image, Pressable, Dimensions, ImageBackground, Platform } from "react-native";
 import { StyleSheet, View } from "react-native";
 import FlexButton from "../Buttons/FlexButton";
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,12 +17,16 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import Svg, { Path } from 'react-native-svg';
 const { width, height } = Dimensions.get("window");
 import { LinearGradient } from "expo-linear-gradient";
-import { Button } from "react-native-paper";
+import { buildDefaultFormObject } from "../../utils/productCartForm";
+const CARD_WIDTH = 160;
 
+function formatPriceShort(n) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return null;
+  return x.toFixed(2);
+}
 
-
-
-function Product({ product }) {
+function Product({ product, layout = 'rail' }) {
   function isValidURL(str) {
     if (typeof str !== 'string') {
       str = String(str);
@@ -42,15 +46,22 @@ function Product({ product }) {
   }
   const canAddToCart = () => {
     // Check if there are at least 2 items in the extra array
-    if (product.extra) {
+    if (product?.extra) {
       return false; // Cannot add to cart if there are fewer than 2 extra items
-    } if (product.components?.length > 0) {
-      return false
     }
-    for (let optionCategory of product.options) {
+    if (Array.isArray(product?.components) && product.components.length > 0) {
+      return false;
+    }
+    for (let optionCategory of Array.isArray(product?.options) ? product.options : []) {
       if (optionCategory?.required) {
         return false; // Cannot add to cart if any required category doesn't meet the required quantity
       }
+    }
+    if (Array.isArray(product?.variantGroups) && product.variantGroups.length > 0) {
+      return false;
+    }
+    if (Array.isArray(product?.addons) && product.addons.length > 0) {
+      return false;
     }
     return true;
   };
@@ -122,29 +133,7 @@ function Product({ product }) {
   //   'quantity': 4
   // }]
   // };
-  const constructProductFormObject = (product) => {
-    // Initialize the form object
-    let formObject = {
-      extra: product.extra ? [] : null, // If extra is true, set to an empty array
-      components: product.components.length > 0 ? '' : null, // If components exist, set empty string
-      options: [], // Prepare options array
-      products: [product],
-      instructions: product.instructions ? '' : null, // If instructions are true, set empty string
-    };
-
-    // Loop through options and set the values array to empty
-    if (product.options) {
-      formObject.options = product.options.map(option => ({
-        name: option.name,
-        required: option.required || false,
-        quantity: option.quantity || null,
-        values: [] // Set values to an empty array
-      }));
-    }
-
-    return formObject;
-  };
-  const productData = constructProductFormObject(product);
+  const productData = buildDefaultFormObject(product);
   //   const [show, setShow] = useState(false)
   const navigation = useNavigation()
   const dispatch = useDispatch();
@@ -180,6 +169,27 @@ function Product({ product }) {
 
   }
 
+  const meta = product?.metadata && typeof product.metadata === "object"
+    ? product.metadata
+    : {};
+  const brandStr = meta.brand != null ? String(meta.brand).trim() : "";
+  const unitStr = meta.unit_size != null ? String(meta.unit_size).trim() : "";
+  const metaLine = [brandStr, unitStr].filter(Boolean).join(" · ");
+  const tagList = Array.isArray(product?.tags)
+    ? product.tags.map((t) => String(t).trim()).filter(Boolean)
+    : [];
+  const subCats = Array.isArray(product?.subCategory) ? product.subCategory : [];
+  const pillLabels = [...new Set([...subCats, ...tagList])].slice(0, 4);
+  const morePills =
+    [...new Set([...subCats, ...tagList])].length - pillLabels.length;
+  const shortBlurb = String(product?.shortDescription || "").trim();
+  const longBlurb = String(product?.description || "").trim();
+  const blurb = shortBlurb || longBlurb;
+  const basePrice = Number(product?.price) || 0;
+  const compareRaw = Number(product?.comparePrice);
+  const showCompare =
+    Number.isFinite(compareRaw) && compareRaw > basePrice + 0.001;
+
   //   const getAverageRatingByTitle = () => {
   //     const item = productItems.find(item => item.title === title);
 
@@ -201,19 +211,70 @@ function Product({ product }) {
   //             rate.push('staro')
   //         }
   //     }
+
+  const cardW = layout === 'grid' ? Math.max(140, Math.floor((width - 52) / 2)) : CARD_WIDTH;
+  const imgH = layout === 'grid' ? 108 : 142;
+  const listImgUri =
+    Array.isArray(product?.images) && product.images[0] && isValidURL(product.images[0])
+      ? product.images[0]
+      : null;
+
+  if (layout === 'list') {
+    return (
+      <View style={styles.listContainer}>
+        <View style={styles.listRow}>
+          <Pressable onPress={pressHandler} style={styles.listMainPress}>
+            {listImgUri ? (
+              <Image source={{ uri: listImgUri }} style={styles.listImage} resizeMode="cover" />
+            ) : (
+              <View style={[styles.listImage, styles.listImagePlaceholder]} />
+            )}
+            <View style={styles.listBody}>
+              <Text style={styles.listTitle} numberOfLines={2}>
+                {product.title}
+              </Text>
+              {blurb ? (
+                <Text style={styles.listDesc} numberOfLines={2}>
+                  {blurb}
+                </Text>
+              ) : null}
+              {pillLabels.length > 0 ? (
+                <View style={styles.listPills}>
+                  {pillLabels.slice(0, 3).map((item, index) => (
+                    <View key={`${item}-${index}`} style={styles.listPill}>
+                      <Text style={styles.listPillText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+              <View style={styles.listPriceRow}>
+                {showCompare ? (
+                  <Text style={styles.comparePrice}>${formatPriceShort(compareRaw)}</Text>
+                ) : null}
+                <Text style={styles.listPrice}>${basePrice.toFixed(2)}</Text>
+              </View>
+            </View>
+          </Pressable>
+          <Pressable onPress={handleIncrement} style={styles.listAddBtn}>
+            <Text style={styles.listAddText}>+ Add</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, layout === 'grid' && { marginRight: 0 }]}>
       <Pressable onPress={pressHandler}>
-        {product.images && isValidURL(product.images[0]) && (
+        {Array.isArray(product?.images) && product.images[0] && isValidURL(product.images[0]) && (
           <ImageBackground
-            style={styles.image}
-            imageStyle={{ borderRadius: 20 }}
+            style={[styles.image, { width: cardW, height: imgH }]}
+            imageStyle={{ borderRadius: layout === 'grid' ? 14 : 16 }}
             source={{ uri: product.images[0] }}
           >
             {/* Apply LinearGradient as an overlay */}
-            <LinearGradient
-              colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0)']} // Customize gradient colors
-              style={styles.gradient}
+            <View
+              style={[styles.gradient, { width: cardW }]}
             >
               <Pressable style={styles.minusButton} onPress={handleIncrement}>
                 <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
@@ -227,34 +288,74 @@ function Product({ product }) {
               {quantity > 0 && <Pressable disabled={quantity == 0} style={styles.addButton} onPress={quantity > 0 ? () => { handleDecrement(cartItems.findIndex(item => product.title === item.products[0].title)) } : () => { }}>
                 <Svg width={24} height={24} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><Path fill="#283618" d="M432 256c0 13.3-10.7 24-24 24L40 280c-13.3 0-24-10.7-24-24s10.7-24 24-24l368 0c13.3 0 24 10.7 24 24z" /></Svg>
               </Pressable>}
-              <View style={styles.detailsContainer}>
-                {product?.subCategory?.slice(0, 2).map((item, index) => (
-                  <View key={index} style={styles.pill}>
+              <View style={[styles.detailsContainer, { maxWidth: cardW }]}>
+                {pillLabels.map((item, index) => (
+                  <View key={`${item}-${index}`} style={styles.pill}>
                     <Text style={styles.pillText}>{item}</Text>
                   </View>
                 ))}
-                {product?.subCategory?.length > 2 && (
+                {morePills > 0 ? (
                   <View style={styles.pill}>
-                    <Text style={styles.pillText}>
-                      +{product.subCategory.length - 2}
-                    </Text>
+                    <Text style={styles.pillText}>+{morePills}</Text>
                   </View>
-                )}
+                ) : null}
               </View>
-            </LinearGradient>
+            </View>
           </ImageBackground>
         )}</Pressable>
-      <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+      <Text
+        style={[styles.name, { width: cardW }, layout === 'grid' && styles.nameGrid]}
+        numberOfLines={layout === 'grid' ? 2 : 1}
+        ellipsizeMode="tail"
+      >
         {product.title}
       </Text>
-      <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">
-        {product.description.length > 1 ? product.description : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}
-      </Text>
-      <View style={{ width: 172.5 }}>
-        <View style={{ justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}><Text style={styles.price}>${product.price?.toFixed(2)}</Text><Pressable style={{ backgroundColor: '#283618', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 }}><Text style={{
-          color: 'white', fontSize: 12, fontFamily: 'SFPRO-Medium',
-          letterSpacing: 1.2,
-        }}>Order Now</Text></Pressable></View>
+      {metaLine ? (
+        <Text style={[styles.metaLine, { width: cardW }]} numberOfLines={1} ellipsizeMode="tail">
+          {metaLine}
+        </Text>
+      ) : null}
+      {blurb ? (
+        <Text
+          style={[styles.description, { width: cardW }, layout === 'grid' && styles.descriptionGrid]}
+          numberOfLines={layout === 'grid' ? 1 : 2}
+          ellipsizeMode="tail"
+        >
+          {blurb}
+        </Text>
+      ) : layout !== 'grid' ? (
+        <Text style={[styles.description, { width: cardW, opacity: 0.55 }]} numberOfLines={1}>
+          Tap for details
+        </Text>
+      ) : null}
+      <View style={{ width: cardW }}>
+        <View style={{ justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
+          <View>
+            {showCompare ? (
+              <Text style={styles.comparePrice}>${formatPriceShort(compareRaw)}</Text>
+            ) : null}
+            <Text style={[styles.price, layout === 'grid' && styles.priceGrid]}>${basePrice.toFixed(2)}</Text>
+          </View>
+          <Pressable
+            style={{
+              backgroundColor: '#2f3f1f',
+              paddingHorizontal: layout === 'grid' ? 6 : 8,
+              paddingVertical: layout === 'grid' ? 3 : 4,
+              borderRadius: 999,
+            }}
+          >
+            <Text
+              style={{
+                color: 'white',
+                fontSize: layout === 'grid' ? 11 : 12,
+                fontFamily: "Poppins-Regular",
+                letterSpacing: 0.6,
+              }}
+            >
+              Order
+            </Text>
+          </Pressable>
+        </View>
         {/* <FlexButton></FlexButton> */}
       </View>
     </View>
@@ -264,27 +365,35 @@ function Product({ product }) {
 export default Product;
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 50,
-    // marginRight: 8,
+    borderRadius: 18,
     padding: 10,
-    // width: 172.5,
-    // backgroundColor: "white",
     justifyContent: "center",
-    // alignItems:'center',
-
-
+    marginRight: 8,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "rgba(17, 24, 39, 0.06)",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#0f172a",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.07,
+        shadowRadius: 14,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   }, plus: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
   }, image: {
     flex: 1,
-    // backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
-    width: 172.5,
-    height: 160,
-    borderRadius: 20
+    width: CARD_WIDTH,
+    height: 142,
+    borderRadius: 16
   },
   button: {
     // position:'absolute',
@@ -294,53 +403,68 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     position: 'absolute',
-    gap: 3,
+    gap: 4,
     bottom: 0,
-    paddingHorizontal: 1,
-    marginBottom: 5,
+    paddingHorizontal: 6,
+    marginBottom: 6,
+    maxWidth: CARD_WIDTH,
   },
   pill: {
-    backgroundColor: '#F0F0F0', // Light background for the pill
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(66, 89, 40, 0.4)',
   },
   pillText: {
-    fontSize: 12,
-    color: '#555',
-    fontFamily: 'SFPRO-Bold',
-    letterSpacing: 1,
+    fontSize: 10,
+    color: '#2d3d22',
+    fontFamily: "Poppins-SemiBold",
+    letterSpacing: 0.25,
   },
   name: {
     fontSize: 16,
-    width: 172.5,
-    marginTop: 2,
-    color: '#333',
+    width: CARD_WIDTH,
+    marginTop: 8,
+    color: '#111827',
     textAlign: 'left',
     alignSelf: 'flex-start',
-    fontFamily: 'SFPRO-Bold',
-    letterSpacing: 1,
-    transform: [{ scaleY: 1.1 }]
+    fontFamily: "Poppins-Bold",
+    letterSpacing: 0.2,
   },
   description: {
-    fontSize: 12,
-    color: 'rgba(0,0,0,0.5)',
-    width: 172.5,
-    marginVertical: 2,
+    fontSize: 11,
+    color: 'rgba(17,24,39,0.48)',
+    width: CARD_WIDTH,
+    marginVertical: 4,
     textAlign: 'left',
     alignSelf: 'flex-start',
-    fontFamily: 'SFPRO-Medium',
-    letterSpacing: 1.2,
-    transform: [{ scaleY: 1.1 }]
-
+    fontFamily: "Poppins-Regular",
+    lineHeight: 15,
+    letterSpacing: 0.2,
+  },
+  metaLine: {
+    fontSize: 10,
+    color: 'rgba(17,24,39,0.42)',
+    width: CARD_WIDTH,
+    marginTop: 2,
+    fontFamily: "Poppins-Regular",
+    letterSpacing: 0.6,
+  },
+  comparePrice: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    textDecorationLine: 'line-through',
+    fontFamily: "Poppins-Regular",
   },
   price: {
-    fontSize: 16,
+    fontSize: 15,
     color: 'rgba(0,0,0,0.7)',
-    fontFamily: 'SFPRO-Bold',
-    letterSpacing: 1.2,
-    transform: [{ scaleY: 1.1 }]
+    fontFamily: "Poppins-Regular",
+    letterSpacing: 0.4,
   },
   card: {
     backgroundColor: "#EFF5E9",
@@ -381,18 +505,18 @@ const styles = StyleSheet.create({
     right: 10,
     // backgroundColor: 'rgba(255,255,255,0.8)',
     backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: 50,
-    padding: 2,
+    borderRadius: 16,
+    padding: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   textButton: {
     position: 'absolute',
     top: 12,
-    right: 69,
+    right: 58,
     backgroundColor: 'rgba(255,255,255,0.8)', // Orange color for the button
-    borderRadius: 50,
-    padding: 2,
+    borderRadius: 16,
+    padding: 1,
     paddingHorizontal: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -402,16 +526,122 @@ const styles = StyleSheet.create({
     top: 10,
     left: 10,
     backgroundColor: 'rgba(255,255,255,0.8)', // Orange color for the button
-    borderRadius: 50,
-    padding: 2,
+    borderRadius: 16,
+    padding: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   gradient: {
     flex: 1,
-    width: 172.5,
-    borderRadius: 20, // Ensure the gradient matches the border radius of the image
-
+    width: CARD_WIDTH,
+    borderRadius: 16,
+  },
+  nameGrid: {
+    fontSize: 14,
+    marginTop: 6,
+  },
+  descriptionGrid: {
+    fontSize: 10,
+    marginVertical: 2,
+  },
+  priceGrid: {
+    fontSize: 16,
+    fontFamily: "Poppins-SemiBold",
+  },
+  listContainer: {
+    borderRadius: 16,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "rgba(17, 24, 39, 0.06)",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#0f172a",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  listRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: 10,
+  },
+  listMainPress: {
+    flex: 1,
+    flexDirection: "row",
+    gap: 12,
+    minWidth: 0,
+  },
+  listImage: {
+    width: 96,
+    height: 96,
+    borderRadius: 14,
+    backgroundColor: "#e8ebe6",
+  },
+  listImagePlaceholder: {
+    backgroundColor: "#e5e7eb",
+  },
+  listBody: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: "space-between",
+  },
+  listTitle: {
+    fontSize: 16,
+    fontFamily: "Poppins-Bold",
+    color: "#111827",
+    letterSpacing: 0.2,
+  },
+  listDesc: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "rgba(17,24,39,0.55)",
+    fontFamily: "Poppins-Regular",
+    lineHeight: 16,
+  },
+  listPills: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 8,
+  },
+  listPill: {
+    backgroundColor: "rgba(66, 89, 40, 0.12)",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  listPillText: {
+    fontSize: 10,
+    fontFamily: "Poppins-SemiBold",
+    color: "#2d3d22",
+  },
+  listPriceRow: {
+    marginTop: 10,
+  },
+  listPrice: {
+    fontSize: 17,
+    fontFamily: "Poppins-SemiBold",
+    color: "#111827",
+  },
+  listAddBtn: {
+    alignSelf: "center",
+    backgroundColor: "#2f3f1f",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+  },
+  listAddText: {
+    color: "#fff",
+    fontSize: 13,
+    fontFamily: "Poppins-SemiBold",
   },
 });
 {/* <View style={{paddingTop: 9}}>
@@ -433,7 +663,7 @@ const styles = StyleSheet.create({
       }}
     >
       <Pressable onPress={pressHandler} style={({ pressed }) => pressed && { opacity: 0.5 }}>
-        {product.images && isValidURL(product.images[0]) && <Image
+        {Array.isArray(product?.images) && product.images[0] && isValidURL(product.images[0]) && <Image
           style={styles.image}
           source={{uri:product.images[0]}}
         />}
