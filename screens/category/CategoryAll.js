@@ -458,6 +458,7 @@ export default function CategoryAll() {
                       style={[styles.deptSearchTextInput, { color: colors.text }]}
                       returnKeyType="search"
                       cursorColor={colors.primary}
+                      underlineColorAndroid="transparent"
                     />
                     {!value.trim() && !browseSearchFocused ? (
                       <Animated.View
@@ -534,12 +535,13 @@ export default function CategoryAll() {
                 contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPad }]}
               >
                 {quickPicksDisplay.length > 0 ? (
-                  <BrowseSectionAnimated index={0} style={styles.section}>
-                    <Text style={styles.sectionTitle}>Popular right now</Text>
+                  <BrowseSectionAnimated index={0} style={styles.sectionNoHPad}>
+                    <Text style={[styles.sectionTitle, { paddingHorizontal: H_PAD }]}>Popular right now</Text>
                     <ScrollView
                       horizontal
                       showsHorizontalScrollIndicator={false}
                       contentContainerStyle={styles.quickRow}
+                      style={{ overflow: "visible" }}
                     >
                       {quickPicksDisplay.map(({ category, department }, qIdx) => (
                         <BrowseItemAnimated
@@ -570,8 +572,8 @@ export default function CategoryAll() {
                   </BrowseSectionAnimated>
                 ) : null}
 
-                <BrowseSectionAnimated index={1} style={styles.section}>
-                  <Text style={styles.sectionTitle}>All categories</Text>
+                <BrowseSectionAnimated index={1} style={styles.sectionNoHPad}>
+                  <Text style={[styles.sectionTitle, { paddingHorizontal: H_PAD }]}>All categories</Text>
                   {departmentBrowse.map((row, deptIdx) => {
                     const d = row.department;
                     const key = d.slug || d.id || d.name;
@@ -627,9 +629,9 @@ export default function CategoryAll() {
                   })}
                 </BrowseSectionAnimated>
 
-                <BrowseSectionAnimated index={2} style={styles.section}>
-                  <Text style={styles.sectionTitle}>Trending searches</Text>
-                  <View style={styles.trendingWrap}>
+                <BrowseSectionAnimated index={2} style={styles.sectionNoHPad}>
+                  <Text style={[styles.sectionTitle, { paddingHorizontal: H_PAD }]}>Trending searches</Text>
+                  <View style={[styles.trendingWrap, { paddingHorizontal: H_PAD }]}>
                     {TRENDING_TERMS.map((term, tIdx) => (
                       <BrowseItemAnimated key={term} index={tIdx}>
                         <Pressable
@@ -675,7 +677,7 @@ const styles = StyleSheet.create({
   },
   root: {
     flex: 1,
-    paddingHorizontal: H_PAD,
+    paddingHorizontal: 0,
   },
   browseScroll: {
     flex: 1,
@@ -723,6 +725,7 @@ const styles = StyleSheet.create({
   },
   headerBlock: {
     marginBottom: 20,
+    paddingHorizontal: H_PAD,
   },
   headerTitle: {
     fontFamily: "Poppins-Bold",
@@ -740,9 +743,11 @@ const styles = StyleSheet.create({
   browseSearchWrap: {
     width: "100%",
     marginBottom: 28,
+    paddingHorizontal: H_PAD,
   },
   browseSearchWrapActive: {
     marginBottom: 12,
+    paddingHorizontal: H_PAD,
   },
   deptSearchBackdrop: {
     width: "100%",
@@ -760,6 +765,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.07,
     shadowRadius: 14,
     elevation: 4,
+    ...Platform.select({
+      android: { backgroundColor: "rgba(255, 255, 255, 0.92)" },
+    }),
   },
   deptSearchBlur: {
     ...StyleSheet.absoluteFillObject,
@@ -839,9 +847,10 @@ const styles = StyleSheet.create({
     margin: 0,
     paddingHorizontal: 0,
     minHeight: 48,
+    includeFontPadding: false,
     ...Platform.select({
       ios: { paddingVertical: 14 },
-      android: { paddingVertical: 0, textAlignVertical: "center" },
+      android: { paddingVertical: 0, textAlignVertical: "center", height: 48 },
     }),
   },
   deptCartSegment: {
@@ -882,7 +891,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
     paddingVertical: 10,
-    paddingHorizontal: 4,
+    paddingHorizontal: H_PAD,
     borderRadius: 12,
   },
   deptGroupHeaderPressed: {
@@ -902,6 +911,9 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 28,
   },
+  sectionNoHPad: {
+    marginBottom: 28,
+  },
   sectionTitle: {
     fontFamily: "Poppins-SemiBold",
     fontSize: 17,
@@ -910,12 +922,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   itemCategoryFlush: {
-    paddingHorizontal: 0,
+    paddingHorizontal: H_PAD,
   },
   quickRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingRight: 8,
+    paddingLeft: H_PAD,
+    paddingRight: H_PAD,
     gap: 10,
   },
   quickItemWrap: {
@@ -947,6 +960,7 @@ const styles = StyleSheet.create({
   },
   searchActive: {
     flex: 1,
+    paddingHorizontal: H_PAD,
   },
   emptySearch: {
     paddingVertical: 32,

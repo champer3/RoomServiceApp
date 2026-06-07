@@ -1421,7 +1421,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.14,
     shadowRadius: 22,
-    elevation: 14,
+    ...Platform.select({
+      ios: { elevation: 14 },
+      android: { elevation: 3, backgroundColor: "rgba(255, 255, 255, 0.95)" },
+    }),
   },
   deptBackHighlight: {
     position: "absolute",
@@ -1453,6 +1456,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.07,
     shadowRadius: 14,
     elevation: 4,
+    ...Platform.select({
+      android: { backgroundColor: "rgba(255, 255, 255, 0.92)" },
+    }),
   },
   deptSearchBlur: {
     ...StyleSheet.absoluteFillObject,

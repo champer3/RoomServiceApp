@@ -7,8 +7,15 @@ export const SERVER_URL = serverUrl;
 export const STRIPE_PUBLISHABLE_KEY = extra.stripePublishableKey || '';
 export const GOOGLE_MAPS_API_KEY = extra.googleMapsApiKey || '';
 
-// Google OAuth (expo-auth-session). Use Web client ID for Android OAuth flow when set.
-const defaultIosClientId = '1036326714736-ccfuoqkih54f50u5trqnffods76djkja.apps.googleusercontent.com';
-export const GOOGLE_IOS_CLIENT_ID = extra.googleIosClientId || defaultIosClientId;
-export const GOOGLE_ANDROID_CLIENT_ID = extra.googleAndroidClientId || '';
+export const GOOGLE_IOS_CLIENT_ID = extra.googleIosClientId || '';
 export const GOOGLE_WEB_CLIENT_ID = extra.googleWebClientId || '';
+
+export const FIREBASE_CONFIG = {
+  apiKey: extra.firebaseApiKey || '',
+  authDomain: extra.firebaseAuthDomain || '',
+  projectId: extra.firebaseProjectId || '',
+  storageBucket: extra.firebaseStorageBucket || '',
+  messagingSenderId: extra.firebaseMessagingSenderId || '',
+  appId: extra.firebaseAppId || '',
+  measurementId: extra.firebaseMeasurementId || '',
+};

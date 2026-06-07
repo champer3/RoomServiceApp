@@ -168,7 +168,10 @@ export default function AddAddressScreen() {
         <Animated.View style={[styles.mapCard, { height: mapHeight }]}>
           {position ? (
             <MapView ref={mapRef} style={StyleSheet.absoluteFillObject} initialRegion={{ ...position, latitudeDelta: 0.005, longitudeDelta: 0.005 }} onPress={(e) => { selectLocationHandler(e); Keyboard.dismiss(); }} customMapStyle={MAP_STYLE}>
-              {show && <Marker coordinate={position} />}
+              {show && <Marker coordinate={position}>
+                <View style={styles.customPin}><Ionicons name="location" size={20} color="#fff" /></View>
+                <View style={styles.pinTail} />
+              </Marker>}
             </MapView>
           ) : (
             <View style={[StyleSheet.absoluteFillObject, { alignItems: "center", justifyContent: "center", backgroundColor: "#EDEAE5" }]}>
@@ -241,6 +244,8 @@ const styles = StyleSheet.create({
   backIconWrap: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center" },
 
   mapCard: { width: "100%", borderRadius: 16, overflow: "hidden", marginBottom: 8, backgroundColor: "#EDEAE5" },
+  customPin: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#BC6C25", alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "#fff", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 5 },
+  pinTail: { width: 3, height: 8, backgroundColor: "#BC6C25", alignSelf: "center", borderBottomLeftRadius: 2, borderBottomRightRadius: 2 },
   myLocBtn: { position: "absolute", bottom: 10, right: 10, width: 40, height: 40, borderRadius: 20, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 4 },
   expandBtn: { position: "absolute", bottom: 10, left: 10, width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.92)", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
 

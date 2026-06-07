@@ -731,6 +731,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 14,
     elevation: 5,
+    ...Platform.select({
+      android: { backgroundColor: "rgba(255, 255, 255, 0.92)" },
+    }),
   },
   glassWash: {
     ...StyleSheet.absoluteFillObject,

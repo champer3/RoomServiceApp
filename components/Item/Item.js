@@ -1,5 +1,5 @@
 import { Image, Pressable, Animated } from "react-native";
-import { StyleSheet, View, Dimensions } from "react-native";
+import { StyleSheet, View, Dimensions, Platform } from "react-native";
 import Text from '../Text';
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
@@ -125,7 +125,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 4,
+    ...Platform.select({
+      ios: { elevation: 4 },
+      android: { elevation: 2 },
+    }),
   },
   pillPressed: {
     opacity: 0.9,
@@ -143,7 +146,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 3,
-    elevation: 2,
+    elevation: 0,
   },
   image: {
     width: IMAGE_SIZE,

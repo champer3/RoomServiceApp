@@ -56,7 +56,7 @@ function CheckoutScreen() {
   const cartItems = useSelector((state) => state.cartItems.ids);
   const totalCartCount = useSelector(selectTotalCartCount);
   const data = useSelector((state) => state.profileData.profile);
-  const address = [...data.address];
+  const address = Array.isArray(data?.address) ? [...data.address] : [];
 
   const [visible, setVisible] = useState(false);
   const [showPaymentError, setShowPaymentError] = useState(false);
@@ -389,7 +389,12 @@ function CheckoutScreen() {
                       rotateEnabled={false}
                       customMapStyle={MAP_STYLE}
                     >
-                      <Marker coordinate={addressCoords} />
+                      <Marker coordinate={addressCoords}>
+                        <View style={styles.customPin}>
+                          <Ionicons name="location" size={20} color="#fff" />
+                        </View>
+                        <View style={styles.pinTail} />
+                      </Marker>
                     </MapView>
                   ) : (
                     <View style={[styles.map, { alignItems: "center", justifyContent: "center", backgroundColor: "#EDEAE5" }]}>
@@ -654,6 +659,8 @@ const styles = StyleSheet.create({
   addressCard: { borderRadius: 16, overflow: "hidden", backgroundColor: "#fff", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
   mapWrap: { height: MAP_HEIGHT, overflow: "hidden" },
   map: { ...StyleSheet.absoluteFillObject },
+  customPin: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#BC6C25", alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "#fff", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 5 },
+  pinTail: { width: 3, height: 8, backgroundColor: "#BC6C25", alignSelf: "center", borderBottomLeftRadius: 2, borderBottomRightRadius: 2 },
   addressRow: { flexDirection: "row", alignItems: "center", padding: 14 },
   addressName: { fontFamily: "Poppins-SemiBold", fontSize: 14, color: "#111827" },
   addressDetail: { fontFamily: "Poppins-Regular", fontSize: 13, color: "#6B7280", marginTop: 1 },

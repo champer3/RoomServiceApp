@@ -22,7 +22,13 @@ import { updateProfile } from "../Data/profile";
 import React, { useEffect, useState } from "react";
 import Text from "../components/Text";
 import axios from "axios";
-import { SERVER_URL, GOOGLE_IOS_CLIENT_ID, GOOGLE_ANDROID_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from "../config";
+import { SERVER_URL, GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from "../config";
+import {
+  nativeGoogleSignIn,
+  isNativeGoogleAvailable,
+  isGoogleSignInBlocked,
+  getGoogleSignInBlockedMessage,
+} from "../utils/googleAuth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useToast } from "../context/ToastContext";
 
@@ -33,10 +39,12 @@ function NumberLogin() {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const { showToast } = useToast();
-  const [request, response, promptAsync] = Google.useAuthRequest({
+  // expo-auth-session hook (used on iOS; on Android we use native sign-in instead)
+  const [iosRequest, iosResponse, iosPromptAsync] = Google.useAuthRequest({
     iosClientId: GOOGLE_IOS_CLIENT_ID,
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID || undefined,
+    androidClientId: GOOGLE_WEB_CLIENT_ID || GOOGLE_IOS_CLIENT_ID,
     webClientId: GOOGLE_WEB_CLIENT_ID || undefined,
+    selectAccount: true,
   });
 
   const saveTokenToAsyncStorage = async (authToken) => {
@@ -84,83 +92,105 @@ function NumberLogin() {
     return userEmail.data.data.user.length;
   }
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-      const token =
-        authentication?.accessToken ?? authentication?.refreshToken;
-
-      (async () => {
-        setIsLoading(true);
-        try {
-          const user = await getUsersProfile(token);
-          if (!user?.email) {
-            setIsLoading(false);
-            showToast({ type: "error", title: "Google sign-in failed", message: "Could not get your email from Google." });
-            return;
-          }
-          const postData = { email: user.email, googleID: user.id };
-          const emailCheckResult = await checkEmail(user.email);
-          if (emailCheckResult >= 1) {
-            let storedToken = { address: [], orders: [] };
-            try {
-              const userResponse = await emailLogin(postData);
-              if (
-                userResponse &&
-                userResponse.firstName &&
-                userResponse.email
-              ) {
-                try {
-                  const address = storedToken?.address || "";
-                  await AsyncStorage.setItem(
-                    "profile",
-                    JSON.stringify({
-                      firstName: userResponse.firstName,
-                      lastName: userResponse.lastName,
-                      phoneNumber: userResponse.phoneNumber,
-                      email: userResponse.email,
-                      password: userResponse.password,
-                      address: address,
-                    })
-                  );
-                } catch (error) {
-                  console.error("Error saving profile:", error);
-                }
-                dispatch(
-                  updateProfile({
-                    id: {
-                      firstName: userResponse.firstName,
-                      lastName: userResponse.lastName,
-                      phoneNumber: userResponse.phoneNumber,
-                      email: userResponse.email,
-                      password: userResponse.password,
-                      address: storedToken?.address || "",
-                    },
-                  })
-                );
-                navigation.replace("Loader");
-              } else {
-                setIsLoading(false);
-                showToast({ type: "error", title: "Invalid input", message: "Check the email or password." });
-              }
-            } catch (error) {
-              console.error("Error during email login:", error);
-              setIsLoading(false);
-              showToast({ type: "error", title: "Login failed", message: "An unexpected error occurred." });
-            }
-          } else {
-            showToast({
-              type: "error",
-              title: "No account found",
-              message: "Please sign up first to use Google sign in.",
-            });
-          }
-        } finally {
-          setIsLoading(false);
+  const completeGoogleLogin = async (googleEmail, googleId) => {
+    setIsLoading(true);
+    try {
+      const postData = { email: googleEmail, googleID: googleId };
+      const emailCheckResult = await checkEmail(googleEmail);
+      if (emailCheckResult >= 1) {
+        const userResponse = await emailLogin(postData);
+        if (userResponse?.firstName && userResponse?.email) {
+          await AsyncStorage.setItem(
+            "profile",
+            JSON.stringify({
+              firstName: userResponse.firstName,
+              lastName: userResponse.lastName,
+              phoneNumber: userResponse.phoneNumber,
+              email: userResponse.email,
+              password: userResponse.password,
+              address: userResponse.address || [],
+            })
+          );
+          dispatch(
+            updateProfile({
+              id: {
+                firstName: userResponse.firstName,
+                lastName: userResponse.lastName,
+                phoneNumber: userResponse.phoneNumber,
+                email: userResponse.email,
+                password: userResponse.password,
+                address: userResponse.address || [],
+              },
+            })
+          );
+          navigation.replace("Loader");
+        } else {
+          showToast({ type: "error", title: "Invalid input", message: "Check the email or password." });
         }
-      })();
+      } else {
+        showToast({
+          type: "error",
+          title: "No account found",
+          message: "Please sign up first to use Google sign in.",
+        });
+      }
+    } catch (error) {
+      console.error("Error during Google login:", error);
+      showToast({ type: "error", title: "Login failed", message: "An unexpected error occurred." });
+    } finally {
+      setIsLoading(false);
     }
-  }, [response]);
+  };
+
+  // Android: native Google Sign-In
+  const handleAndroidGoogleSignIn = async () => {
+    try {
+      const result = await nativeGoogleSignIn({ selectAccount: true });
+      if (result.cancelled) return;
+      await completeGoogleLogin(result.email, result.googleId);
+    } catch (err) {
+      showToast({ type: "error", title: "Google sign-in failed", message: err?.message || "Something went wrong." });
+    }
+  };
+
+  // iOS: handle expo-auth-session response
+  useEffect(() => {
+    if (Platform.OS !== "ios" || iosResponse?.type !== "success") return;
+    const token = iosResponse.authentication?.accessToken ?? iosResponse.authentication?.refreshToken;
+
+    (async () => {
+      setIsLoading(true);
+      try {
+        const user = await getUsersProfile(token);
+        if (!user?.email) {
+          setIsLoading(false);
+          showToast({ type: "error", title: "Google sign-in failed", message: "Could not get your email from Google." });
+          return;
+        }
+        await completeGoogleLogin(user.email, user.id);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [iosResponse]);
+
+  const googleReady = isNativeGoogleAvailable() || !!iosRequest;
+  const handleGooglePress = () => {
+    if (isLoading) return;
+    if (isGoogleSignInBlocked()) {
+      showToast({
+        type: "error",
+        title: "Use development build",
+        message: getGoogleSignInBlockedMessage(),
+      });
+      return;
+    }
+    if (isNativeGoogleAvailable()) {
+      handleAndroidGoogleSignIn();
+    } else if (iosRequest) {
+      iosPromptAsync();
+    }
+  };
 
   function handleScreenPress() {
     Keyboard.dismiss();
@@ -309,9 +339,9 @@ function NumberLogin() {
 
             {/* Google — white pill, gray border */}
             <Pressable
-              style={[styles.googleButton, (!request || isLoading) && { opacity: 0.7 }]}
-              onPress={() => request && !isLoading && promptAsync()}
-              disabled={!request || isLoading}
+              style={[styles.googleButton, (!googleReady || isLoading) && { opacity: 0.7 }]}
+              onPress={handleGooglePress}
+              disabled={!googleReady || isLoading}
             >
               <Image
                 source={require("../assets/google.png")}

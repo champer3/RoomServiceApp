@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: -30,
+    bottom: Platform.OS === "android" ? 0 : -30,
     alignItems: "center",
     justifyContent: "flex-end",
   },

@@ -34,8 +34,9 @@ import Input from "../components/Inputs/Input";
 const { width, height } = Dimensions.get("window");
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart, addOptions, selectTotalCartCount } from "../Data/cart";
+import { addToCart, removeFromCart, addOptions, selectTotalCartCount, setCart } from "../Data/cart";
 import { fetchOrders, updateOrder } from "../Data/order"
+import { setFavorites } from "../Data/favorites";
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from "../components/Modals/BottomSheet";
 import { LinearGradient } from "expo-linear-gradient";
@@ -198,6 +199,16 @@ function Home() {
         invalidateAppCache();
         fetchAppHome().then((d) => { if (d) setHomeAppData(d); });
       });
+      s.on('cartSync', (data) => {
+        if (data && Array.isArray(data.items)) {
+          dispatch(setCart(data.items));
+        }
+      });
+      s.on('favoritesSync', (data) => {
+        if (data && Array.isArray(data.ids)) {
+          dispatch(setFavorites(data.ids));
+        }
+      });
       return true;
     };
 
@@ -222,6 +233,8 @@ function Home() {
         activeSocket.off('productUpdate');
         activeSocket.off('categoryUpdate');
         activeSocket.off('departmentUpdate');
+        activeSocket.off('cartSync');
+        activeSocket.off('favoritesSync');
       }
     };
   }, [expoPushToken]);
@@ -1200,11 +1213,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.78)",
     shadowColor: "#111827",
-    // marginVertical: 2,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 14,
     elevation: 4,
+    ...Platform.select({
+      android: { backgroundColor: "rgba(255, 255, 255, 0.92)" },
+    }),
   },
   headerSearchBlur: {
     ...StyleSheet.absoluteFillObject,

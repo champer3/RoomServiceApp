@@ -1,11 +1,15 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SERVER_URL } from "../config";
+import { getSocket } from "../socketService";
 
 async function getAuthHeaders() {
   const token = await AsyncStorage.getItem("authToken");
   if (!token) return null;
-  return { Authorization: `Bearer ${token}` };
+  const headers = { Authorization: `Bearer ${token}` };
+  const socket = getSocket();
+  if (socket?.id) headers['x-socket-id'] = socket.id;
+  return headers;
 }
 
 // ─── Addresses ─────────────────────────────────────────────────────────────
