@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
-    "eas-cli": "^14.1.0",
+    "eas-cli": "^20.1.0",
     "react-native-paper": "^5.11.3"
   },
   "private": true
