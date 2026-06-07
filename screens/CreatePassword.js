@@ -177,7 +177,7 @@ function CreatePassword() {
   const saveTokenToAsyncStorage = async () => {
     try {
       await AsyncStorage.setItem("authToken", authToken);
-      console.log("Token saved successfully.");
+      await AsyncStorage.setItem("onboarded", "true");
     } catch (error) {
       console.error("Error saving token:", error);
     }

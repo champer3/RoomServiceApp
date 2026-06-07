@@ -13,9 +13,19 @@ export const profile = createSlice({
           },
     },
     reducers: {
-        updateProfile : (state, action) => {state.profile = {...action.payload.id}}
+        updateProfile : (state, action) => {state.profile = {...action.payload.id}},
+        resetProfile : (state) => {
+            state.profile = {
+                firstName: '',
+                lastName: '',
+                phoneNumber: '+',
+                email: '',
+                language: 'English (United States)',
+                address: []
+            };
+        }
     }
 })
 
-export const updateProfile = profile.actions.updateProfile
+export const { updateProfile, resetProfile } = profile.actions
 export default profile.reducer

@@ -9,9 +9,17 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  InteractionManager,
+  Keyboard,
+  LayoutAnimation,
+  UIManager,
 } from "react-native";
+
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import Text from "../../components/Text";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
@@ -20,11 +28,15 @@ import ProductCategory from "../../components/Category/ProductCategory";
 import ItemCategory from "../../components/Category/ItemCategory";
 import Item from "../../components/Item/Item";
 import { useSelector } from "react-redux";
+import { selectTotalCartCount } from "../../Data/cart";
 import { SERVER_URL } from "../../config";
-import { fetchAppHome, fetchAppDepartment } from "../../api/appPromotions";
+import { fetchAppHome, fetchAppDepartment, invalidateAppCache } from "../../api/appPromotions";
+import SkeletonBrowse from "../../components/SkeletonBrowse";
+import { getSocket } from "../../socketService";
+import { useTheme } from "../../theme/ThemeContext";
 
 const H_PAD = 18;
-const TAB_BAR_BOTTOM_PAD = 108;
+const TAB_BAR_BOTTOM_PAD = 140;
 /** Match DepartmentScreen search glass */
 const BROWSE_SEARCH_RADIUS = 15;
 const BROWSE_SEARCH_BAR_ROTATION_MS = 4600;
@@ -32,6 +44,60 @@ const BROWSE_SEARCH_BAR_ROTATION_MS = 4600;
 const PLACEHOLDER_IMAGE = require("../../assets/food.png");
 
 const TRENDING_TERMS = ["Chips", "Ice cream", "Milk", "Water", "Coffee", "Cookies"];
+
+const BrowseSectionAnimated = React.memo(({ index, children, style }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 500,
+      delay: index * 150,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          opacity: anim,
+          transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+});
+
+const BrowseItemAnimated = React.memo(({ index, children, style }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(anim, {
+      toValue: 1,
+      delay: 100 + index * 60,
+      friction: 7,
+      tension: 80,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          opacity: anim,
+          transform: [
+            { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.88, 1] }) },
+          ],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+});
 
 /** @param {string | undefined | null} url */
 function mediaUri(url) {
@@ -96,9 +162,27 @@ function searchTitles(items, searchPhrase) {
 export default function CategoryAll() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
   const cartItems = useSelector((state) => state.cartItems.ids);
   const productItems = useSelector((state) => state.productItems.ids);
   const [value, setValue] = useState("");
+  const searchInputRef = useRef(null);
+  const wasSearchingRef = useRef(false);
+
+  const setSearchValue = useCallback((v) => {
+    const willSearch = v.length > 0;
+    const wasSearching = wasSearchingRef.current;
+    if (willSearch !== wasSearching) {
+      LayoutAnimation.configureNext(
+        LayoutAnimation.create(250, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity)
+      );
+    }
+    wasSearchingRef.current = willSearch;
+    if (!willSearch && wasSearching) {
+      Keyboard.dismiss();
+    }
+    setValue(v);
+  }, []);
 
   const [browseStatus, setBrowseStatus] = useState("loading");
   const [browseError, setBrowseError] = useState(null);
@@ -111,66 +195,99 @@ export default function CategoryAll() {
     setBrowseStatus("loading");
     setBrowseError(null);
 
-    fetchAppHome()
-      .then(async (home) => {
-        if (cancelled) return;
-        const depts = Array.isArray(home?.departments) ? home.departments : [];
-        const rows = await Promise.all(
-          depts.map(async (d) => {
-            const slug = d?.slug ? String(d.slug).trim() : "";
-            if (!slug) {
-              return {
-                department: {
-                  id: d?.id,
-                  name: d?.name || "Department",
-                  slug: "",
-                  iconUrl: d?.iconUrl,
-                },
-                categories: [],
-              };
-            }
-            try {
-              const data = await fetchAppDepartment(slug);
-              if (cancelled) return null;
-              return {
-                department: {
-                  id: d?.id,
-                  name: data?.department?.name || d?.name || "Department",
-                  slug: data?.department?.slug || slug,
-                  iconUrl: data?.department?.iconUrl ?? d?.iconUrl,
-                },
-                categories: Array.isArray(data?.categories) ? data.categories : [],
-              };
-            } catch {
-              if (cancelled) return null;
-              return {
-                department: {
-                  id: d?.id,
-                  name: d?.name || "Department",
-                  slug,
-                  iconUrl: d?.iconUrl,
-                },
-                categories: [],
-              };
-            }
-          })
-        );
-        if (cancelled) return;
-        setDepartmentBrowse(rows.filter(Boolean));
-        setBrowseStatus("ready");
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        setBrowseError(e?.message || "Could not load categories");
-        setBrowseStatus("error");
-      });
+    const handle = InteractionManager.runAfterInteractions(() => {
+      fetchAppHome()
+        .then(async (home) => {
+          if (cancelled) return;
+          const depts = Array.isArray(home?.departments) ? home.departments : [];
+          const rows = await Promise.all(
+            depts.map(async (d) => {
+              const slug = d?.slug ? String(d.slug).trim() : "";
+              if (!slug) {
+                return {
+                  department: {
+                    id: d?.id,
+                    name: d?.name || "Department",
+                    slug: "",
+                    iconUrl: d?.iconUrl,
+                  },
+                  categories: [],
+                };
+              }
+              try {
+                const data = await fetchAppDepartment(slug);
+                if (cancelled) return null;
+                return {
+                  department: {
+                    id: d?.id,
+                    name: data?.department?.name || d?.name || "Department",
+                    slug: data?.department?.slug || slug,
+                    iconUrl: data?.department?.iconUrl ?? d?.iconUrl,
+                  },
+                  categories: Array.isArray(data?.categories) ? data.categories : [],
+                };
+              } catch {
+                if (cancelled) return null;
+                return {
+                  department: {
+                    id: d?.id,
+                    name: d?.name || "Department",
+                    slug,
+                    iconUrl: d?.iconUrl,
+                  },
+                  categories: [],
+                };
+              }
+            })
+          );
+          if (cancelled) return;
+          setDepartmentBrowse(rows.filter(Boolean));
+          setBrowseStatus("ready");
+        })
+        .catch((e) => {
+          if (cancelled) return;
+          setBrowseError(e?.message || "Could not load categories");
+          setBrowseStatus("error");
+        });
+    });
 
     return () => {
       cancelled = true;
+      handle.cancel();
     };
   }, [browseLoadKey]);
 
-  const cartCount = cartItems?.length ?? 0;
+  useEffect(() => {
+    const s = getSocket();
+    if (!s) return;
+    const handleRefresh = () => {
+      invalidateAppCache();
+      setBrowseLoadKey((k) => k + 1);
+    };
+    s.on('categoryUpdate', handleRefresh);
+    s.on('departmentUpdate', handleRefresh);
+    return () => {
+      s.off('categoryUpdate', handleRefresh);
+      s.off('departmentUpdate', handleRefresh);
+    };
+  }, []);
+
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  const [hasRevealed, setHasRevealed] = useState(false);
+
+  useEffect(() => {
+    if (browseStatus === 'ready' && !hasRevealed) {
+      setHasRevealed(true);
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [browseStatus, hasRevealed, contentOpacity]);
+
+  const cartCount = useSelector(selectTotalCartCount);
 
   const browseSearchPhrases = useMemo(() => {
     const names = departmentBrowse
@@ -295,93 +412,108 @@ export default function CategoryAll() {
     [navigation]
   );
 
-  return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.root}>
-        {!value.length ? (
-          <>
-            <View style={styles.headerBlock}>
-              <Text style={styles.headerTitle}>Browse</Text>
-              <Text style={styles.headerSubtitle}>Find what you need quickly</Text>
-            </View>
+  const isSearching = value.length > 0;
 
-            <View style={styles.browseSearchWrap}>
-              <View style={styles.deptSearchBackdrop}>
-                <View style={styles.deptSearchGlassOuter}>
-                  <BlurView
-                    intensity={Platform.OS === "ios" ? 40 : 32}
-                    tint="light"
-                    style={styles.deptSearchBlur}
-                  />
-                  <View style={styles.deptSearchGlassWash} pointerEvents="none" />
-                  <LinearGradient
-                    pointerEvents="none"
-                    colors={["rgba(255,255,255,0.5)", "rgba(255,255,255,0)"]}
-                    style={styles.deptSearchInnerShine}
-                  />
-                  <LinearGradient
-                    pointerEvents="none"
-                    colors={["transparent", "rgba(17, 24, 39, 0.04)"]}
-                    style={styles.deptSearchInnerFloor}
-                  />
-                  <View style={styles.deptSearchRow}>
-                    <View style={styles.deptSearchMainHit}>
-                      <Feather name="search" size={18} color="#111827" style={styles.deptSearchIcon} />
-                      <View style={styles.deptGroceryInputWrap}>
-                        <TextInput
-                          value={value}
-                          onChangeText={setValue}
-                          onFocus={() => setBrowseSearchFocused(true)}
-                          onBlur={() => setBrowseSearchFocused(false)}
-                          placeholder={value.length > 0 || browseSearchFocused ? undefined : ""}
-                          placeholderTextColor="rgba(107,114,128,0.82)"
-                          style={styles.deptSearchTextInput}
-                          returnKeyType="search"
-                          cursorColor="#425928"
-                        />
-                        {!value.trim() && !browseSearchFocused ? (
-                          <Animated.View
-                            pointerEvents="none"
-                            style={[
-                              styles.deptSearchPlaceholderOverlay,
-                              {
-                                opacity: browseSearchTextOpacity,
-                                transform: [{ translateY: browseSearchTextTranslateY }],
-                              },
-                            ]}
-                          >
-                            <Text style={styles.deptSearchPlaceholderText} numberOfLines={1}>
-                              {activeBrowseSearchLead}
-                            </Text>
-                          </Animated.View>
-                        ) : null}
-                      </View>
-                    </View>
-                    <Pressable
-                      style={styles.deptCartSegment}
-                      onPress={() => navigation.navigate("Cart")}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Cart, ${cartCount} items`}
-                    >
-                      <Feather name="shopping-cart" size={18} color="#111827" />
-                      {cartCount > 0 ? (
-                        <View style={styles.deptCartBadge}>
-                          <Text style={styles.deptCartBadgeText}>
-                            {cartCount > 99 ? "99+" : String(cartCount)}
-                          </Text>
-                        </View>
-                      ) : null}
-                    </Pressable>
+  return (
+    <View style={[styles.safe, { backgroundColor: colors.background }]}>
+      <View style={[styles.root, { paddingTop: insets.top }]}>
+        {!isSearching && (
+          <View style={styles.headerBlock}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Browse</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Find what you need quickly</Text>
+          </View>
+        )}
+
+        <View style={[styles.browseSearchWrap, isSearching && styles.browseSearchWrapActive]}>
+          <View style={styles.deptSearchBackdrop}>
+            <View style={styles.deptSearchGlassOuter}>
+              <BlurView
+                intensity={Platform.OS === "ios" ? 40 : 32}
+                tint="light"
+                style={styles.deptSearchBlur}
+              />
+              <View style={styles.deptSearchGlassWash} pointerEvents="none" />
+              <LinearGradient
+                pointerEvents="none"
+                colors={["rgba(255,255,255,0.5)", "rgba(255,255,255,0)"]}
+                style={styles.deptSearchInnerShine}
+              />
+              <LinearGradient
+                pointerEvents="none"
+                colors={["transparent", "rgba(17, 24, 39, 0.04)"]}
+                style={styles.deptSearchInnerFloor}
+              />
+              <View style={styles.deptSearchRow}>
+                <View style={styles.deptSearchMainHit}>
+                  <Feather name="search" size={18} color={colors.text} style={styles.deptSearchIcon} />
+                  <View style={styles.deptGroceryInputWrap}>
+                    <TextInput
+                      ref={searchInputRef}
+                      value={value}
+                      onChangeText={setSearchValue}
+                      onFocus={() => setBrowseSearchFocused(true)}
+                      onBlur={() => setBrowseSearchFocused(false)}
+                      placeholder={isSearching || browseSearchFocused ? "Search products" : ""}
+                      placeholderTextColor={colors.textMuted}
+                      style={[styles.deptSearchTextInput, { color: colors.text }]}
+                      returnKeyType="search"
+                      cursorColor={colors.primary}
+                    />
+                    {!value.trim() && !browseSearchFocused ? (
+                      <Animated.View
+                        pointerEvents="none"
+                        style={[
+                          styles.deptSearchPlaceholderOverlay,
+                          {
+                            opacity: browseSearchTextOpacity,
+                            transform: [{ translateY: browseSearchTextTranslateY }],
+                          },
+                        ]}
+                      >
+                        <Text style={styles.deptSearchPlaceholderText} numberOfLines={1}>
+                          {activeBrowseSearchLead}
+                        </Text>
+                      </Animated.View>
+                    ) : null}
                   </View>
                 </View>
+                {isSearching ? (
+                  <Pressable
+                    onPress={() => setSearchValue("")}
+                    style={styles.deptCartSegment}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear search"
+                  >
+                    <Text style={styles.searchClearSegmentText}>Clear</Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    style={styles.deptCartSegment}
+                    onPress={() => navigation.navigate("Cart")}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Cart, ${cartCount} items`}
+                  >
+                    <Feather name="shopping-cart" size={18} color="#111827" />
+                    {cartCount > 0 ? (
+                      <View style={styles.deptCartBadge}>
+                        <Text style={styles.deptCartBadgeText}>
+                          {cartCount > 99 ? "99+" : String(cartCount)}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </Pressable>
+                )}
               </View>
             </View>
+          </View>
+        </View>
+
+        {!isSearching ? (
+          <>
 
             {browseStatus === "loading" ? (
-              <View style={styles.loadingInline}>
-                <ActivityIndicator size="large" color="#425928" />
-                <Text style={styles.loadingHint}>Loading departments and categories…</Text>
-              </View>
+              <SkeletonBrowse />
             ) : browseStatus === "error" ? (
               <View style={styles.loadingInline}>
                 <Text style={styles.errorTitle}>Something went wrong</Text>
@@ -394,6 +526,7 @@ export default function CategoryAll() {
                 </Pressable>
               </View>
             ) : (
+              <Animated.View style={{ flex: 1, opacity: contentOpacity }}>
               <ScrollView
                 style={styles.browseScroll}
                 showsVerticalScrollIndicator={false}
@@ -401,16 +534,17 @@ export default function CategoryAll() {
                 contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPad }]}
               >
                 {quickPicksDisplay.length > 0 ? (
-                  <View style={styles.section}>
+                  <BrowseSectionAnimated index={0} style={styles.section}>
                     <Text style={styles.sectionTitle}>Popular right now</Text>
                     <ScrollView
                       horizontal
                       showsHorizontalScrollIndicator={false}
                       contentContainerStyle={styles.quickRow}
                     >
-                      {quickPicksDisplay.map(({ category, department }) => (
-                        <View
+                      {quickPicksDisplay.map(({ category, department }, qIdx) => (
+                        <BrowseItemAnimated
                           key={category.slug || category.id || category.name}
+                          index={qIdx}
                           style={styles.quickItemWrap}
                         >
                           <Item
@@ -430,19 +564,19 @@ export default function CategoryAll() {
                               )
                             }
                           />
-                        </View>
+                        </BrowseItemAnimated>
                       ))}
                     </ScrollView>
-                  </View>
+                  </BrowseSectionAnimated>
                 ) : null}
 
-                <View style={styles.section}>
+                <BrowseSectionAnimated index={1} style={styles.section}>
                   <Text style={styles.sectionTitle}>All categories</Text>
-                  {departmentBrowse.map((row) => {
+                  {departmentBrowse.map((row, deptIdx) => {
                     const d = row.department;
                     const key = d.slug || d.id || d.name;
                     return (
-                      <View key={key} style={styles.groupBlock}>
+                      <BrowseItemAnimated key={key} index={deptIdx} style={styles.groupBlock}>
                         <Pressable
                           onPress={() => {
                             if (d.slug) navigation.navigate("Department", { slug: d.slug });
@@ -488,95 +622,49 @@ export default function CategoryAll() {
                             }
                           />
                         ) : null}
-                      </View>
+                      </BrowseItemAnimated>
                     );
                   })}
-                </View>
+                </BrowseSectionAnimated>
 
-                <View style={styles.section}>
+                <BrowseSectionAnimated index={2} style={styles.section}>
                   <Text style={styles.sectionTitle}>Trending searches</Text>
                   <View style={styles.trendingWrap}>
-                    {TRENDING_TERMS.map((term) => (
-                      <Pressable
-                        key={term}
-                        onPress={() => setValue(term)}
-                        style={({ pressed }) => [styles.trendChip, pressed && styles.trendChipPressed]}
-                      >
-                        <Text style={styles.trendChipText}>{term}</Text>
-                      </Pressable>
+                    {TRENDING_TERMS.map((term, tIdx) => (
+                      <BrowseItemAnimated key={term} index={tIdx}>
+                        <Pressable
+                          onPress={() => setValue(term)}
+                          style={({ pressed }) => [styles.trendChip, pressed && styles.trendChipPressed]}
+                        >
+                          <Text style={styles.trendChipText}>{term}</Text>
+                        </Pressable>
+                      </BrowseItemAnimated>
                     ))}
                   </View>
-                </View>
+                </BrowseSectionAnimated>
               </ScrollView>
+              </Animated.View>
             )}
           </>
         ) : (
           <View style={styles.searchActive}>
-            <View style={[styles.browseSearchWrap, styles.browseSearchWrapActive]}>
-              <View style={styles.deptSearchBackdrop}>
-                <View style={styles.deptSearchGlassOuter}>
-                  <BlurView
-                    intensity={Platform.OS === "ios" ? 40 : 32}
-                    tint="light"
-                    style={styles.deptSearchBlur}
-                  />
-                  <View style={styles.deptSearchGlassWash} pointerEvents="none" />
-                  <LinearGradient
-                    pointerEvents="none"
-                    colors={["rgba(255,255,255,0.5)", "rgba(255,255,255,0)"]}
-                    style={styles.deptSearchInnerShine}
-                  />
-                  <LinearGradient
-                    pointerEvents="none"
-                    colors={["transparent", "rgba(17, 24, 39, 0.04)"]}
-                    style={styles.deptSearchInnerFloor}
-                  />
-                  <View style={styles.deptSearchRow}>
-                    <View style={styles.deptSearchMainHit}>
-                      <Feather name="search" size={18} color="#111827" style={styles.deptSearchIcon} />
-                      <View style={styles.deptGroceryInputWrap}>
-                        <TextInput
-                          value={value}
-                          onChangeText={setValue}
-                          placeholder="Search products"
-                          placeholderTextColor="rgba(107,114,128,0.82)"
-                          style={styles.deptSearchTextInput}
-                          returnKeyType="search"
-                          autoFocus
-                          cursorColor="#425928"
-                        />
-                      </View>
-                    </View>
-                    <Pressable
-                      onPress={() => setValue("")}
-                      style={styles.deptCartSegment}
-                      hitSlop={8}
-                      accessibilityRole="button"
-                      accessibilityLabel="Clear search"
-                    >
-                      <Text style={styles.searchClearSegmentText}>Clear</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              </View>
-            </View>
             {searchResults.length === 0 ? (
               <View style={styles.emptySearch}>
                 <Text style={styles.emptySearchTitle}>No matches</Text>
                 <Text style={styles.emptySearchHint}>
                   Try another word, pick a category below, or clear search.
                 </Text>
-                <Pressable onPress={() => setValue("")} style={styles.emptySearchBtn}>
+                <Pressable onPress={() => setSearchValue("")} style={styles.emptySearchBtn}>
                   <Text style={styles.emptySearchBtnText}>Back to browse</Text>
                 </Pressable>
               </View>
             ) : (
-              <ProductCategory items={searchResults} />
+              <ProductCategory items={searchResults} bottomPadding={bottomPad} />
             )}
           </View>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

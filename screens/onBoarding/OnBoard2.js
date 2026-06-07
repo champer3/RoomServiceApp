@@ -30,15 +30,13 @@ function OnBoard2() {
   async function skipHandler (){
     setIsLoading(true)
     try {
-      await AsyncStorage.setItem("essential", JSON.stringify({address: [], orders:  [],}));
-      console.log("Essential saved successfully.");
+      await AsyncStorage.setItem("onboarded", "true");
     } catch (error) {
-      console.error("Error saving token:", error);
+      console.error("Error saving onboarded flag:", error);
     }
     setTimeout(() => {
       navigation.replace('Authentication')
       setTimeout(()=>{setIsLoading(false)}, 200)
-      // Set loading status to false after some time (simulating app loading)
     }, 400)
   }
   return (

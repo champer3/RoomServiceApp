@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Placeholder from '../components/Placeholder';
+import Placeholder from './Placeholder';
 
 const { width } = Dimensions.get('window');
 const CARD_W = width / 2.25;
@@ -14,7 +14,7 @@ const ProductCardSkeleton = () => (
   </View>
 );
 
-const ProductSectionSkeleton = () => (
+const SectionSkeleton = () => (
   <View style={styles.section}>
     <Placeholder style={styles.sectionTitle} />
     <ScrollView
@@ -30,7 +30,7 @@ const ProductSectionSkeleton = () => (
   </View>
 );
 
-const FalseHomeScreen = () => {
+export default function SkeletonDepartment() {
   const insets = useSafeAreaInsets();
 
   return (
@@ -40,19 +40,11 @@ const FalseHomeScreen = () => {
         scrollEnabled={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Header: location pill + action icons */}
-        <View style={styles.headerTopRow}>
-          <Placeholder style={styles.locationPill} />
-          <View style={styles.headerIcons}>
-            <Placeholder style={styles.iconCircle} />
-            <Placeholder style={styles.iconCircle} />
-          </View>
-        </View>
-
-        {/* Greeting text lines */}
-        <View style={styles.greetingBlock}>
-          <Placeholder style={styles.greetingLine1} />
-          <Placeholder style={styles.greetingLine2} />
+        {/* Header: back button + title */}
+        <View style={styles.headerRow}>
+          <Placeholder style={styles.backButton} />
+          <Placeholder style={styles.titleBlock} />
+          <View style={styles.spacer} />
         </View>
 
         {/* Search bar */}
@@ -60,34 +52,34 @@ const FalseHomeScreen = () => {
           <Placeholder style={styles.searchBar} />
         </View>
 
-        {/* Department category circles */}
+        {/* Category tabs */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           scrollEnabled={false}
-          contentContainerStyle={styles.categoryRow}
+          contentContainerStyle={styles.tabsRow}
         >
           {[0, 1, 2, 3, 4].map((i) => (
-            <View key={i} style={styles.categoryItem}>
-              <Placeholder style={styles.categoryCircle} />
-              <Placeholder style={styles.categoryLabel} />
-            </View>
+            <Placeholder
+              key={i}
+              style={[styles.tab, { width: 60 + (i % 3) * 20 }]}
+            />
           ))}
         </ScrollView>
 
-        {/* Hero promo banner */}
+        {/* Hero banner */}
         <View style={styles.heroWrap}>
           <Placeholder style={styles.heroBanner} />
         </View>
 
         {/* Product sections */}
-        <ProductSectionSkeleton />
-        <ProductSectionSkeleton />
-        <ProductSectionSkeleton />
+        <SectionSkeleton />
+        <SectionSkeleton />
+        <SectionSkeleton />
       </ScrollView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   root: {
@@ -95,79 +87,53 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f6f2',
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 100,
   },
-  headerTopRow: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginTop: 5,
-    marginBottom: 8,
+    paddingHorizontal: 16,
+    marginBottom: 4,
   },
-  locationPill: {
-    height: 32,
+  backButton: {
+    width: 35,
+    height: 35,
+    borderRadius: 999,
+  },
+  titleBlock: {
+    height: 22,
     width: 120,
-    borderRadius: 16,
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  iconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-  },
-  greetingBlock: {
-    paddingHorizontal: 20,
-    marginBottom: 12,
-    gap: 8,
-  },
-  greetingLine1: {
-    height: 28,
-    width: width * 0.65,
     borderRadius: 6,
   },
-  greetingLine2: {
-    height: 16,
-    width: width * 0.55,
-    borderRadius: 4,
+  spacer: {
+    width: 35,
   },
   searchWrap: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    paddingHorizontal: 26,
+    paddingTop: 10,
+    paddingBottom: 12,
   },
   searchBar: {
     height: 48,
     width: '100%',
-    borderRadius: 999,
+    borderRadius: 15,
   },
-  categoryRow: {
-    paddingHorizontal: 20,
-    gap: 16,
+  tabsRow: {
+    paddingHorizontal: 22,
+    gap: 20,
     marginBottom: 20,
   },
-  categoryItem: {
-    alignItems: 'center',
-    gap: 6,
-  },
-  categoryCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  categoryLabel: {
-    width: 42,
-    height: 10,
-    borderRadius: 5,
+  tab: {
+    height: 16,
+    borderRadius: 4,
   },
   heroWrap: {
     paddingHorizontal: 20,
     marginBottom: 24,
   },
   heroBanner: {
-    height: 160,
+    height: 140,
     width: '100%',
     borderRadius: 16,
   },
@@ -176,7 +142,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     height: 18,
-    width: 140,
+    width: 130,
     borderRadius: 4,
     marginHorizontal: 20,
     marginBottom: 14,
@@ -205,5 +171,3 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 });
-
-export default FalseHomeScreen;

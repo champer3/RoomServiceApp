@@ -1,476 +1,264 @@
-import { StyleSheet,View, Modal, Animated , Dimensions, Platform,
-    TouchableWithoutFeedback,
-    Button,
-    Keyboard,
-    KeyboardAvoidingView,
-    Pressable,
-    FlatList,
-    ScrollView,
-    ActivityIndicator} from "react-native";
-  import MapView from "react-native-maps";
-  import * as Location from 'expo-location';
-  import Text from '../components/Text';
-  import { Marker } from "react-native-maps";
-  import { Polyline } from "react-native-maps";
-  import { Octicons } from '@expo/vector-icons';
-  import * as SplashScreen from 'expo-splash-screen';
-  import React, { useState, useEffect, useCallback, useRef } from 'react';
-  import {TouchableOpacity} from 'react-native';
-  import { GestureHandlerRootView } from 'react-native-gesture-handler';
-  import BottomSheet from '../components/Modals/BottomSheet';
-  import { getAddress, getPosition, searchAddress } from "../util/location";
-  import Input from "../components/Inputs/Input";
-  import PhoneIcon from "../components/PhoneIcon";
-  import FlexButton from "../components/Buttons/FlexButton";
-  import { Entypo } from '@expo/vector-icons';
-  import { useNavigation } from "@react-navigation/native";
-  import AsyncStorage from "@react-native-async-storage/async-storage";
-  
-import {useSelector, useDispatch} from 'react-redux'
+import {
+  StyleSheet, View, Dimensions, Platform, Keyboard, KeyboardAvoidingView,
+  Pressable, ScrollView, ActivityIndicator, TextInput, Animated,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import * as Location from "expo-location";
+import Text from "../components/Text";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
-  
-  
-  export default function AddAddressScreen() {
-      const [location, setLocation] = useState(null);
-      const orders = useSelector((state) => state.orders.ids)
-    const [errorMsg, setErrorMsg] = useState(null);
-    const dispatch = useDispatch();
-    const [results, setResults] = useState()
-  const data = useSelector((state) => state.profileData.profile)
-  const address = Array.isArray(data?.address) ? [...data.address] : []
-    const [position , setPosition] = useState(null)
-    const [info, setInfo] = useState('Locating.....')
-    const [show, setShow] = useState(false)
-    const navigation = useNavigation()
-    const [active, setActive] = useState(false)
-    const ref = useRef(null);
-    const mapRef = useRef(null);
-    const [form , setForm] = useState({
-      id : address.length,
-        name: '',
-        nameNo: '',
-        address: '',
-        number: '',
-      })
-    const [saveError, setSaveError] = useState(null)
-    const suggestionTimeoutRef = useRef(null)
-    ref?.current?.scrollTo(-765);
-    const onPress = useCallback(() => {
-      const isActive = ref?.current?.isActive();
-      // ref?.current?.scrollTo(0);
-      ref?.current?.scrollTo(-765);
-    }, []);
-    
-    function selectLocationHandler(event){
-      const lat = event.nativeEvent.coordinate.latitude
-      const lng = event.nativeEvent.coordinate.longitude
-      setPosition({latitude: lat, longitude: lng})
-      handleLocation(lat,lng)
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import { getAddress, getPosition, searchAddress } from "../util/location";
+import { MAP_STYLE } from "../utils/mapStyle";
+import { syncAddresses } from "../api/syncService";
 
-    }
-    useEffect(() => {
-      (async () => {
-        
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          setErrorMsg('Permission to access location was denied');
-          return;
-        }
-  
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
-        if (location) {
-          setPosition({latitude: location.coords.latitude,
-            longitude: location.coords.longitude ,})
-        }
-        
-          
-      })();
-    }, []);
+const { height: SH } = Dimensions.get("window");
+const MAP_MIN = 180;
+const MAP_MAX = Math.round(SH * 0.55);
 
-    function handleFormChange(field, value) {
-    if (field == 'number'){
-      const cleanedInput = value.replace(/\D/g, '');
+export default function AddAddressScreen() {
+  const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const data = useSelector((s) => s.profileData.profile);
+  const address = Array.isArray(data?.address) ? [...data.address] : [];
 
-    // Add brackets dynamically based on entered digits
-    let formattedNumber = '';
-    for (let i = 0; i < cleanedInput.length; i++) {
-      if (i === 0) {
-        formattedNumber += '(';
-      } else if (i === 3) {
-        formattedNumber += ') ';
-      } else if (i === 6) {
-        formattedNumber += '-';
-      }
-      formattedNumber += cleanedInput[i];
-    }
-    value = formattedNumber
-    }
-    else if (field == 'address'){
-      setSaveError(null)
-      if (suggestionTimeoutRef.current) clearTimeout(suggestionTimeoutRef.current)
-      if ((value || '').trim().length >= 2) {
-        suggestionTimeoutRef.current = setTimeout(() => {
-          showSuggestion(value)
-        }, 300)
-      } else {
-        setResults([])
-      }
-    }
+  const [position, setPosition] = useState(null);
+  const [show, setShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [active, setActive] = useState(false);
+  const [results, setResults] = useState([]);
+  const [saveError, setSaveError] = useState(null);
+  const [form, setForm] = useState({ id: address.length, name: "", nameNo: "", address: "", number: "" });
+  const mapRef = useRef(null);
+  const suggestionTimeout = useRef(null);
+  const [mapExpanded, setMapExpanded] = useState(false);
+  const mapHeight = useRef(new Animated.Value(MAP_MIN)).current;
 
-    setForm((prev) => ({...prev, [field]: value}));
+  function toggleMap() {
+    const next = !mapExpanded;
+    setMapExpanded(next);
+    Animated.spring(mapHeight, { toValue: next ? MAP_MAX : MAP_MIN, useNativeDriver: false, friction: 10, tension: 60 }).start();
   }
 
-  async function showSuggestion(value) {
-    const m = await searchAddress(value)
-    setResults(Array.isArray(m) ? m : [])
-  }
-  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+      const loc = await Location.getCurrentPositionAsync({});
+      if (loc) setPosition({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+    })();
+  }, []);
 
-  async function validateAddress() {
-    setSaveError(null)
-    const addr = (form.address || '').trim()
-    if (!addr) {
-      setSaveError('Please enter an address.')
-      return
+  function handleFormChange(field, value) {
+    if (field === "number") {
+      const clean = value.replace(/\D/g, "");
+      let fmt = "";
+      for (let i = 0; i < clean.length; i++) {
+        if (i === 0) fmt += "(";
+        else if (i === 3) fmt += ") ";
+        else if (i === 6) fmt += "-";
+        fmt += clean[i];
+      }
+      value = fmt;
+    } else if (field === "address") {
+      setSaveError(null);
+      if (suggestionTimeout.current) clearTimeout(suggestionTimeout.current);
+      if ((value || "").trim().length >= 2) {
+        suggestionTimeout.current = setTimeout(async () => {
+          const r = await searchAddress(value);
+          setResults(Array.isArray(r) ? r : []);
+        }, 300);
+      } else setResults([]);
     }
-    setIsLoading(true)
-    const locationT = await getPosition(form.address)
-    if (!locationT?.lat) {
-      setIsLoading(false)
-      setSaveError('Address not found. Please check the address or try selecting a suggestion.')
-      return
+    setForm((p) => ({ ...p, [field]: value }));
+  }
+
+  async function selectSuggestion(addr) {
+    setForm((p) => ({ ...p, address: addr }));
+    setResults([]);
+    Keyboard.dismiss();
+    const pos = await getPosition(addr);
+    if (pos?.lat) {
+      setPosition({ latitude: pos.lat, longitude: pos.lng });
+      setShow(true);
+      setTimeout(() => mapRef.current?.animateToRegion({ latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.005, longitudeDelta: 0.005 }, 350), 100);
     }
-    const m = await getAddress(locationT.lat, locationT.lng) || form.address
-    let newData
+  }
+
+  function selectLocationHandler(e) {
+    const { latitude, longitude } = e.nativeEvent.coordinate;
+    setPosition({ latitude, longitude });
+    setShow(true);
+    (async () => {
+      const addr = await getAddress(latitude, longitude);
+      if (addr) setForm((p) => ({ ...p, address: addr }));
+    })();
+  }
+
+  async function findMyLocation() {
+    try {
+      const loc = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = loc.coords;
+      const addr = await getAddress(latitude, longitude);
+      if (addr) setForm((p) => ({ ...p, address: addr }));
+      setPosition({ latitude, longitude });
+      setShow(true);
+      mapRef.current?.animateToRegion({ latitude, longitude, latitudeDelta: 0.005, longitudeDelta: 0.005 }, 350);
+    } catch (e) { console.warn(e?.message); }
+  }
+
+  async function validateAndSave() {
+    setSaveError(null);
+    if (!(form.address || "").trim()) { setSaveError("Please enter an address."); return; }
+    setIsLoading(true);
+    const loc = await getPosition(form.address);
+    if (!loc?.lat) { setIsLoading(false); setSaveError("Address not found. Try a suggestion."); return; }
+    const resolved = (await getAddress(loc.lat, loc.lng)) || form.address;
+    const newAddress = { ...form, address: resolved, latitude: loc.lat, longitude: loc.lng };
+    let newData;
     if (active) {
-      setActive(false)
-      const tempData = { ...data, address: [{ ...form, address: m }, ...(data.address || [])] }
-      newData = { ...data, address: [] }
-      let j = 0
-      for (let i = 0; i < tempData.address.length; i++) {
-        newData.address.push({ ...tempData.address[i], id: j })
-        j += 1
-      }
+      const temp = { ...data, address: [newAddress, ...(data.address || [])] };
+      newData = { ...data, address: temp.address.map((a, i) => ({ ...a, id: i })) };
     } else {
-      newData = { ...data, address: [...(data.address || []), { ...form, address: m }] }
+      newData = { ...data, address: [...(data.address || []), newAddress] };
     }
-    dispatch(updateProfile({ id: newData }))
-    try { await AsyncStorage.removeItem('essential') } catch (e) { }
-    try {
-      await AsyncStorage.setItem('essential', JSON.stringify({ address: newData.address, orders }))
-    } catch (e) { console.error('Error saving token:', e) }
-    setIsLoading(false)
-    navigation.navigate('Address')
-    setForm({ id: (data.address || []).length, name: '', nameNo: '', address: '', number: '' })
-    return
-  }
-  async function handleLocation(lat, lng) {
-    try {
-      const addr = await getAddress(lat, lng)
-      if (addr) setForm((prev) => ({ ...prev, address: addr }))
-    } catch (e) {
-      console.warn('handleLocation:', e?.message)
-    }
+    dispatch(updateProfile({ id: newData }));
+    syncAddresses(newData.address).catch(() => {});
+    setIsLoading(false);
+    navigation.navigate("Address");
   }
 
-  async function findLocation() {
-    try {
-      const loc = await Location.getCurrentPositionAsync({})
-      const coords = loc?.coords
-      if (!coords) return
-      const addr = await getAddress(coords.latitude, coords.longitude)
-      if (addr) setForm((prev) => ({ ...prev, address: addr }))
-      setPosition({ latitude: coords.latitude, longitude: coords.longitude })
-      setLocation(loc)
-      setShow(true)
-    } catch (e) {
-      console.warn('findLocation:', e?.message)
-      setErrorMsg('Could not get your location. Check permissions or enter address manually.')
-    }
-  }
-    
-    let text = <ActivityIndicator size="large" color="#0000ff" />
-    SplashScreen.preventAutoHideAsync();
-    if (errorMsg) {
-      text = <Text>{errorMsg}</Text>;
-      // navigation.goBack()
-    } else if (position) {
-      const region = {
-        latitude: position.latitude,
-        longitude: position.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      }
-      text =  <MapView
-        ref={mapRef}
-        onPress={(e)=>{selectLocationHandler(e); onPress(); setShow(true);Keyboard.dismiss()}}
-        zoomEnabled={true}
-        style={styles.map}
-        initialRegion={region}
-        customMapStyle={styles.mapStyle}
-      >
-      {show && <Marker coordinate={{
-        latitude: position.latitude,
-        longitude: position.longitude,
+  function goBack() { navigation.canGoBack() ? navigation.goBack() : navigation.navigate("HomeTabs"); }
 
-      }} pinColor="#C91C1C" style={{elevation: 2}}/>}
-      
-      </MapView>
-      
-    }
+  if (isLoading) {
     return (
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}>
-      {isLoading ? (
-        // Render loading indicator while loading
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <ActivityIndicator size="large" color="#0000ff" /></View>
-      ) : (<><View style={{flex: 1}}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          
-        <View style={styles.container}>
-        {text}
-          {/* <TouchableOpacity style={styles.button} onPress={onPress} /> */}
-          
-          <BottomSheet ref={ref}>
-            <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', }} >
-              <View style ={{justifyContent: 'space-between', flexDirection: 'row'}}><Text style={{fontWeight: 'bold'}}>Add an Address</Text></View>
-              <Input text={'Address Name'} textInputConfig={{cursorColor: '#aaa',value: form.name, onChangeText: handleFormChange.bind(this, 'name')}}/>
-              <View>
-              <Input text={'Address'} onPress={()=>{findLocation(); Keyboard.dismiss()}} type="address" textInputConfig={{cursorColor: '#aaa',value: form.address, onChangeText: handleFormChange.bind(this, 'address')}}/>
-              {results && results.length > 0 && <View style={{ zIndex: 2, backgroundColor: 'white' , width: '100%', paddingTop: 10, marginHorizontal: 10, alignSelf: 'center',  backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 10, marginTop: 7 }}>
-                          {results.slice(0, 4).map((address, index) => (
-                            <Pressable
-                              key={index}
-                              onPress={async () => {
-                                const selectedAddr = results[index]
-                                setForm((prev) => ({ ...prev, address: selectedAddr }))
-                                setResults([])
-                                Keyboard.dismiss()
-                                const pos = await getPosition(selectedAddr)
-                                if (pos?.lat) {
-                                  setPosition({ latitude: pos.lat, longitude: pos.lng })
-                                  setLocation({ coords: { latitude: pos.lat, longitude: pos.lng } })
-                                  setShow(true)
-                                  setTimeout(() => {
-                                    mapRef.current?.animateToRegion({
-                                      latitude: pos.lat,
-                                      longitude: pos.lng,
-                                      latitudeDelta: 0.005,
-                                      longitudeDelta: 0.005,
-                                    }, 350)
-                                  }, 100)
-                                }
-                              }}
-                              style={{ flexDirection: 'row', gap: 10, marginBottom: 10, width: '90%', padding: 10 }}
-                            >
-                              <Octicons name="location" size={24} color="black" />
-                              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{address}</Text>
-                            </Pressable>
-                          ))}
-                        </View>}
-              {saveError ? <Text style={{ color: '#B22334', marginTop: 6 }}>{saveError}</Text> : null}
-              </View>
-              <Input text={'Contact Name'} textInputConfig={{cursorColor: '#aaa',value: form.nameNo, onChangeText: handleFormChange.bind(this, 'nameNo')}}/>
-              <Input keyboard="number-pad" length={14} icon={<PhoneIcon/>} text={'Contact Number'} textInputConfig={{cursorColor: '#aaa',value: form.number, onChangeText: handleFormChange.bind(this, 'number')}}/>
-              <View style ={{marginTop: 15, gap: 13, flexDirection: 'row'}}>
-              <Pressable onPress={()=> setActive((prev) => !prev )}><View style={{width: 25, height: 25, borderWidth: 2, borderColor: '#aaa', borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? '#aaa' : 'white' }}><Entypo name="check" size={20} color="white" /></View></Pressable>
-              <Text>Make this the default address</Text>
-              </View>
-              <View style={[styles.recommendedView, {height: 65, marginTop: 20}]}>
-                  <FlexButton onPress={validateAddress} background={'#283618'}><Text style={{color: 'white', fontSize: 18}}>Save</Text></FlexButton>
-              </View>
-              
-            </View>
-          </BottomSheet>
-        </View>
-      </GestureHandlerRootView>
-      </View></>)}
-      
-          </KeyboardAvoidingView>
-          
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#BC6C25" />
+        <Text style={styles.loadingText}>Saving address…</Text>
+      </View>
     );
   }
-  
-  //create our styling code:
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: 'white',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    map: {
-      ...StyleSheet.absoluteFillObject,
-      color: 'black',
-      flex: 1,
-    },
-    button: {
-      height: 50,
-      borderRadius: 25,
-      aspectRatio: 1,
-      backgroundColor: 'red',
-      opacity: 0.6,
-    },
-    mapStyle: [
-      {
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#f5f5f5"
-          }
-        ]
-      },
-      {
-        "elementType": "labels.icon",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
-      },
-      {
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#616161"
-          }
-        ]
-      },
-      {
-        "elementType": "labels.text.stroke",
-        "stylers": [
-          {
-            "color": "#f5f5f5"
-          }
-        ]
-      },
-      {
-        "featureType": "administrative.land_parcel",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#bdbdbd"
-          }
-        ]
-      },
-      {
-        "featureType": "poi",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#eeeeee"
-          }
-        ]
-      },
-      {
-        "featureType": "poi",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#757575"
-          }
-        ]
-      },
-      {
-        "featureType": "poi.park",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#e5e5e5"
-          }
-        ]
-      },
-      {
-        "featureType": "poi.park",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#9e9e9e"
-          }
-        ]
-      },
-      {
-        "featureType": "road",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#ffffff"
-          }
-        ]
-      },
-      {
-        "featureType": "road.arterial",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#757575"
-          }
-        ]
-      },
-      {
-        "featureType": "road.highway",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#dadada"
-          }
-        ]
-      },
-      {
-        "featureType": "road.highway",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#616161"
-          }
-        ]
-      },
-      {
-        "featureType": "road.local",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#9e9e9e"
-          }
-        ]
-      },
-      {
-        "featureType": "transit.line",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#e5e5e5"
-          }
-        ]
-      },
-      {
-        "featureType": "transit.station",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#eeeeee"
-          }
-        ]
-      },
-      {
-        "featureType": "water",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#c9c9c9"
-          }
-        ]
-      },
-      {
-        "featureType": "water",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#9e9e9e"
-          }
-        ]
-      }
-    ]
-  });
+
+  return (
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      {/* Header */}
+      <View style={[styles.navRow, { paddingTop: insets.top + 10 }]}>
+        <View style={styles.navSide}>
+          <Pressable onPress={goBack} style={styles.backOuter} hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back">
+            <BlurView intensity={Platform.OS === "ios" ? 82 : 58} tint="light" style={StyleSheet.absoluteFillObject} />
+            <LinearGradient pointerEvents="none" colors={["rgba(255,255,255,0.78)", "rgba(252,252,251,0.52)", "rgba(248,249,246,0.44)"]} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient pointerEvents="none" colors={["rgba(255,255,255,0.35)", "transparent"]} style={styles.backHighlight} />
+            <View style={styles.backIconWrap} pointerEvents="none"><Ionicons name="chevron-back" size={18} color="#111827" /></View>
+          </Pressable>
+        </View>
+        <View style={styles.navTitleCenter} pointerEvents="none">
+          <Text style={styles.navTitleText} numberOfLines={1}>New Address</Text>
+        </View>
+        <View style={styles.navSide} />
+      </View>
+
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        {/* Map card -- expandable */}
+        <Animated.View style={[styles.mapCard, { height: mapHeight }]}>
+          {position ? (
+            <MapView ref={mapRef} style={StyleSheet.absoluteFillObject} initialRegion={{ ...position, latitudeDelta: 0.005, longitudeDelta: 0.005 }} onPress={(e) => { selectLocationHandler(e); Keyboard.dismiss(); }} customMapStyle={MAP_STYLE}>
+              {show && <Marker coordinate={position} />}
+            </MapView>
+          ) : (
+            <View style={[StyleSheet.absoluteFillObject, { alignItems: "center", justifyContent: "center", backgroundColor: "#EDEAE5" }]}>
+              <ActivityIndicator size="small" color="#BC6C25" />
+              <Text style={{ fontFamily: "Poppins-Regular", fontSize: 13, color: "#6B7280", marginTop: 8 }}>Getting location…</Text>
+            </View>
+          )}
+          <Pressable style={styles.myLocBtn} onPress={() => { findMyLocation(); Keyboard.dismiss(); }}>
+            <Ionicons name="locate-outline" size={20} color="#BC6C25" />
+          </Pressable>
+          <Pressable style={styles.expandBtn} onPress={toggleMap} hitSlop={6}>
+            <Ionicons name={mapExpanded ? "chevron-up" : "chevron-down"} size={18} color="#374151" />
+          </Pressable>
+        </Animated.View>
+
+        <Text style={styles.fieldLabel}>Address name</Text>
+        <TextInput style={styles.input} placeholder="e.g. Home, Work" placeholderTextColor="#9CA3AF" value={form.name} onChangeText={(v) => handleFormChange("name", v)} />
+
+        <Text style={styles.fieldLabel}>Street address</Text>
+        <View style={styles.addressInputRow}>
+          <TextInput style={[styles.input, { flex: 1 }]} placeholder="Start typing…" placeholderTextColor="#9CA3AF" value={form.address} onChangeText={(v) => handleFormChange("address", v)} />
+          <Pressable style={styles.locateSmall} onPress={() => { findMyLocation(); Keyboard.dismiss(); }}>
+            <Ionicons name="navigate" size={16} color="#BC6C25" />
+          </Pressable>
+        </View>
+        {results.length > 0 && (
+          <View style={styles.suggestionsWrap}>
+            {results.slice(0, 4).map((addr, i) => (
+              <Pressable key={i} style={styles.suggestionRow} onPress={() => selectSuggestion(addr)}>
+                <Ionicons name="location-outline" size={18} color="#6B7280" />
+                <Text style={styles.suggestionText} numberOfLines={1}>{addr}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+        {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+
+        <Text style={styles.fieldLabel}>Contact name</Text>
+        <TextInput style={styles.input} placeholder="Full name" placeholderTextColor="#9CA3AF" value={form.nameNo} onChangeText={(v) => handleFormChange("nameNo", v)} />
+
+        <Text style={styles.fieldLabel}>Phone number</Text>
+        <TextInput style={styles.input} placeholder="(555) 123-4567" placeholderTextColor="#9CA3AF" value={form.number} onChangeText={(v) => handleFormChange("number", v)} keyboardType="number-pad" maxLength={14} />
+
+        <Pressable style={styles.checkRow} onPress={() => setActive((p) => !p)}>
+          <View style={[styles.checkbox, active && styles.checkboxActive]}>
+            {active && <Ionicons name="checkmark" size={16} color="#fff" />}
+          </View>
+          <Text style={styles.checkLabel}>Make this the default address</Text>
+        </Pressable>
+
+        <Pressable onPress={validateAndSave} style={styles.saveBtn}>
+          <Ionicons name="checkmark-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.saveBtnText}>Save address</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f8f6f2" },
+  loadingText: { marginTop: 16, fontFamily: "Poppins-Medium", fontSize: 15, color: "#6B7280" },
+
+  navRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 6, paddingBottom: 10, backgroundColor: "#f8f6f2" },
+  navSide: { width: 44, alignItems: "center", justifyContent: "center" },
+  navTitleCenter: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
+  navTitleText: { fontFamily: "Poppins-SemiBold", fontSize: 17, color: "#111827", letterSpacing: 0.2 },
+  backOuter: { width: 35, height: 35, borderRadius: 999, overflow: "hidden", borderWidth: 1, borderColor: "rgba(255,255,255,0.9)", shadowColor: "#1f2937", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.14, shadowRadius: 22, elevation: 14 },
+  backHighlight: { position: "absolute", top: 0, left: 0, right: 0, height: 12, borderTopLeftRadius: 999, borderTopRightRadius: 999 },
+  backIconWrap: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center" },
+
+  mapCard: { width: "100%", borderRadius: 16, overflow: "hidden", marginBottom: 8, backgroundColor: "#EDEAE5" },
+  myLocBtn: { position: "absolute", bottom: 10, right: 10, width: 40, height: 40, borderRadius: 20, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 4 },
+  expandBtn: { position: "absolute", bottom: 10, left: 10, width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.92)", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+
+  fieldLabel: { fontFamily: "Poppins-Medium", fontSize: 13, color: "#6B7280", marginBottom: 6, marginTop: 14 },
+  input: { backgroundColor: "#F9FAFB", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)", borderRadius: 12, paddingHorizontal: 14, paddingVertical: Platform.OS === "ios" ? 14 : 10, fontFamily: "Poppins-Regular", fontSize: 15, color: "#111827" },
+  addressInputRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  locateSmall: { width: 44, height: 44, borderRadius: 12, backgroundColor: "rgba(188,108,37,0.08)", alignItems: "center", justifyContent: "center" },
+
+  suggestionsWrap: { backgroundColor: "#F9FAFB", borderRadius: 12, marginTop: 6, overflow: "hidden", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
+  suggestionRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.04)" },
+  suggestionText: { fontFamily: "Poppins-Regular", fontSize: 14, color: "#111827", flex: 1 },
+  errorText: { fontFamily: "Poppins-Regular", fontSize: 13, color: "#B22334", marginTop: 6 },
+
+  checkRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 20 },
+  checkbox: { width: 24, height: 24, borderRadius: 8, borderWidth: 2, borderColor: "#D1D5DB", alignItems: "center", justifyContent: "center" },
+  checkboxActive: { backgroundColor: "#BC6C25", borderColor: "#BC6C25" },
+  checkLabel: { fontFamily: "Poppins-Regular", fontSize: 14, color: "#374151" },
+
+  saveBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(188,108,37,0.94)", borderRadius: 999, paddingVertical: 15, marginTop: 24, shadowColor: "#BC6C25", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  saveBtnText: { fontFamily: "Poppins-SemiBold", fontSize: 16, color: "#fff" },
+});

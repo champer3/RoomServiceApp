@@ -64,6 +64,21 @@ const items = createSlice({
         state.ids[index].reviews.push(action.payload.id.reviews);
       }
     },
+    removeProduct: (state, action) => {
+      state.ids = state.ids.filter(item => item._id !== action.payload);
+    },
+    patchProduct: (state, action) => {
+      const index = state.ids.findIndex(item => item._id === action.payload._id);
+      if (index !== -1) {
+        state.ids[index] = { ...state.ids[index], ...action.payload };
+      }
+    },
+    addProduct: (state, action) => {
+      const exists = state.ids.some(item => item._id === action.payload._id);
+      if (!exists) {
+        state.ids.unshift(action.payload);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -81,5 +96,5 @@ const items = createSlice({
   },
 });
 
-export const { addReview } = items.actions;
+export const { addReview, removeProduct, patchProduct, addProduct } = items.actions;
 export default items.reducer;

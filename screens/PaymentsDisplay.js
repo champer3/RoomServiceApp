@@ -1,813 +1,506 @@
+import React, { useEffect, useState, useCallback } from "react";
 import {
-  Image,
   StyleSheet,
-  Text,
   View,
   Pressable,
-  Dimensions,
   ScrollView,
-  Keyboard,
+  ActivityIndicator,
   Alert,
-  ActivityIndicator
+  Platform,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
 } from "react-native";
-import { useEffect, useState } from "react";
-import FlexButton from "../components/Buttons/FlexButton";
-import Input from "../components/Inputs/Input";
-import { Octicons } from "@expo/vector-icons";
-import CreditCard from "../components/CreditCard";
-import BottomSheet from "../components/Modals/BottomSheet";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import React, { useCallback, useRef } from "react";
-import CardCat from "../components/CardCat";
-import { Entypo } from "@expo/vector-icons";
-import Info from "../components/Info";
-import { useSelector, useDispatch } from "react-redux";
-import { updateProfile } from "../Data/profile";
+import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
-import { useNavigation } from "@react-navigation/native";
+import Text from "../components/Text";
+import { SERVER_URL } from "../config";
+import { useTheme } from "../theme/ThemeContext";
 
+function getBrandLabel(brand) {
+  if (!brand) return "Card";
+  return brand.charAt(0).toUpperCase() + brand.slice(1);
+}
 
-// Use your backend URL (same as Items.js). For device/emulator use your machine's IP.
-import { SERVER_URL } from '../config';
-
-const PAYMENTS_API_BASE = SERVER_URL;
-
-const retrieveTokenFromAsyncStorage = async () => {
-  try {
-    const storedToken = await AsyncStorage.getItem("authToken");
-    if (storedToken !== null) {
-      return storedToken;
-    }
-  } catch (error) {
-    console.error("Error retrieving token:", error);
-  }
-  return null;
-};
-
-const { width, height } = Dimensions.get("window");
 function PaymentsDisplay() {
-  const dispatch = useDispatch();
-  const navigation = useNavigation()
-  // const data = useSelector((state) => state.profileData.profile);
-  // const cards = [...data.payments];
-  // const [warning, setWarning] = useState();
-  // const [form, setForm] = useState({
-  //   name: "",
-  //   number: "",
-  //   cvv: "",
-  //   exp: "",
-  //   card: "",
-  //   id: cards.length,
-  // });
-  // const [scrollHeight, setScrollHeight] = useState(-450);
-  // const [index, setIndex] = useState(null);
-  // const [active, setActive] = useState(false);
-  // const handleSelect = (selectedIndex) => {
-  //   setIndex(selectedIndex);
-  // };
-  // const ref = useRef(null);
-  // const onPress = useCallback(() => {
-  //   const isActive = ref?.current?.isActive();
-  //   // ref?.current?.scrollTo(0);
-  //   ref?.current?.scrollTo(-450);
-  //   setScrollHeight(-450);
-  //   setForm({
-  //     name: "",
-  //     number: "",
-  //     cvv: "",
-  //     exp: "",
-  //     card: "",
-  //     id: cards.length,
-  //   });
-    // handleUpdate([
-    //   {
-    //     id: 'pm_1OfVeuK5nIEAEdc38ZwCX0qx',
-    //     object: 'payment_method',
-    //     billing_details: { address: [Object], email: null, name: null, phone: null },
-    //     card: {
-    //       brand: 'visa',
-    //       checks: [Object],
-    //       country: 'US',
-    //       exp_month: 12,
-    //       exp_year: 2027,
-    //       fingerprint: 'zu53W4k5crXMKJ08',
-    //       funding: 'credit',
-    //       generated_from: null,
-    //       last4: '4242',
-    //       networks: [Object],
-    //       three_d_secure_usage: [Object],
-    //       wallet: null
-    //     },
-    //     created: 1706914592,
-    //     customer: 'cus_PUUHx7j4nv1aU6',
-    //     livemode: false,
-    //     metadata: {},
-    //     type: 'card'
-    //   }
-    // ])
-  // });
-  // const onEditing = useCallback(() => {
-  //   ref?.current?.scrollTo(-650);
-  //   setScrollHeight(-650);
-  // });
-  // const methods = ["Debit Card", "Credit Card"];
-  const token = retrieveTokenFromAsyncStorage()
-  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YmQ2ZDgyZTVmYzlhMDJlYTM3YzAzMyIsImlhdCI6MTcwNjkxMzE1NywiZXhwIjoxNzA3Nzc3MTU3fQ.TwpnSDIBnTJPAB1BUjPkz8PPiDztuySl4JcqTHgruxU"
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const [paymentError, setPaymentError] = useState(null);
 
-  const fetchPaymentSheet = async () => {
-    setPaymentError(null);
-    const token = await retrieveTokenFromAsyncStorage();
+  const [cards, setCards] = useState([]);
+  const [defaultPM, setDefaultPM] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [error, setError] = useState(null);
+  const [editingCard, setEditingCard] = useState(null);
+  const [editForm, setEditForm] = useState({ name: "", exp_month: "", exp_year: "", postal_code: "" });
+  const [saving, setSaving] = useState(false);
+
+  const getToken = async () => {
+    try {
+      return await AsyncStorage.getItem("authToken");
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const fetchCards = useCallback(async () => {
+    setError(null);
+    const token = await getToken();
     if (!token) {
-      setIsLoading(false);
-      setPaymentError('Please sign in to add a payment method.');
+      setLoading(false);
+      setError("Please sign in to view payment methods.");
       return;
     }
     try {
-      const response = await axios.post(
-        `${PAYMENTS_API_BASE}/api/v1/payments/payment-sheet`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 15000,
-        }
+      const res = await axios.post(
+        `${SERVER_URL}/api/v1/payments/payment-methods`,
+        null,
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 }
       );
-      const data = response.data;
+      if (res.data?.paymentMethods) {
+        setCards(res.data.paymentMethods);
+      } else {
+        setCards([]);
+      }
+      if (res.data?.defaultPaymentMethod) {
+        setDefaultPM(res.data.defaultPaymentMethod);
+      }
+    } catch (e) {
+      setError("Could not load payment methods.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCards();
+  }, [fetchCards]);
+
+  const handleAddCard = async () => {
+    setAdding(true);
+    const token = await getToken();
+    if (!token) {
+      setAdding(false);
+      Alert.alert("Error", "Please sign in first.");
+      return;
+    }
+    try {
+      const res = await axios.post(
+        `${SERVER_URL}/api/v1/payments/payment-sheet`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 }
+      );
+      const data = res.data;
       if (!data?.setupIntent || !data?.ephemeralKey || !data?.customer) {
-        setIsLoading(false);
-        setPaymentError('Invalid response from server. Please try again.');
+        setAdding(false);
+        Alert.alert("Error", "Invalid response from server.");
         return;
       }
       const { error: initError } = await initPaymentSheet({
-        merchantDisplayName: 'RoomService',
+        merchantDisplayName: "RoomService",
         setupIntentClientSecret: data.setupIntent,
         customerEphemeralKeySecret: data.ephemeralKey,
         customerId: data.customer,
       });
       if (initError) {
-        setIsLoading(false);
-        setPaymentError(initError.message || 'Could not initialize payment sheet.');
+        setAdding(false);
+        Alert.alert("Error", initError.message || "Could not initialize.");
         return;
       }
       const { error: presentError } = await presentPaymentSheet();
-      setIsLoading(false);
+      setAdding(false);
       if (presentError) {
-        if (presentError.code === 'Canceled') {
-          navigation.goBack();
-          return;
-        }
-        setPaymentError(presentError.message || 'Payment was not completed.');
+        if (presentError.code === "Canceled") return;
+        Alert.alert("Error", presentError.message || "Payment not completed.");
         return;
       }
-      try {
-        await axios.post(
-          `${PAYMENTS_API_BASE}/api/v1/payments/payment-methods`,
-          null,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } catch (e) {
-        console.warn('Fetch payment methods after add:', e?.message);
-      }
-      navigation.goBack();
-    } catch (error) {
-      setIsLoading(false);
-      const msg = error?.response?.data?.message || error?.message || 'Could not load payment form. Check your connection and try again.';
-      setPaymentError(msg);
+      setLoading(true);
+      fetchCards();
+    } catch (e) {
+      setAdding(false);
+      Alert.alert("Error", e?.response?.data?.message || e?.message || "Something went wrong.");
     }
   };
 
-  useEffect(() => {
-    fetchPaymentSheet();
-  }, []);
-    
-  // function handleUpdate(res) {
-  //   const cards = []
-  //   for (var i = 0; i < res.length; i ++){
-  //     var image = "";
-  //   if (res[i]['card']['brand'] === "amex") {
-  //     image = require(`../assets/amex.png`);
-  //   } else if (res[i]['card']['brand'] === "visa") {
-  //     image = require(`../assets/visa.png`);
-  //   } else if (res[i]['card']['brand'] === "discover") {
-  //     image = require(`../assets/discover.png`);
-  //   } else if (res[i]['card']['brand'] === "mastercard") {
-  //     image = require(`../assets/mastercard.png`);
-  //   }
-  //   console.log(res[i]['card']['brand'])
-  //     cards.push({card: res[i]['card']['brand'], number: res[i]['card']['last4'], image: image})
-  //   }
-  //   console.log(cards)
-  //   var newData = {};
-  //     newData = {
-  //       ...data,
-  //       ["payments"]: [...cards],
-  //   }
-  //   console.log(newData)
-  //   dispatch(updateProfile({ id: newData }));
-  // }
-  // function handleEdit(index) {
-  //   // Create a shallow copy of the data object
-  //   const newData = { ...data, ["payments"]: [] };
-  //   var image = "";
-  //   if (getCardType(form.number) === "Amex") {
-  //     image = require(`../assets/amex.png`);
-  //   } else if (getCardType(form.number) === "Visa") {
-  //     image = require(`../assets/visa.png`);
-  //   } else if (getCardType(form.number) === "Discover") {
-  //     image = require(`../assets/discover.png`);
-  //   } else if (getCardType(form.number) === "Mastercard") {
-  //     image = require(`../assets/mastercard.png`);
-  //   }
+  function goBack() {
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.navigate("HomeTabs");
+  }
 
-  //   // Loop through the payments array
-  //   for (let i = 0; i < data.payments.length; i++) {
-  //     // If the current index is less than the specified index, copy the existing payment
-  //     if (i !== index) {
-  //       newData.payments.push(data.payments[i]);
-  //     }
-  //     // If the current index is equal to the specified index, append the form data
-  //     else if (i === index) {
-  //       newData.payments.push({
-  //         ...form,
-  //         ["card"]: getCardType(form.number),
-  //         ["image"]: image,
-  //       });
-  //     }
-  //   }
-  //   // Return the new data object
-  //   dispatch(updateProfile({ id: newData }));
-  // }
+  const handleDeleteCard = (pm) => {
+    Alert.alert(
+      "Remove Card",
+      `Remove ${getBrandLabel(pm.card?.brand)} ending in ${pm.card?.last4}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            const token = await getToken();
+            if (!token) return;
+            try {
+              await axios.delete(
+                `${SERVER_URL}/api/v1/payments/payment-methods/${pm.id}`,
+                { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 }
+              );
+              setCards((prev) => prev.filter((c) => c.id !== pm.id));
+              if (defaultPM === pm.id) setDefaultPM(null);
+            } catch (e) {
+              Alert.alert("Error", "Could not remove card. Try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
 
-  // function makeDefault(id) {
-  //   const newData = {
-  //     ...data,
-  //     ["payments"]: [{ ...data.payments[id], ["id"]: 0 }],
-  //   };
-  //   var j = 1;
-  //   for (let i = 0; i < data.payments.length; i++) {
-  //     // If the current index is less than the specified index, copy the existing payment
-  //     if (data.payments[i].id != id) {
-  //       newData.payments.push({ ...data.payments[i], ["id"]: j });
-  //       j += 1;
-  //     }
-  //   }
-  //   dispatch(updateProfile({ id: newData }));
-  // }
-  // function isCardNotExpired(expiryDate) {
-  //   const currentDate = new Date();
-  //   const currentYear = currentDate.getFullYear() % 100; // Extract last two digits of the current year
-  //   const currentMonth = currentDate.getMonth() + 1; // Months are zero-indexed, so add 1
+  const handleSetDefault = async (pm) => {
+    const token = await getToken();
+    if (!token) return;
+    try {
+      await axios.post(
+        `${SERVER_URL}/api/v1/payments/payment-methods/set-default`,
+        { paymentMethodId: pm.id },
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 }
+      );
+      setDefaultPM(pm.id);
+    } catch (e) {
+      Alert.alert("Error", "Could not set as default. Try again.");
+    }
+  };
 
-  //   const [expiryMonth, expiryYear] = expiryDate
-  //     .split("/")
-  //     .map((part) => parseInt(part, 10));
+  const openEditModal = (pm) => {
+    setEditingCard(pm);
+    setEditForm({
+      name: pm.billing_details?.name || "",
+      exp_month: pm.card?.exp_month?.toString() || "",
+      exp_year: pm.card?.exp_year?.toString() || "",
+      postal_code: pm.billing_details?.address?.postal_code || "",
+    });
+  };
 
-  //   // Check if the card has not expired
-  //   if (
-  //     expiryYear > currentYear ||
-  //     (expiryYear === currentYear && expiryMonth >= currentMonth)
-  //   ) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
-  const [isLoading, setIsLoading] = useState(true); // State variable to track loading status
+  const handleSaveEdit = async () => {
+    if (!editingCard) return;
+    setSaving(true);
+    const token = await getToken();
+    if (!token) { setSaving(false); return; }
 
-  // function verifyPayment() {
-  //   if (!form.name || !form.number || !form.cvv || !form.exp) {
-  //     return "All fields are required.";
-  //   }
+    const body = {};
+    if (editForm.name.trim()) body.name = editForm.name.trim();
+    if (editForm.exp_month) body.exp_month = editForm.exp_month;
+    if (editForm.exp_year) body.exp_year = editForm.exp_year.length === 2 ? `20${editForm.exp_year}` : editForm.exp_year;
+    if (editForm.postal_code.trim()) body.address_postal_code = editForm.postal_code.trim();
 
-  //   // Check credit card number validity
-  //   // Remove spaces from the credit card number
-  //   const cleanedNumber = form.number.replace(/\s/g, "");
+    try {
+      const res = await axios.patch(
+        `${SERVER_URL}/api/v1/payments/payment-methods/${editingCard.id}`,
+        body,
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 }
+      );
+      if (res.data?.paymentMethod) {
+        setCards((prev) => prev.map((c) => c.id === editingCard.id ? res.data.paymentMethod : c));
+      }
+      setEditingCard(null);
+    } catch (e) {
+      Alert.alert("Error", e?.response?.data?.message || "Could not update card.");
+    }
+    setSaving(false);
+  };
 
-  //   const creditCardRegex = /^\d{16}$/;
-  //   if (getCardType(form.number) == "Unknown") {
-  //     return `Invalid card number. Provide a valid card number`;
-  //   }
-
-  //   // Check CVV validity
-  //   const cvvRegex = /^\d{3}$/;
-  //   if (!cvvRegex.test(form.cvv)) {
-  //     return "Invalid CVV. It should be a 3-digit number.";
-  //   }
-
-  //   // Check expiration date validity (MM/YY format)
-  //   const expDateRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
-  //   if (!expDateRegex.test(form.exp)) {
-  //     return "Invalid expiration date. Please use MM/YY format.";
-  //   } else if (!isCardNotExpired(form.exp)) {
-  //     return "Card has expired. Provide a valid card";
-  //   }
-
-  //   // Additional checks for card type, name format, etc. can be added as needed
-
-  //   // If all checks pass, payment method is considered valid
-  //   return false;
-  // }
-  // function getCardType(cardNumber) {
-  //   // Define regular expressions for different card types
-  //   const cardTypes = {
-  //     visa: /^4[0-9]{12}(?:[0-9]{3})?$/,
-  //     mastercard: /^5[1-5][0-9]{14}$/,
-  //     amex: /^3[47][0-9]{13}$/,
-  //     discover: /^6(?:011|5[0-9]{2})[0-9]{12}$/,
-  //     // Add more card types as needed
-  //   };
-  //   // Remove spaces from the credit card number
-  //   const cleanedNumber = cardNumber.replace(/\s/g, "");
-
-  //   // Check the card number against each card type
-  //   for (const type in cardTypes) {
-  //     if (cardTypes[type].test(cleanedNumber)) {
-  //       return type.charAt(0).toUpperCase() + type.slice(1);
-  //     }
-  //   }
-
-  //   // If no match is found, return 'Unknown'
-  //   return "Unknown";
-  // }
-  // const onDone = useCallback(() => {
-  //   if (!verifyPayment()) {
-  //     setScrollHeight((prev) => (prev == -450 ? -550 : -450));
-
-  //     handleUpdate();
-  //     setForm({
-  //       name: "",
-  //       number: "",
-  //       cvv: "",
-  //       exp: "",
-  //       card: "",
-  //       id: cards.length,
-  //     });
-  //     setIndex();
-  //     setWarning();
-  //     ref?.current?.scrollTo(0);
-  //   } else {
-  //     setWarning(verifyPayment());
-  //   }
-  // });
-  // const onEdit = useCallback(() => {
-  //   if (!verifyPayment()) {
-  //     setScrollHeight((prev) => (prev == -450 ? -550 : -450));
-  //     handleEdit(form.id);
-  //     if (active) {
-  //       makeDefault(form.id);
-  //       setActive(false);
-  //     }
-  //     setForm({
-  //       name: "",
-  //       number: "",
-  //       cvv: "",
-  //       exp: "",
-  //       card: "",
-  //       id: cards.length,
-  //     });
-  //     setIndex();
-  //     setWarning();
-  //     ref?.current?.scrollTo(0);
-  //   } else {
-  //     setWarning(verifyPayment());
-  //   }
-  // });
-  // function deleteAndUpdate(indexToDelete) {
-  //   // Delete the object at the specified index
-  //   const newData = { ...data, ["payments"]: [] };
-  //   var j = 0;
-  //   for (let i = 0; i < data.payments.length; i++) {
-  //     // If the current index is less than the specified index, copy the existing payment
-  //     if (i != indexToDelete) {
-  //       newData.payments.push({ ...data.payments[i], ["id"]: j });
-  //       j += 1;
-  //     }
-  //   }
-  //   // Update the id property of other objects
-
-  //   ref?.current?.scrollTo(0);
-  //   setScrollHeight(-450);
-  //   setForm({
-  //     name: "",
-  //     number: "",
-  //     cvv: "",
-  //     exp: "",
-  //     card: "",
-  //     id: cards.length,
-  //   });
-  //   setIndex();
-  //   console.log("Updated List:", newData.payments);
-
-  //   // Return the new data object
-  //   dispatch(updateProfile({ id: newData }));
-  // }
-  // function handleFormChange(field, value) {
-  //   if (field == "number") {
-  //     const cleanedInput = value.replace(/\D/g, "");
-  //     // Add brackets dynamically based on entered digits
-  //     let formattedNumber = "";
-  //     for (let i = 0; i < cleanedInput.length; i++) {
-  //       if (i === 4) {
-  //         formattedNumber += " ";
-  //       } else if (i === 8) {
-  //         formattedNumber += " ";
-  //       } else if (i === 12) {
-  //         formattedNumber += " ";
-  //       }
-  //       formattedNumber += cleanedInput[i];
-  //     }
-  //     value = formattedNumber;
-  //   }
-  //   if (field == "exp") {
-  //     const cleanedInput = value.replace(/\D/g, "");
-  //     let formattedNumber = "";
-  //     for (let i = 0; i < cleanedInput.length; i++) {
-  //       if (i === 2) {
-  //         formattedNumber += "/";
-  //       }
-  //       formattedNumber += cleanedInput[i];
-  //     }
-  //     value = formattedNumber;
-  //   }
-  //   setForm((prev) => ({ ...prev, [field]: value }));
-  // }
   return (
-    <GestureHandlerRootView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-       {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
-       {!isLoading && paymentError && (
-        <View style={{ padding: 24, alignItems: 'center' }}>
-          <Text style={{ color: '#B22334', textAlign: 'center', marginBottom: 16 }}>{paymentError}</Text>
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Pressable onPress={() => navigation.goBack()} style={{ paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#eee', borderRadius: 8 }}>
-              <Text>Go back</Text>
-            </Pressable>
-            <Pressable onPress={() => { setPaymentError(null); setIsLoading(true); fetchPaymentSheet(); }} style={{ paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#283618', borderRadius: 8 }}>
-              <Text style={{ color: 'white' }}>Try again</Text>
-            </Pressable>
-          </View>
-        </View>
-       )}
-      {/* <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
-        <View>
-          <ScrollView>
-            <View style={[styles.recommendedView, { paddingBottom: "50%" }]}>
-              {cards &&
-                cards.length > 0 &&
-                cards.map(({card, number, image}, idx) => (
-                  <View key={idx}>
-                    <Pressable>
-                      <CreditCard
-                        image={image}
-                        onPress={() => {
-                          onEditing();
-                          setForm({ ...cards[idx] });
-                        }}
-                        card={card.toUpperCase()}
-                        number={number}
-                      />
-                    </Pressable>
-                  </View>
-                ))}
-              {!cards ||
-                (!cards.length && (
-                  <View style={{ gap: 19, marginBottom: 45 }}>
-                    <View>
-                      <Image
-                        style={styles.image}
-                        source={require("../assets/empty.png")}
-                      />
-                    </View>
-                    <Text style={{ textAlign: "center" }}>
-                      You currently have no saved payment method, add one to
-                      ease your checkout.
-                    </Text>
-                  </View>
-                ))}
-              <View style={[{ height: 75 }]}>
-                <FlexButton onPress={onPress}>
-                  <Text style={{ fontSize: 18 }}>Add payment method</Text>
-                </FlexButton>
-              </View>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.navRow, { paddingTop: insets.top + 10 }]}>
+        <View style={styles.navSide}>
+          <Pressable onPress={goBack} style={styles.backOuter} hitSlop={8}>
+            <BlurView intensity={Platform.OS === "ios" ? 82 : 58} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient pointerEvents="none" colors={isDark ? ["rgba(30,30,30,0.78)", "rgba(30,30,30,0.52)", "rgba(30,30,30,0.44)"] : ["rgba(255,255,255,0.78)", "rgba(252,252,251,0.52)", "rgba(248,249,246,0.44)"]} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient pointerEvents="none" colors={isDark ? ["rgba(255,255,255,0.08)", "transparent"] : ["rgba(255,255,255,0.35)", "transparent"]} style={styles.backHighlight} />
+            <View style={styles.backIconWrap} pointerEvents="none">
+              <Ionicons name="chevron-back" size={18} color={colors.text} />
             </View>
-          </ScrollView>
+          </Pressable>
         </View>
-        <BottomSheet ref={ref}>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "white",
-              paddingHorizontal: "5%",
-            }}
-          >
-            {scrollHeight == -450 && (
-              <>
-                <View
-                  style={{
-                    justifyContent: "space-between",
-                    flexDirection: "row",
-                    marginVertical: 20,
-                  }}
-                >
-                  <Text style={{ fontWeight: "bold" }}>Select Method</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <View
-                    style={{
-                      flex: 0.34,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      gap: 35,
-                      justifyContent: "center",
-                    }}
-                  >
-                    {methods.map((item, id) => (
-                      <View key={id} style={{ width: "45%" }}>
+        <View style={styles.navTitleCenter} pointerEvents="none">
+          <Text style={[styles.navTitleText, { color: colors.text }]} numberOfLines={1}>Payment Methods</Text>
+        </View>
+        <View style={styles.navSide} />
+      </View>
+
+      {loading ? (
+        <View style={styles.centerWrap}>
+          <ActivityIndicator size="large" color="#283618" />
+        </View>
+      ) : error ? (
+        <View style={styles.centerWrap}>
+          <Ionicons name="alert-circle-outline" size={48} color="#B22334" />
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable style={styles.retryBtn} onPress={() => { setLoading(true); fetchCards(); }}>
+            <Text style={styles.retryBtnText}>Try again</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 12) + 100 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {cards.length === 0 ? (
+            <View style={styles.emptyWrap}>
+              <View style={styles.emptyIcon}>
+                <MaterialCommunityIcons name="credit-card-off-outline" size={40} color="#BC6C25" />
+              </View>
+              <Text style={styles.emptyTitle}>No payment methods</Text>
+              <Text style={styles.emptyHint}>Add a card to speed up checkout</Text>
+            </View>
+          ) : (
+            <View style={styles.cardsSection}>
+              {cards.map((pm) => {
+                const isDefault = defaultPM === pm.id;
+                return (
+                  <View key={pm.id} style={[styles.cardRow, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
+                    <View style={[styles.cardIconCircle, { backgroundColor: colors.primaryLight }]}>
+                      <MaterialCommunityIcons name="credit-card-outline" size={22} color={colors.primary} />
+                    </View>
+                    <View style={styles.cardInfo}>
+                      <View style={styles.cardBrandRow}>
+                        <Text style={[styles.cardBrand, { color: colors.text }]}>{getBrandLabel(pm.card?.brand)}</Text>
+                        {isDefault && (
+                          <View style={[styles.defaultBadge, { backgroundColor: colors.primaryLight }]}>
+                            <Text style={[styles.defaultBadgeText, { color: colors.primary }]}>Default</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.cardLast4, { color: colors.textSecondary }]}>
+                        •••• {pm.card?.last4 || "????"}
+                        {"  "}
+                        <Text style={[styles.cardExpiry, { color: colors.textMuted }]}>
+                          {pm.card?.exp_month?.toString().padStart(2, "0")}/{pm.card?.exp_year?.toString().slice(-2)}
+                        </Text>
+                      </Text>
+                    </View>
+                    <View style={styles.cardActions}>
+                      {!isDefault && (
                         <Pressable
-                          onPress={() => {
-                            handleSelect(id);
-                          }}
+                          onPress={() => handleSetDefault(pm)}
+                          style={[styles.cardActionBtn, { backgroundColor: colors.primaryLight }]}
+                          hitSlop={6}
                         >
-                          <CardCat active={index == id}>{item}</CardCat>
+                          <Ionicons name="checkmark-circle-outline" size={16} color={colors.primary} />
                         </Pressable>
-                      </View>
-                    ))}
-                  </View>
-                  <View style={[{ height: 65 }]}>
-                    <FlexButton
-                      onPress={onPressHandler}
-                      background={index == null ? "rgba(0,0,0,0.5)" : "#283618"}
-                    >
-                      <Text style={{ color: "white", fontSize: 18 }}>
-                        Select
-                      </Text>
-                    </FlexButton>
-                  </View>
-                </View>
-              </>
-            )}
-            {scrollHeight == -550 && (
-              <>
-                <View
-                  style={{
-                    justifyContent: "space-between",
-                    flexDirection: "row",
-                    marginVertical: 20,
-                  }}
-                >
-                  <Text style={{ fontWeight: "bold" }}>Add Card</Text>
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <Input
-                    text={"Card Holder Name"}
-                    textInputConfig={{
-                      cursorColor: "#aaa",
-                      value: form.name,
-                      onChangeText: handleFormChange.bind(this, "name"),
-                    }}
-                  />
-                  <Input
-                    text={"Card Number"}
-                    length={19}
-                    keyboard="number-pad"
-                    textInputConfig={{
-                      cursorColor: "#aaa",
-                      value: form.number,
-                      onChangeText: handleFormChange.bind(this, "number"),
-                    }}
-                  />
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View style={{ flex: 0.5 }}>
-                      <Input
-                        text={"CVV"}
-                        length={3}
-                        secured={true}
-                        keyboard="number-pad"
-                        textInputConfig={{
-                          cursorColor: "#aaa",
-                          value: form.cvv,
-                          onChangeText: handleFormChange.bind(this, "cvv"),
-                        }}
-                      />
-                    </View>
-                    <View style={{ flex: 0.48 }}>
-                      <Input
-                        text={"Expiry Date"}
-                        length={5}
-                        keyboard="number-pad"
-                        textInputConfig={{
-                          cursorColor: "#aaa",
-                          value: form.exp,
-                          onChangeText: handleFormChange.bind(this, "exp"),
-                        }}
-                      />
-                    </View>
-                  </View>
-                  <View
-                    style={{
-                      marginVertical: 15,
-                      gap: 13,
-                      flexDirection: "row",
-                    }}
-                  >
-                    <Pressable onPress={() => setActive((prev) => !prev)}>
-                      <View
-                        style={{
-                          width: 25,
-                          height: 25,
-                          borderWidth: 2,
-                          borderColor: "#aaa",
-                          borderRadius: 8,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: active ? "#aaa" : "white",
-                        }}
+                      )}
+                      <Pressable
+                        onPress={() => openEditModal(pm)}
+                        style={[styles.cardActionBtn, { backgroundColor: colors.accentLight }]}
+                        hitSlop={6}
                       >
-                        <Entypo name="check" size={20} color="white" />
-                      </View>
-                    </Pressable>
-                    <Text>Make this the default payment</Text>
-                  </View>
-                  {!warning && (
-                    <Info
-                      text={
-                        "By adding this card you can easily complete purchases securely with it."
-                      }
-                    />
-                  )}
-                  {warning && (
-                    <Info
-                      text={`${warning}                                              `}
-                    />
-                  )}
-                  <View style={[{ height: 65, marginTop: 40 }]}>
-                    <FlexButton onPress={onDone} background={"#283618"}>
-                      <Text style={{ color: "white", fontSize: 18 }}>Save</Text>
-                    </FlexButton>
-                  </View>
-                </View>
-              </>
-            )}
-            {scrollHeight == -650 && (
-              <>
-                <View
-                  style={{
-                    justifyContent: "space-between",
-                    flexDirection: "row",
-                  }}
-                >
-                  <Text style={{ fontWeight: "bold" }}>{`${
-                    form.card
-                  } ${form.number.slice(0, 4)}*`}</Text>
-                  <Pressable
-                    onPress={() => deleteAndUpdate(form.id)}
-                    style={({ pressed }) => pressed && { opacity: 0.5 }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        gap: 6,
-                        alignItems: "center",
-                      }}
-                    >
-                      <Octicons name="trash" size={24} color="#B22334" />
-                      <Text style={{ fontWeight: "bold", color: "#B22334" }}>
-                        Delete Card
-                      </Text>
-                    </View>
-                  </Pressable>
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <Input
-                    text={"Card Holder Name"}
-                    textInputConfig={{
-                      cursorColor: "#aaa",
-                      value: form.name,
-                      onChangeText: handleFormChange.bind(this, "name"),
-                    }}
-                  />
-                  <Input
-                    text={"Card Number"}
-                    length={19}
-                    keyboard="number-pad"
-                    textInputConfig={{
-                      cursorColor: "#aaa",
-                      value: form.number,
-                      onChangeText: handleFormChange.bind(this, "number"),
-                    }}
-                  />
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View style={{ flex: 0.5 }}>
-                      <Input
-                        text={"CVV"}
-                        length={3}
-                        secured={true}
-                        keyboard="number-pad"
-                        textInputConfig={{
-                          cursorColor: "#aaa",
-                          value: form.cvv,
-                          onChangeText: handleFormChange.bind(this, "cvv"),
-                        }}
-                      />
-                    </View>
-                    <View style={{ flex: 0.48 }}>
-                      <Input
-                        text={"Expiry Date"}
-                        length={5}
-                        keyboard="number-pad"
-                        textInputConfig={{
-                          cursorColor: "#aaa",
-                          value: form.exp,
-                          onChangeText: handleFormChange.bind(this, "exp"),
-                        }}
-                      />
-                    </View>
-                  </View>
-                  <View
-                    style={{
-                      marginVertical: 15,
-                      gap: 13,
-                      flexDirection: "row",
-                    }}
-                  >
-                    <Pressable
-                      onPress={() => {
-                        setActive((prev) => !prev);
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: 25,
-                          height: 25,
-                          borderWidth: 2,
-                          borderColor: "#aaa",
-                          borderRadius: 8,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: active ? "#aaa" : "white",
-                        }}
+                        <Feather name="edit-2" size={14} color={colors.accent} />
+                      </Pressable>
+                      <Pressable
+                        onPress={() => handleDeleteCard(pm)}
+                        style={[styles.cardActionBtn, { backgroundColor: colors.dangerLight }]}
+                        hitSlop={6}
                       >
-                        <Entypo name="check" size={20} color="white" />
-                      </View>
-                    </Pressable>
-                    <Text>Make this the default payment</Text>
+                        <Feather name="trash-2" size={14} color={colors.danger} />
+                      </Pressable>
+                    </View>
                   </View>
-                  {warning && (
-                    <Info
-                      text={`${warning}                                              `}
-                    />
-                  )}
-                  <View style={[{ height: 65, marginTop: 40 }]}>
-                    <FlexButton onPress={onEdit} background={"#283618"}>
-                      <Text style={{ color: "white", fontSize: 18 }}>Save</Text>
-                    </FlexButton>
-                  </View>
-                </View>
+                );
+              })}
+            </View>
+          )}
+        </ScrollView>
+      )}
+
+      {/* Add Card Button */}
+      {!loading && !error && (
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) + 8 }]}>
+          <Pressable style={styles.addBtn} onPress={handleAddCard} disabled={adding}>
+            {adding ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="add" size={20} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.addBtnText}>Add payment method</Text>
               </>
             )}
+          </Pressable>
+        </View>
+      )}
+
+      {/* Edit Modal */}
+      <Modal
+        visible={!!editingCard}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setEditingCard(null)}
+      >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setEditingCard(null)} />
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <View style={styles.modalHandle} />
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Card Details</Text>
+            {editingCard && (
+              <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+                {getBrandLabel(editingCard.card?.brand)} •••• {editingCard.card?.last4}
+              </Text>
+            )}
+
+            <View style={styles.modalFields}>
+              <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Cardholder Name</Text>
+              <TextInput
+                style={[styles.modalInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                value={editForm.name}
+                onChangeText={(v) => setEditForm((p) => ({ ...p, name: v }))}
+                placeholder="Name on card"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="words"
+              />
+
+              <View style={styles.modalRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Exp Month</Text>
+                  <TextInput
+                    style={[styles.modalInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                    value={editForm.exp_month}
+                    onChangeText={(v) => setEditForm((p) => ({ ...p, exp_month: v.replace(/\D/g, "").slice(0, 2) }))}
+                    placeholder="MM"
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Exp Year</Text>
+                  <TextInput
+                    style={[styles.modalInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                    value={editForm.exp_year}
+                    onChangeText={(v) => setEditForm((p) => ({ ...p, exp_year: v.replace(/\D/g, "").slice(0, 4) }))}
+                    placeholder="YYYY"
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="number-pad"
+                    maxLength={4}
+                  />
+                </View>
+              </View>
+
+              <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Billing Zip / Postal Code</Text>
+              <TextInput
+                style={[styles.modalInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                value={editForm.postal_code}
+                onChangeText={(v) => setEditForm((p) => ({ ...p, postal_code: v }))}
+                placeholder="Postal code"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="characters"
+              />
+            </View>
+
+            <View style={styles.modalActions}>
+              <Pressable
+                style={[styles.modalCancelBtn, { borderColor: colors.border }]}
+                onPress={() => setEditingCard(null)}
+              >
+                <Text style={[styles.modalCancelText, { color: colors.textSecondary }]}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalSaveBtn, { backgroundColor: colors.primary }]}
+                onPress={handleSaveEdit}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalSaveText}>Save Changes</Text>
+                )}
+              </Pressable>
+            </View>
           </View>
-        </BottomSheet>
-      </Pressable> */}
-    </GestureHandlerRootView>
+        </KeyboardAvoidingView>
+      </Modal>
+    </View>
   );
 }
+
 export default PaymentsDisplay;
 
 const styles = StyleSheet.create({
-  catHead: {
-    justifyContent: "space-between",
-    gap: 19,
-  },
-  text: { fontWeight: "bold", fontSize: 20 },
-  recommendedView: {
-    paddingHorizontal: "5%",
-    paddingTop: "5%",
-    gap: 20,
-  },
-  image: {
-    height: height / 3,
-    alignSelf: "center",
-    resizeMode: "contain",
-  },
-  imageContainer: {
+  container: { flex: 1, backgroundColor: "#f8f6f2" },
+
+  navRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 6, paddingBottom: 10 },
+  navSide: { width: 48, alignItems: "center" },
+  navTitleCenter: { flex: 1, alignItems: "center" },
+  navTitleText: { fontFamily: "Poppins-SemiBold", fontSize: 18, color: "#111827" },
+  backOuter: { width: 36, height: 36, borderRadius: 18, overflow: "hidden", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
+  backHighlight: { position: "absolute", top: 0, left: 0, right: 0, height: "50%", borderTopLeftRadius: 18, borderTopRightRadius: 18 },
+  backIconWrap: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+
+  scroll: { flex: 1 },
+
+  centerWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24 },
+  errorText: { fontFamily: "Poppins-Regular", fontSize: 14, color: "#6B7280", textAlign: "center", marginTop: 12 },
+  retryBtn: { marginTop: 16, paddingVertical: 10, paddingHorizontal: 24, backgroundColor: "#283618", borderRadius: 999 },
+  retryBtnText: { fontFamily: "Poppins-SemiBold", fontSize: 14, color: "#fff" },
+
+  emptyWrap: { alignItems: "center", paddingTop: 80 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: "rgba(188,108,37,0.10)", alignItems: "center", justifyContent: "center", marginBottom: 16 },
+  emptyTitle: { fontFamily: "Poppins-SemiBold", fontSize: 18, color: "#111827" },
+  emptyHint: { fontFamily: "Poppins-Regular", fontSize: 14, color: "#6B7280", marginTop: 4, textAlign: "center" },
+
+  cardsSection: { marginTop: 12 },
+  cardRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    // borderWidth: 2
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
   },
+  cardIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(40,54,24,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardInfo: { flex: 1, marginLeft: 14 },
+  cardBrandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  cardBrand: { fontFamily: "Poppins-SemiBold", fontSize: 15, color: "#111827" },
+  defaultBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  defaultBadgeText: { fontFamily: "Poppins-Medium", fontSize: 11 },
+  cardLast4: { fontFamily: "Poppins-Regular", fontSize: 13, color: "#6B7280", marginTop: 2 },
+  cardExpiry: { color: "#9CA3AF" },
+  cardActions: { flexDirection: "row", gap: 8, marginLeft: 8 },
+  cardActionBtn: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+
+  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingTop: 14, backgroundColor: "#f8f6f2" },
+  addBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(188,108,37,0.94)", borderRadius: 999, paddingVertical: 15, shadowColor: "#BC6C25", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  addBtnText: { fontFamily: "Poppins-SemiBold", fontSize: 16, color: "#fff" },
+
+  modalOverlay: { flex: 1, justifyContent: "flex-end" },
+  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.4)" },
+  modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+  modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.12)", alignSelf: "center", marginBottom: 16 },
+  modalTitle: { fontFamily: "Poppins-SemiBold", fontSize: 18, marginBottom: 4 },
+  modalSubtitle: { fontFamily: "Poppins-Regular", fontSize: 14, marginBottom: 20 },
+  modalFields: { gap: 12 },
+  modalLabel: { fontFamily: "Poppins-Regular", fontSize: 12, marginBottom: 4 },
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontFamily: "Poppins-Regular", fontSize: 15 },
+  modalRow: { flexDirection: "row", gap: 12 },
+  modalActions: { flexDirection: "row", gap: 12, marginTop: 24 },
+  modalCancelBtn: { flex: 1, borderWidth: 1, borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  modalCancelText: { fontFamily: "Poppins-Regular", fontSize: 14 },
+  modalSaveBtn: { flex: 1, borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  modalSaveText: { fontFamily: "Poppins-SemiBold", fontSize: 14, color: "#fff" },
 });

@@ -1,6 +1,7 @@
 import { Image, Pressable, Dimensions, ScrollView } from "react-native";
 import { StyleSheet, View } from "react-native";
 import Text from '../Text';
+import AppImage from '../AppImage';
 const { width, height } = Dimensions.get("window");
 import { AntDesign } from "@expo/vector-icons";
 import { EvilIcons } from '@expo/vector-icons';
@@ -34,9 +35,9 @@ function ProductDescription({ title, image, price, reviews, category, component,
             paddingVertical: 10,
             paddingHorizontal: 10,
           }}>
-            {image && isValidURL(image) && <Image
+            {image && isValidURL(image) && <AppImage
+              uri={image}
               style={styles.image}
-              source={{ uri: image }}
             />}
           </View>
           <Text style={{ fontWeight: 900, fontSize: 14 }}>{`Total: $${(price).toFixed(2)}`}</Text>

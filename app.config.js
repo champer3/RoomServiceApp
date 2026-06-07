@@ -8,7 +8,7 @@ module.exports = {
     ...base,
     extra: {
       ...(base.extra || {}),
-      serverUrl: process.env.SERVER_URL || 'https://roomservicebackend-6fdac2e35a8e.herokuapp.com',
+      serverUrl: process.env.SERVER_URL || 'http://192.168.1.80:3000',
       stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
     },

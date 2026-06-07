@@ -1,264 +1,357 @@
-import { StyleSheet, View, Pressable, Alert, ScrollView, Image, Dimensions, ActivityIndicator } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import BareButton from "../components/Buttons/BareButton";
-import Feather from '@expo/vector-icons/Feather';
-import ProductAction from "../components/Product/ProductAction";
-import { FontAwesome } from "@expo/vector-icons";
-import { AntDesign } from '@expo/vector-icons';
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Entypo } from "@expo/vector-icons";
-import { Octicons } from "@expo/vector-icons";
-import Profile from "../components/Profile";
-import Content from "../components/Content";
-import FlexButton from "../components/Buttons/FlexButton";
-import NavBar from "../components/NavBar";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  StyleSheet,
+  View,
+  Pressable,
+  ScrollView,
+  Image,
+  Dimensions,
+  Animated,
+  Easing,
+} from "react-native";
+import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useSelector } from 'react-redux'
-import axios from "axios";
-import Text from '../components/Text';
-import { SERVER_URL } from "../config";
+import Text from "../components/Text";
+import { useTheme } from "../theme/ThemeContext";
 
 const { width, height } = Dimensions.get("window");
+
 function AccountDisplay() {
-  const data = useSelector((state) => state.profileData.profile)
-  const [logged, setLogged] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // State variable to track loading status
-
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  function pressHandler() {
-    navigation.navigate("Profile");
-  }
-  function paymentHandler() {
-    navigation.navigate("Payment");
-  }
-  function orderHandler() {
-    navigation.navigate("Order History");
-  }
-  function addressHandler() {
-    navigation.navigate("Address");
-  }
-  function settingsHandler() {
-    navigation.navigate("Settings");
-  }
-  const retrieveTokenFromAsyncStorage = async () => {
-    try {
-      const storedToken = await AsyncStorage.getItem("profile");
-      if (storedToken !== null) {
-        setLogged(true)
-      }
-    } catch (error) {
-      console.error("Error retrieving token:", error);
-    }
-  };
-  const retrievePrivateTokenFromAsyncStorage = async () => {
-    try {
-      const storedToken = await AsyncStorage.getItem("authToken");
-      if (storedToken !== null) {
-        return storedToken;
-      } else {
-        navigation.navigate('Account')
-      }
-    } catch (error) {
-      console.error("Error retrieving token:", error);
-    }
-  };
-  useEffect(() => { retrievePrivateTokenFromAsyncStorage() }, [])
-  // Allert to delete account.....................................................................
+  const data = useSelector((state) => state.profileData.profile);
+  const { colors, isDark } = useTheme();
+  const [logged, setLogged] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const handleYes = () => {
-    // Perform action when user selects "Yes"
-    console.log('User selected Yes');
-  };
+  useEffect(() => {
+    (async () => {
+      const token = await AsyncStorage.getItem("profile");
+      if (token) setLogged(true);
+      setIsLoading(false);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 350,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    })();
+  }, []);
 
-  const handleNo = () => {
-    // Perform action when user selects "No"
-    console.log('User selected No');
-  };
+  const fullName = data
+    ? `${data.firstName || ""} ${data.lastName || ""}`.trim().replace(/\b\w/g, (c) => c.toUpperCase())
+    : "";
 
-  const showAlert = () => {
-    Alert.alert(
-      'Confirmation',
-      'Are you sure you want to delete your account?',
-      [
-        {
-          text: 'No',
-          onPress: handleNo,
-          style: 'cancel'
-        },
-        {
-          text: 'Yes',
-          onPress: deleteHandler
-        }
-      ],
-      { cancelable: false }
-    );
-  };
-
-  async function logoutHandler() {
-    try {
-      await AsyncStorage.removeItem('authToken')
-      console.log("item removed")
-    } catch (error) {
-      console.error('Error deleting item:', error);
-    }
-    try {
-      await AsyncStorage.removeItem('profile')
-      console.log("item removed")
-      navigation.replace("Authentication", { screen: "NumberLogin" });
-    } catch (error) {
-      console.error('Error deleting item:', error);
-    }
-  }
-
-  async function deleteHandler() {
-    console.log("here")
-    console.log(data.email)
-    try {
-      const token = await retrievePrivateTokenFromAsyncStorage();
-      console.log(token)
-      await axios.delete(
-        `${SERVER_URL}/api/v1/users/${data.email}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("done")
-      await AsyncStorage.removeItem('authToken')
-      console.log("item removed")
-    } catch (error) {
-      console.error('Error deleting item:', error);
-    }
-    try {
-      await AsyncStorage.removeItem('profile')
-      console.log("item removed")
-      navigation.replace("Authentication", { screen: "NumberLogin" });
-    } catch (error) {
-      console.error('Error deleting item:', error);
-    }
-  }
-  useEffect(() => { setIsLoading(true); setTimeout(() => { setIsLoading(false) }, 500) }, [])
-  useEffect(() => { retrieveTokenFromAsyncStorage() }, [])
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      {isLoading ? (
-        // Render loading indicator while loading
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#0000ff" /></View>
-      ) : (<>
-        {logged ? <><View
-          style={{
-            paddingLeft: "5%",
-            paddingTop: "7%",
-            paddingBottom: "3%",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 20,
-          }}
-        >
-          <Text style={{  fontSize: 20 }}>My Account</Text>
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.loadingWrap}>
+          <Animated.View style={{ opacity: fadeAnim }}>
+            <Text style={styles.headerTitle}>Account</Text>
+          </Animated.View>
         </View>
-          <View style={{ flex: 1 }}>
-            <ScrollView style={{}}>
-              <View style={styles.recommendedView}>
-                <Profile />
+      </View>
+    );
+  }
+
+  if (!logged) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+        <View style={styles.notLoggedWrap}>
+          <Image style={styles.emptyImage} source={require("../assets/empty.png")} />
+          <Text style={[styles.notLoggedTitle, { color: colors.text }]}>You're not logged in</Text>
+          <Text style={[styles.notLoggedHint, { color: colors.textSecondary }]}>Sign in or create an account to manage your profile</Text>
+          <Pressable
+            style={[styles.getAccountBtn, { backgroundColor: colors.primary }]}
+            onPress={() => navigation.replace("Authentication", { screen: "StartScreen" })}
+          >
+            <Text style={styles.getAccountBtnText}>Get started</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Animated.View style={[styles.inner, { opacity: fadeAnim, paddingTop: insets.top }]}>
+        {/* Header */}
+        <View style={styles.headerBlock}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Account</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Manage your profile & preferences</Text>
+        </View>
+
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 12) + 100 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* User Info Card */}
+          <View style={[styles.userCard, { backgroundColor: colors.userCardBg }]}>
+            <View style={styles.userCardLeft}>
+              <View style={styles.avatarCircle}>
+                <Text style={styles.avatarLetter}>
+                  {data?.firstName ? data.firstName.charAt(0).toUpperCase() : "U"}
+                </Text>
               </View>
-              <View
-                style={[
-                  styles.recommendedView,
-                  {
-                    marginVertical: "10%",
-                    marginTop: "5%",
-                    marginHorizontal: "5%",
-                    paddingBottom: "2%",
-                    borderWidth: 2,
-                    borderColor: "rgba(0,0,0,0.05)",
-                    borderRadius: 20,
-                    justifyContent: "space-between",
-                  },
-                ]}
-              >
-                <Content
-                  title={"My Profile"}
-                  info={"Make changes to your account"}
-                  icon={
-                    <Ionicons name="person-outline" size={30} color="#283618" />
-                  }
-                  onPress={pressHandler}
-                />
-                <Content
-                  title={"Payments"}
-                  info={"Manage your payment settings"}
-                  icon={
-                    <MaterialCommunityIcons
-                      name="wallet-outline"
-                      size={30}
-                      color="#283618"
-                    />
-                  }
-                  onPress={paymentHandler}
-                />
-                <Content
-                  title={"Orders"}
-                  info={"View your orders"}
-                  icon={<Entypo name="text-document" size={30} color="#283618" />}
-                  onPress={orderHandler}
-                />
-                <Content
-                  title={"Address"}
-                  info={"Add or manage saved addresses"}
-                  icon={<Octicons name="location" size={30} color="#283618" />}
-                  onPress={addressHandler}
-                />
-                <Content
-                  title={"Settings"}
-                  info={"Update your App Settings"}
-                  icon={<Feather name="settings" size={24} color="black" />}
-                  onPress={settingsHandler}
-                />
+              <View style={styles.userInfo}>
+                <Text style={[styles.userName, { color: colors.userCardText }]} numberOfLines={1}>{fullName || "User"}</Text>
+                <Text style={[styles.userEmail, { color: colors.userCardTextSecondary }]} numberOfLines={1}>{data?.email || ""}</Text>
+                {data?.phone ? (
+                  <Text style={[styles.userPhone, { color: colors.userCardTextSecondary }]} numberOfLines={1}>{data.phone}</Text>
+                ) : null}
               </View>
-              <View style={[styles.recommendedView, { flex: 1, paddingVertical: "10%" }]}>
-                <BareButton color={"#B22334"} onPress={logoutHandler}>
-                  <Ionicons name="log-out-outline" size={width / 11} color="#B22334" />
-                  <Text style={{ fontSize: 18, color: "#B22334" }}> Logout</Text>
-                </BareButton>
-              </View>
-              <View style={[styles.recommendedView, { flex: 1 }]}>
-                <BareButton color={"#B22334"} onPress={showAlert}>
-                  <AntDesign name="delete" size={width / 12} color="#B22334" />
-                  <Text style={{ fontSize: 18, color: "#B22334" }}> Delete Account</Text>
-                </BareButton>
-              </View>
-            </ScrollView>
-            {/*
-        <View style={{paddingHorizontal: '5%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' , justifyContent: "space-between", flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)'}}>
-            <NavBar/>
-        </View> */}
-          </View></> : <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 }}><View><Image style={styles.image} source={require('../assets/empty.png')} /></View><Text style={{ textAlign: 'center', fontSize: 15, fontWeight: '500' }}>You don’t have an account try logging in or signing up</Text><View style={[styles.recommendedView, { height: 75 }]}><FlexButton background={'#283618'} onPress={() => { navigation.replace('Authentication', { screen: 'NumberLogin' }) }}><Text style={{ fontSize: 18, color: 'white' }}>Get my account</Text></FlexButton></View></View>}</>)}
-    </SafeAreaView>
+            </View>
+            <Pressable
+              style={styles.userEditBtn}
+              onPress={() => navigation.navigate("Profile")}
+              hitSlop={10}
+            >
+              <Feather name="edit-2" size={16} color={colors.accent} />
+            </Pressable>
+          </View>
+
+          {/* Menu Items */}
+          <View style={[styles.menuSection, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
+            <MenuItem
+              icon={<Ionicons name="receipt-outline" size={22} color={colors.primary} />}
+              title="Orders"
+              subtitle="View your order history"
+              onPress={() => navigation.navigate("Order History")}
+            />
+            <MenuItem
+              icon={<Ionicons name="heart-outline" size={22} color={colors.primary} />}
+              title="My Favorites"
+              subtitle="Products you've saved"
+              onPress={() => navigation.navigate("Favorites")}
+            />
+            <MenuItem
+              icon={<Ionicons name="location-outline" size={22} color={colors.primary} />}
+              title="Addresses"
+              subtitle="Manage saved addresses"
+              onPress={() => navigation.navigate("Address")}
+            />
+            <MenuItem
+              icon={<MaterialCommunityIcons name="wallet-outline" size={22} color={colors.primary} />}
+              title="Payment Methods"
+              subtitle="Manage cards & payment options"
+              onPress={() => navigation.navigate("Payment")}
+            />
+            <MenuItem
+              icon={<Ionicons name="notifications-outline" size={22} color={colors.primary} />}
+              title="Notifications"
+              subtitle="Notification preferences"
+              onPress={() => navigation.navigate("Notifications")}
+            />
+            <MenuItem
+              icon={<Feather name="settings" size={22} color={colors.primary} />}
+              title="Settings"
+              subtitle="App preferences"
+              onPress={() => navigation.navigate("Settings")}
+            />
+          </View>
+        </ScrollView>
+      </Animated.View>
+    </View>
   );
 }
+
+function MenuItem({ icon, title, subtitle, onPress }) {
+  const { colors } = useTheme();
+  return (
+    <Pressable style={[styles.menuItem, { borderBottomColor: colors.borderHairline }]} onPress={onPress}>
+      <View style={[styles.menuIconCircle, { backgroundColor: colors.primaryLight }]}>{icon}</View>
+      <View style={styles.menuTextWrap}>
+        <Text style={[styles.menuTitle, { color: colors.text }]}>{title}</Text>
+        {subtitle ? <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>{subtitle}</Text> : null}
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+    </Pressable>
+  );
+}
+
 export default AccountDisplay;
 
 const styles = StyleSheet.create({
-  catHead: {
-    justifyContent: "space-between",
-    gap: 19,
+  container: {
+    flex: 1,
+    backgroundColor: "#f8f6f2",
   },
-  text: { fontWeight: "600", fontSize: 20, marginBottom: 20, color: "#aaa" },
-  recommendedView: {
-    paddingHorizontal: "5%",
-    paddingTop: "5%",
+  inner: {
+    flex: 1,
+    paddingHorizontal: 18,
   },
-  image: {
-    height: height / 3,
-    alignSelf: "center",
-    resizeMode: 'contain',
-    marginBottom: 30
+  loadingWrap: {
+    flex: 1,
+    paddingHorizontal: 18,
+    paddingTop: 20,
+  },
+
+  headerBlock: {
+    marginBottom: 24,
+    marginTop: 8,
+  },
+  headerTitle: {
+    fontFamily: "Poppins-Bold",
+    fontSize: 30,
+    color: "#111827",
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 15,
+    color: "#6b7280",
+    marginTop: 2,
+    lineHeight: 22,
+  },
+
+  scroll: {
+    flex: 1,
+  },
+
+  // User card
+  userCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#283618",
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 24,
+  },
+  userCardLeft: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatarCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#BC6C25",
+    borderWidth: 0.18,
+    borderColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  avatarLetter: {
+    fontFamily: "Poppins-Medium",
+    fontSize: 20,
+    color: "#fff",
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 20,
+    color: "#fff",
+    lineHeight: 26,
+  },
+  userEmail: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 14,
+    color: "rgba(255,255,255,0.7)",
+    marginTop: 2,
+  },
+  userPhone: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 13,
+    color: "rgba(255,255,255,0.55)",
+    marginTop: 2,
+  },
+  userEditBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // Menu
+  menuSection: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.05)",
+    overflow: "hidden",
+    marginBottom: 20,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(0,0,0,0.06)",
+  },
+  menuIconCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "rgba(40,54,24,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  menuTextWrap: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  menuTitle: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 16,
+    letterSpacing: -0.5,
+    color: "#111827",
+  },
+  menuSubtitle: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 13,
+    color: "#6B7280",
+    marginTop: 2,
+  },
+
+  // Not logged in
+  notLoggedWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  emptyImage: {
+    width: width * 0.5,
+    height: height / 4,
+    resizeMode: "contain",
+    marginBottom: 24,
+  },
+  notLoggedTitle: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 20,
+    color: "#111827",
+    textAlign: "center",
+  },
+  notLoggedHint: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: 6,
+    lineHeight: 20,
+  },
+  getAccountBtn: {
+    marginTop: 28,
+    backgroundColor: "#283618",
+    borderRadius: 999,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+  },
+  getAccountBtnText: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 16,
+    color: "#fff",
   },
 });

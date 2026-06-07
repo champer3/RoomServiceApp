@@ -19,6 +19,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, {Path} from 'react-native-svg';
 import { addToCart } from "../Data/cart";
+import useThrottledPress from "../hooks/useThrottledPress";
+import { emitCartAdd } from "../utils/cartEvents";
 import IncrementDecrementBton from "../components/Buttons/IncrementDecrementBtn copy";
 import { LinearGradient } from "expo-linear-gradient";
 import { useToast } from "../context/ToastContext";
@@ -227,10 +229,11 @@ function ProductDisplay() {
     });
   }, []);
   const scrollViewRef = useRef(null);
-  function fuflfilCart(){
+  const fuflfilCart = useThrottledPress(() => {
     Keyboard.dismiss();
     if (canAddToCart()){
     dispatch(addToCart({ id: formObject }));
+    emitCartAdd();
     setFormObject({
       ...buildDefaultFormObject(product),
       products: [product],
@@ -239,7 +242,7 @@ function ProductDisplay() {
       type: "success",
       title: "Item added to cart",
       actionLabel: "View Cart →",
-      onAction: () => navigation.navigate("CartShow"),
+      onAction: () => navigation.navigate("Cart"),
     });
   }else{
       if (scrollViewRef.current) {
@@ -247,7 +250,7 @@ function ProductDisplay() {
       }
       showToast({ type: "error", title: "Required options", message: "Choose all required options." });
     }
-  }
+  }, 500);
   const handleSelectOption = (category, item, required, change = 0) => {
     setFormObject((prevForm) => {
       const updatedOptions = prevForm.options.map((opt) => {

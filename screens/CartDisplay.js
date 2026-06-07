@@ -1,12 +1,13 @@
-import { Image, StyleSheet, TextInput, View, Pressable, Dimensions, TouchableOpacity, ScrollView } from "react-native";
+import { Image, StyleSheet, TextInput, View, Pressable, Dimensions, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useRef , useEffect} from 'react';
+import { useState, useRef, useEffect } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import AppImage from "../components/AppImage";
 import { postAppApplyCoupon } from "../api/appPromotions";
 import { cartLinesForPromoApi } from "../utils/cartPromoPayload";
 import CartPromotionSummary from "../components/promotions/CartPromotionSummary";
 import CouponEntrySection from "../components/promotions/CouponEntrySection";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Review from "../components/Reviews/Review"
 import Rating from "../components/Reviews/Rating"
 import Pill from '../components/Pills/Pills'
@@ -24,13 +25,18 @@ import Text from '../components/Text';
 import { useNavigation } from "@react-navigation/native";
 import {useSelector, useDispatch} from 'react-redux'
 import {addToCart, removeFromCart, deleteFromCart, addOptions, addItem, updateCart} from '../Data/cart'
+import useThrottledPress from '../hooks/useThrottledPress'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import BottomSheet from '../components/Modals/BottomSheet';
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 // import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import ProductDescription from "../components/Product/ProductDescription";
 import IncrementDecrementBton from "../components/Buttons/IncrementDecrementBtn copy";
 const { width, height } = Dimensions.get("window");
+
 function CartDisplay() {
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids)
   const [extra, setExtra] = useState()
@@ -96,29 +102,30 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
     return totalPrice
   }
   const calculateTotalPrice = (formObject) => {
-    const productQuantity = formObject.products.length; // The quantity of the main product
-    let totalPrice = formObject.products[0].price * productQuantity; // Start with the base product price times the quantity
-  
-    // Calculate the total price of extra items
+    const productQuantity = formObject.products.length;
+    let totalPrice = formObject.products[0].price * productQuantity;
+
     formObject.extra?.forEach((extraItem) => {
-      totalPrice += extraItem.price * productQuantity;
+      totalPrice += (Number(extraItem.price) || 0) * productQuantity;
     });
-  
-    // Calculate the total price of selected options
-    formObject.options.forEach((optionCategory) => {
-      if (optionCategory.required) {
-        // If the option category is required, multiply the price of each selected option by the product quantity
-        optionCategory.values.forEach((selectedOption) => {
-          totalPrice += selectedOption.price * productQuantity;
+
+    (formObject.options || []).forEach((optionCategory) => {
+      (optionCategory.values || []).forEach((selectedOption) => {
+        const p = Number(selectedOption.price) || 0;
+        totalPrice += optionCategory.required ? p * productQuantity : p;
       });
-      } else {
-        // If the option category is not required, just add the price of each selected option
-        optionCategory.values.forEach((selectedOption) => {
-            totalPrice += selectedOption.price;
-        });
-      }
     });
-  
+
+    (formObject.variantSelections || []).forEach((group) => {
+      (group.selected || []).forEach((choice) => {
+        totalPrice += (Number(choice.priceDelta) || 0) * productQuantity;
+      });
+    });
+
+    (formObject.schemaAddonsSelected || []).forEach((addon) => {
+      totalPrice += (Number(addon.price) || 0) * productQuantity;
+    });
+
     return totalPrice;
   };
   const cost = {}
@@ -251,13 +258,13 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
         setCouponLoading(false);
       }
     };
-    function pressHandler (){
+    const pressHandler = useThrottledPress(() => {
       if (cartItems.length > 0){
         navigation.navigate('Checkout')}
-    }
-    function dealHandler (){
+    }, 600);
+    const dealHandler = useThrottledPress(() => {
         navigation.navigate('All Deals')
-      }
+      }, 600);
       function toggleNumberInArray(number) {
         setSelected((prev)=> {
             const array = [...prev]
@@ -346,139 +353,484 @@ const [foodDictionary, setFoodDictionary] = useState(foodStore);
       return total + productPrice 
     }, 0);
   };
-  function handleProductClick(item, index){
-    let product = item.products[0]
-    dispatch(deleteFromCart({ id: {'index': index} }));
-    navigation.navigate('Product',{product, productData: item})
+  const handleProductClick = useThrottledPress((item, index) => {
+    const product = item.products[0];
+    const productData = { ...item };
+    navigation.navigate('Product', { product, productData });
+    requestAnimationFrame(() => {
+      dispatch(deleteFromCart({ id: { 'index': index } }));
+    });
+  }, 600);
+  const fmtShort = (v) => { const n = Number(v); return n % 1 === 0 ? String(n) : n.toFixed(2); };
+
+  function isValidURL(str) {
+    if (typeof str !== 'string') str = String(str);
+    return str.startsWith("http://") || str.startsWith("https://");
   }
-  // Render each product in the cart
+
   const renderCartItem = ({ item, index }) => {
-    const product = item.products[0]; // Assuming only one product per cart entry
+    const product = item.products[0];
+    const qty = item.products.length;
+    const lineTotal = calculateTotalPrice(item);
+    const unitPrice = product?.price ?? 0;
+    const imgSrc = product?.images?.[0];
+    const title = product?.title || "";
+    const extras = item.extra;
+    const opts = item.options;
+    const instr = item.instructions;
+    const variants = item.variantSelections;
+    const addons = item.schemaAddonsSelected;
+    const comp = item.components;
+
+    const hasDetails = (extras?.length > 0) || (opts?.some(o => o.values?.length > 0)) ||
+      (variants?.some(v => v.selected?.length > 0)) || (addons?.length > 0) || instr;
+
     return (
-      <ProductAction component={item.components}  onTap={()=> handleProductClick(item, index)} title={product.title} options={item.options} instruction={item.instructions} side={item.extra} image={product.images[0]} quantity={item.products.length} price={calculateTotalPrice(item)} action={<Pressable onPress={()=>handleDeleteFromCart(index)} style={({ pressed }) => pressed && { opacity: 0.5 }}><EvilIcons name="trash" size={35} color="#B22334" /></Pressable>}><IncrementDecrementBton minValue={item.products.length} onIncrease={()=>{handleAddToCart(index)}} onDecrease ={()=>{handleRemoveFromCart(index)}}/></ProductAction>
+      <Pressable
+        onPress={() => handleProductClick(item, index)}
+        style={styles.cartCard}
+      >
+        <View style={styles.cartCardTop}>
+          <AppImage
+            uri={imgSrc && isValidURL(imgSrc) ? imgSrc : null}
+            style={styles.cartItemImage}
+          />
+          <View style={styles.cartItemInfo}>
+            <View style={styles.cartItemTitleRow}>
+              <Text style={styles.cartItemTitle} numberOfLines={2} ellipsizeMode="tail">
+                {title.replace(/\b\w/g, (c) => c.toUpperCase())}
+                {comp ? <Text style={styles.cartItemComp}>{` (${comp})`}</Text> : null}
+              </Text>
+              <Pressable
+                onPress={() => handleDeleteFromCart(index)}
+                hitSlop={8}
+                style={({ pressed }) => pressed && { opacity: 0.5 }}
+              >
+                <EvilIcons name="trash" size={38} color="#B22334" />
+              </Pressable>
+            </View>
+            <Text style={styles.cartItemPrice}>${unitPrice.toFixed(2)} each</Text>
+
+            {hasDetails && (
+              <View style={styles.cartItemDetails}>
+                {opts?.map((opt, i) =>
+                  opt.values?.length > 0 ? (
+                    <Text key={`opt-${i}`} style={styles.detailChip} numberOfLines={1}>
+                      {opt.name}: {opt.values.map(v =>
+                        v.name + (Number(v.price) > 0 ? ` (+$${fmtShort(v.price)})` : "")
+                      ).join(", ")}
+                    </Text>
+                  ) : null
+                )}
+                {variants?.map((g, i) =>
+                  g.selected?.length > 0 ? (
+                    <Text key={`var-${i}`} style={styles.detailChip} numberOfLines={1}>
+                      {g.groupName}: {g.selected.map(s =>
+                        s.name + (Number(s.priceDelta) > 0 ? ` (+$${fmtShort(s.priceDelta)})` : "")
+                      ).join(", ")}
+                    </Text>
+                  ) : null
+                )}
+                {extras?.slice(0, 3).map((e, i) => (
+                  <Text key={`ext-${i}`} style={styles.detailChip} numberOfLines={1}>
+                    + {e.name}{Number(e.price) > 0 ? ` (+$${fmtShort(e.price)})` : ""}
+                  </Text>
+                ))}
+                {extras?.length > 3 && (
+                  <Text style={styles.detailChip}>+{extras.length - 3} more</Text>
+                )}
+                {addons?.slice(0, 3).map((a, i) => (
+                  <Text key={`add-${i}`} style={styles.detailChip} numberOfLines={1}>
+                    + {a.name}{Number(a.price) > 0 ? ` (+$${fmtShort(a.price)})` : ""}
+                  </Text>
+                ))}
+                {instr ? (
+                  <Text style={[styles.detailChip, { fontStyle: "italic" }]} numberOfLines={1}>
+                    Note: {instr}
+                  </Text>
+                ) : null}
+              </View>
+            )}
+          </View>
+        </View>
+        <View style={styles.cartCardBottom}>
+          <IncrementDecrementBton
+            minValue={qty}
+            onIncrease={() => handleAddToCart(index)}
+            onDecrease={() => handleRemoveFromCart(index)}
+          />
+          <Text style={styles.cartItemLineTotal}>${lineTotal.toFixed(2)}</Text>
+        </View>
+      </Pressable>
     );
   };
-  function pressHandler (){
-    if (cartItems.length > 0){
-      navigation.navigate('Checkout', cartItems)}
-  }
-  // Calculate total
   const subtotal = calculateSubtotal();
   const taxesAndFees = 0.3 * subtotal;
-  const deliveryFee = 5.00;
-  const total = Math.max(0, subtotal + taxesAndFees + deliveryFee - promoDiscount);
+  const total = Math.max(0, subtotal + taxesAndFees - promoDiscount);
 
   return (
     <View style={styles.container}>
-           <View style={{marginTop: 45, flexDirection: 'row', alignItems: 'center'}}>
-        <TouchableOpacity onPress={navigation.goBack}><Svg width={43} height={43} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><Path class="fa-secondary" fill={'#425928'} opacity=".4" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zm112 0c0-6.1 2.3-12.3 7-17L231 127c4.7-4.7 10.8-7 17-7s12.3 2.3 17 7c9.4 9.4 9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9c-4.7 4.7-10.8 7-17 7s-12.3-2.3-17-7L119 273c-4.7-4.7-7-10.8-7-17z"/><Path fill={'#425928'} class="fa-primary" d="M119 273c-9.4-9.4-9.4-24.6 0-33.9L231 127c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L119 273z"/></Svg>
-        </TouchableOpacity>
-    <Text style={{ fontSize: 20, textAlign: 'center', width: '80%'}}>My Cart</Text>
-     </View>
-    {cartItems.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
-     {cartItems.length > 0 && <>
-     <View style={{marginTop: 20}}></View>
-      <CartPromotionSummary appliedLines={promoSummaryLines} />
-      <CouponEntrySection
-        appliedCoupon={appliedCouponUi}
-        onApply={handleApplyCoupon}
-        isApplying={couponLoading}
-        error={couponError}
-      />
-      {cartItems.map((item, index) => (
-        <View key={index.toString()}>
-          {renderCartItem({ item, index })}
+      <View style={[styles.navRow, { paddingTop: insets.top + 10 }]}>
+        <View style={styles.navSide}>
+          <Pressable
+            onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate("Home"))}
+            style={styles.backOuter}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <BlurView
+              intensity={Platform.OS === "ios" ? 82 : 58}
+              tint="light"
+              style={StyleSheet.absoluteFillObject}
+            />
+            <LinearGradient
+              pointerEvents="none"
+              colors={[
+                "rgba(255, 255, 255, 0.78)",
+                "rgba(252, 252, 251, 0.52)",
+                "rgba(248, 249, 246, 0.44)",
+              ]}
+              locations={[0, 0.45, 1]}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <LinearGradient
+              pointerEvents="none"
+              colors={["rgba(255, 255, 255, 0.35)", "transparent"]}
+              style={styles.backHighlight}
+            />
+            <View style={styles.backIconWrap} pointerEvents="none">
+              <Ionicons name="chevron-back" size={18} color="#111827" />
+            </View>
+          </Pressable>
         </View>
-      ))}
-
-      {/* Order Summary */}
-      <View style={styles.orderSummary}>
-        <View style={styles.summaryRow}>
-          <Text>Sub total</Text>
-          <Text>${subtotal.toFixed(2)}</Text>
+        <View style={styles.navTitleCenter} pointerEvents="none">
+          <Text style={styles.navTitleText} numberOfLines={1}>My Cart</Text>
         </View>
-        <View style={styles.summaryRow}>
-          <Text>Taxes & Fees</Text>
-          <Text>${taxesAndFees.toFixed(2)}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.totalText}>Total</Text>
-          <Text style={styles.totalText}>${total.toFixed(2)}</Text>
-        </View>
+        <View style={styles.navSide} />
       </View>
+      {cartItems.length === 0 ? (
+        <View style={styles.emptyWrap}>
+          <Image style={styles.emptyImage} source={require('../assets/cartEmpty.png')} />
+          <Text style={styles.emptyTitle}>Your cart is empty</Text>
+          <Text style={styles.emptyHint}>Add items to get started</Text>
+          <Pressable onPress={() => navigation.navigate('HomeTabs')} style={styles.emptyBtn}>
+            <Text style={styles.emptyBtnText}>Search items</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={0}
+          >
+          <ScrollView
+            style={{ flex: 1 }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <CartPromotionSummary appliedLines={promoSummaryLines} />
 
-      {/* Checkout Button */}
-      <TouchableOpacity onPress={pressHandler} style={styles.checkoutButton}>
-        <Text style={styles.checkoutButtonText}>Checkout</Text>
-      </TouchableOpacity></>}
+            {cartItems.map((item, index) => (
+              <View key={index.toString()}>
+                {renderCartItem({ item, index })}
+              </View>
+            ))}
+
+            <CouponEntrySection
+              appliedCoupon={appliedCouponUi}
+              onApply={handleApplyCoupon}
+              isApplying={couponLoading}
+              error={couponError}
+            />
+
+            <View style={styles.orderSummary}>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Subtotal</Text>
+                <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Taxes & Fees</Text>
+                <Text style={styles.summaryValue}>${taxesAndFees.toFixed(2)}</Text>
+              </View>
+              <View style={[styles.summaryRow, { marginTop: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.08)" }]}>
+                <Text style={styles.totalText}>Total</Text>
+                <Text style={styles.totalText}>${total.toFixed(2)}</Text>
+              </View>
+            </View>
+          </ScrollView>
+          </KeyboardAvoidingView>
+
+          <View style={[styles.checkoutBar, { paddingBottom: Math.max(insets.bottom, 12) + 8 }]}>
+            <View style={styles.checkoutTotalWrap}>
+              <Text style={styles.checkoutTotalLabel}>Total</Text>
+              <Text style={styles.checkoutTotalValue}>${total.toFixed(2)}</Text>
+            </View>
+            <Pressable onPress={pressHandler} style={styles.checkoutButton}>
+              <Ionicons name="bag-check-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.checkoutButtonText}>Checkout</Text>
+            </Pressable>
+          </View>
+        </>
+      )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#f8f6f2",
     paddingHorizontal: 10,
-    paddingVertical: "8%"
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
+  navRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    paddingBottom: 10,
   },
-  backButton: {
-    fontSize: 24,
-    color: '#000',
+  navSide: {
+    width: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 10,
+  navTitleCenter: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8,
   },
-  cartItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },image: {
-    height: height / 3,
-    alignSelf: "center",
-    resizeMode: 'contain'
+  navTitleText: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 17,
+    color: "#111827",
+    letterSpacing: 0.2,
   },
-  productImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-    marginRight: 10,
+  backOuter: {
+    width: 35,
+    height: 35,
+    borderRadius: 999,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.9)",
+    shadowColor: "#1f2937",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.14,
+    shadowRadius: 22,
+    elevation: 14,
   },
-  productDetails: {
-    // flex: 1,
+  backHighlight: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 12,
+    borderTopLeftRadius: 999,
+    borderTopRightRadius: 999,
   },
-  productName: {
+  backIconWrap: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingBottom: 160,
+  },
+  emptyImage: {
+    width: 140,
+    height: 140,
+    resizeMode: "contain",
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 17,
+    color: "#111827",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptyHint: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 14,
+    color: "#6b7280",
+    textAlign: "center",
+    lineHeight: 21,
+    marginBottom: 20,
+  },
+  emptyBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 999,
+    backgroundColor: "rgba(66, 89, 40, 0.12)",
+  },
+  emptyBtnText: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 14,
+    color: "#425928",
+  },
+  cartCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    marginBottom: 12,
+    padding: 14,
+    shadowColor: "#1f2937",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  cartCardTop: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  cartItemImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 14,
+    backgroundColor: "#f3f1ed",
+  },
+  cartItemInfo: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  cartItemTitleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  cartItemTitle: {
+    flex: 1,
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 14,
+    color: "#111827",
+    lineHeight: 20,
+  },
+  cartItemComp: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 11,
+    color: "#6b7280",
+  },
+  cartItemPrice: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 13,
+    color: "#6b7280",
+    marginTop: 2,
+  },
+  cartItemDetails: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 8,
+  },
+  detailChip: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 11,
+    color: "#425928",
+    backgroundColor: "rgba(66, 89, 40, 0.08)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+  cartCardBottom: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.05)",
+  },
+  cartItemLineTotal: {
+    fontFamily: "Poppins-SemiBold",
     fontSize: 16,
+    color: "#111827",
   },
   orderSummary: {
-    marginBottom: 20,
-    paddingTop: 15,
-    borderTopWidth: 1,
-    borderStyle: 'dashed'
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 4,
+    marginBottom: 12,
   },
   summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  summaryLabel: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 14,
+    color: "#6b7280",
+  },
+  summaryValue: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 14,
+    color: "#111827",
   },
   totalText: {
-    fontSize: 18,
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 17,
+    color: "#111827",
+  },
+  checkoutBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 14,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: "#1f2937",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  checkoutTotalWrap: {
+    gap: 2,
+  },
+  checkoutTotalLabel: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 12,
+    color: "#6b7280",
+  },
+  checkoutTotalValue: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 20,
+    color: "#111827",
   },
   checkoutButton: {
-    backgroundColor: '#283618',
-    borderRadius: 10,
-    paddingVertical: 15,
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(188, 108, 37, 0.94)",
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    shadowColor: "#BC6C25",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
   },
   checkoutButtonText: {
-    color: '#fff',
-    fontSize: 18,
+    fontFamily: "Poppins-SemiBold",
+    color: "#fff",
+    fontSize: 16,
+    letterSpacing: 0.3,
   },
 });
 export default CartDisplay

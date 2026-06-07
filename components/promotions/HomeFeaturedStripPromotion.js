@@ -1,6 +1,7 @@
 import { View, Pressable, Image, StyleSheet, Dimensions, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../Text';
+import AppImage from '../AppImage';
 import { PROMO_CARD, PROMO_GREEN, toneToColor } from './promoTheme';
 import { handlePromotionCtaPress } from '../../utils/promotionCtaNavigation';
 
@@ -24,11 +25,7 @@ export default function HomeFeaturedStripPromotion({
 
   return (
     <View style={[styles.card, { width: w }]}>
-      {img ? (
-        <Image source={{ uri: img }} style={[styles.image, { width: w }]} resizeMode="cover" />
-      ) : (
-        <View style={[styles.image, styles.imagePlaceholder, { width: w }]} />
-      )}
+      <AppImage uri={img || null} style={[styles.image, { width: w }]} resizeMode="cover" />
       <View style={[styles.body, compact && styles.bodyCompact]}>
         {badge?.label ? (
           <View style={[styles.badge, { backgroundColor: toneToColor(badge.tone) }]}>

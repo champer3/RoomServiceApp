@@ -10,6 +10,8 @@ import {
   Easing,
   FlatList,
   Platform,
+  InteractionManager,
+  AppState,
 } from "react-native";
 import Text from '../components/Text';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -32,7 +34,7 @@ import Input from "../components/Inputs/Input";
 const { width, height } = Dimensions.get("window");
 import IncrementDecrementBtn from "../components/Buttons/IncrementDecrementBtn";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart, addOptions, } from "../Data/cart";
+import { addToCart, removeFromCart, addOptions, selectTotalCartCount } from "../Data/cart";
 import { fetchOrders, updateOrder } from "../Data/order"
 import { useEffect, useState, useRef } from "react";
 import BottomSheet from "../components/Modals/BottomSheet";
@@ -40,18 +42,19 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexButton from "../components/Buttons/FlexButton";
-import io from 'socket.io-client';
 import TransparentSheet from "../components/Modals/TransparentSheet.";
 import axios from "axios";
 import { initializeSocket, getSocket, disconnectSocket } from '../socketService';
-import { fetchProducts } from "../Data/Items"
+import { fetchProducts, removeProduct, patchProduct, addProduct } from "../Data/Items"
 import ItemSmallCategory from "../components/Category/ItemSmallCategory";
 import { SERVER_URL } from "../config";
-import { fetchAppHome } from "../api/appPromotions";
+import { fetchAppHome, invalidateAppCache } from "../api/appPromotions";
 import PromotionHomeSection from "../components/promotions/PromotionHomeSection";
+import { useTheme } from "../theme/ThemeContext";
 import RoomServiceAlert, { ROOM_SERVICE_ALERT_TYPES } from "../components/RoomServiceAlert";
 import { useToast } from "../context/ToastContext";
 import FloatingCartFab from "../components/FloatingCartFab";
+import FalseHomeScreen from "./FalseHomeScreen";
 
 const FadeOutView = (props) => {
   const [fadeAnim] = useState(new Animated.Value(1)); // Initial value for opacity: 1
@@ -117,173 +120,123 @@ const SEARCH_BAR_PHRASES = [
 
 function Home() {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
 
   const [socket, setSocket] = useState(null);
   const address = useSelector((state) => state.profileData.profile)?.address[0]
   const expoPushToken = useSelector((state) => state.notifications.expoPushToken);
-  const [message, setMessage] = useState('')
-  const [orderId, setOrderId] = useState('')
-  const [actions, setAction] = useState('')
+  const notificationCount = useSelector((state) => state.notifications.unreadCount || 0);
 
-  const handleSendNotification = (title, message) => {
-    if (expoPushToken) {
-      dispatch(triggerNotification(expoPushToken, title, message));
-    } else {
-      console.error('No push token available');
-    }
-  };
   useEffect(() => {
-    const setupSocket = async () => {
-      try {
-        const token = await retrieveTokenFromAsyncStorage();
-        console.log('Token:', token);
-
-        // Ensure the socket is initialized before trying to get it
-        await initializeSocket(token); // Wait for the socket to be initialized
-
-        const socketInstance = getSocket(); // Get the socket after it's initialized
-        setSocket(socketInstance); // Set the socket
-      } catch (error) {
-        console.error('Error setting up socket:', error);
+    const setup = async () => {
+      const token = await retrieveTokenFromAsyncStorage();
+      if (token) {
+        initializeSocket(token);
+        setSocket(getSocket());
       }
     };
+    setup();
+  }, []);
 
-    setupSocket(); // Call the async setup function
-
-    return () => {
-      disconnectSocket(); // Clean up the socket on component unmount
-    };
-    // const initializeSocket = async () => {
-    //   try {
-    //     const token = await retrieveTokenFromAsyncStorage();
-    //     // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MGRiYWY2NmVjYWE0MWUyODQwYjZlNiIsImlhdCI6MTcxMjE3NTg2MiwiZXhwIjoxNzEzMDM5ODYyfQ.C8dASXQn_jHO0tBGd7-wnFWOfpWwwTSED-xqcpc7oVU"
-    //     console.log(token)
-    //     console.log("Did we even get here?")
-    //     const newSocket = io(SERVER_URL, {
-    //       query: { token }
-    //     });
-    //     // console.log("New socket in the local backend",newSocket);
-    //     setSocket(newSocket);
-
-    //     newSocket.on('connect', () => {
-    //       console.log('Connected to server');
-    //     });
-    //   } catch (error) {
-    //     console.error('Error initializing socket:', error);
-    //   }
-    // };
-
-    // initializeSocket();
-  }, [])
-
-
-  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1OGIyM2U2ODVlNzU4ZmM0YzFlMGU2ZSIsImlhdCI6MTcxMDQ0MzUyOCwiZXhwIjoxNzExMzA3NTI4fQ.HAym6ciuWr67c4ZqfVz-_x5xOU_YjVSI6zXZGTX0qts"
   const [deliveringOrdersCount, setDeliveringOrdersCount] = useState(countDeliveringOrders(orders));
 
-
-
-  // useEffect(()=>{
-  //   const socket = io(SERVER_URL);
-
-  //   socket.on('connect', () => {
-  //     console.log('Connected to server');
-  // });
-
-  // socket.on('message', (data) => {
-  //   console.log('Received message:', data);
-  // Handle incoming messages from the server
-  // });
-
-
-  // connectSocket()
-  // },[])
   useEffect(() => {
-    if (message) { handleSendNotification("Order Update", message) };
-    const date = new Date()
-    dispatch(updateOrder({ id: { uid: orderId, act: 'status', perform: actions } }));
-    if (actions == 'Delivered') {
-      dispatch(updateOrder({ id: { uid: orderId, act: 'date', perform: date.toString() } }));
+    let interval = null;
+    let cleanedUp = false;
+    let activeSocket = null;
+    let fetchDebounce = null;
 
-      setDeliveringOrdersCount(prev => prev - 1)
+    const handleOrderUpdate = (data) => {
+      console.log('[Home] orderUpdate received:', data);
+      if (data.orderId && data.status) {
+        dispatch(updateOrder({ id: { uid: data.orderId, act: 'status', perform: data.status } }));
+        if (data.status === 'delivered' || data.status === 'Delivered') {
+          dispatch(updateOrder({ id: { uid: data.orderId, act: 'date', perform: new Date().toString() } }));
+          setDeliveringOrdersCount(prev => Math.max(0, prev - 1));
+        }
+      }
+      if (data.message) {
+        dispatch(triggerNotification(expoPushToken, "Order Update", data.message));
+      }
+      // Debounced refetch to avoid rapid successive calls
+      if (fetchDebounce) clearTimeout(fetchDebounce);
+      fetchDebounce = setTimeout(() => { dispatch(fetchOrders()); }, 800);
+    };
 
-    }
-  }, [orderId])
+    const attachListeners = () => {
+      const s = getSocket();
+      if (!s || !s.connected) return false;
+      if (activeSocket === s) return true;
+      activeSocket = s;
 
-  useEffect(() => {
+      s.on('orderUpdate', handleOrderUpdate);
+      s.on('orderInDelivery', (data) => {
+        handleOrderUpdate({ ...data, status: 'out_for_delivery', message: data.message || 'Your order is out for delivery' });
+      });
+      s.on('delivered', (data) => {
+        handleOrderUpdate({ ...data, status: 'delivered', message: data.message || 'Your order has been delivered' });
+      });
+      s.on('productUpdate', (data) => {
+        if (data.type === 'deleted') {
+          dispatch(removeProduct(data.productId));
+        } else if (data.type === 'created' && data.product) {
+          dispatch(addProduct(data.product));
+        } else if (data.type === 'updated' && data.product) {
+          if (data.product.availability === false || data.product.status === 'inactive') {
+            dispatch(removeProduct(data.productId));
+          } else {
+            dispatch(patchProduct(data.product));
+          }
+        }
+      });
+      s.on('categoryUpdate', () => {
+        invalidateAppCache();
+        fetchAppHome().then((d) => { if (d) setHomeAppData(d); });
+        dispatch(fetchProducts());
+      });
+      s.on('departmentUpdate', () => {
+        invalidateAppCache();
+        fetchAppHome().then((d) => { if (d) setHomeAppData(d); });
+      });
+      return true;
+    };
 
-    if (socket) {
-      socket.on('orderInDelivery', (data) => {
-        console.log('we got here right')
-        setMessage(data.message)
-        setOrderId(data.orderId)
-        setAction('Out for Delivery')
-      })
-      socket.on('delivered', (data) => {
-        setMessage(data.message)
-        setOrderId(data.orderId)
-        setAction('Delivered')
-      })
-      //   socket.on('Delivered', (data) => {
-      //     console.log("here6556477")
-      //     const deliveringOrders = orders.filter(order => order.status === "Delivering");
-
-      // if (deliveringOrders.length === 0) {
-      //     return null; // Return null if there are no delivering orders
-      // }
-
-      // let earliestOrder = deliveringOrders[0];
-      // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
-
-      // deliveringOrders.forEach(order => {
-      //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
-      //     if (timestamp < earliestTimestamp) {
-      //         earliestOrder = order;
-      //         earliestTimestamp = timestamp;
-      //     }
-      // });
-      // console.log("orders",deliveringOrders)
-      // console.log("order",orders)
-      //   date = getTodaysDate()
-      //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
-      //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
-
-      //   });
-
-      return () => {
-        socket.off('delivered');
-        socket.off('orderInDelivery');
-        // Remove 'message' event listener
-        //     // Remove other event listeners as needed
-      };
-      //   socket.on('Out for Delivery', (data) => {
-      //     const deliveringOrders = orders.filter(order => order.status === "Ready for Delivery");
-
-      // if (deliveringOrders.length === 0) {
-      //     return null; // Return null if there are no delivering orders
-      // }
-
-      // let earliestOrder = deliveringOrders[0];
-      // let earliestTimestamp = new Date(earliestOrder.date).getTime(); // Convert the first date to a timestamp
-
-      // deliveringOrders.forEach(order => {
-      //     const timestamp = new Date(order.date).getTime(); // Convert the date to a timestamp
-      //     if (timestamp < earliestTimestamp) {
-      //         earliestOrder = order;
-      //         earliestTimestamp = timestamp;
-      //     }
-      // });
-      // console.log("orders",deliveringOrders)
-      // console.log("order",orders)
-      //   date = getTodaysDate()
-      //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'status', perform: 'Delivered'} }))
-      //       dispatch(updateOrder({ id: {uid : earliestOrder.id, act: 'date', perform: date} }))
-
-      //   });
-
-
+    if (!attachListeners()) {
+      interval = setInterval(() => {
+        if (cleanedUp) return;
+        if (attachListeners() && interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      }, 1000);
     }
 
-  })
+    return () => {
+      cleanedUp = true;
+      if (interval) clearInterval(interval);
+      if (fetchDebounce) clearTimeout(fetchDebounce);
+      if (activeSocket) {
+        activeSocket.off('orderUpdate');
+        activeSocket.off('delivered');
+        activeSocket.off('orderInDelivery');
+        activeSocket.off('productUpdate');
+        activeSocket.off('categoryUpdate');
+        activeSocket.off('departmentUpdate');
+      }
+    };
+  }, [expoPushToken]);
+
+  // Refetch orders when app returns from background
+  const appState = useRef(AppState.currentState);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        dispatch(fetchOrders());
+      }
+      appState.current = nextAppState;
+    });
+    return () => subscription.remove();
+  }, [dispatch]);
 
   const retrieveTokenFromAsyncStorage = async () => {
     try {
@@ -457,7 +410,10 @@ function Home() {
 
   // deliveringOrdersCount = countDeliveringOrders(orders);
   useEffect(() => {
-    dispatch(fetchProducts());
+    const handle = InteractionManager.runAfterInteractions(() => {
+      dispatch(fetchProducts());
+    });
+    return () => handle.cancel();
   }, [dispatch]);
   useEffect(() => {
     setBlink(true)
@@ -467,6 +423,7 @@ function Home() {
   const data = useSelector((state) => state.profileData.profile);
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems.ids);
+  const cartCount = useSelector(selectTotalCartCount);
 
 
 
@@ -475,17 +432,36 @@ function Home() {
   const [homeAppData, setHomeAppData] = useState(null);
   const [showMenuLoadError, setShowMenuLoadError] = useState(true);
 
+  const dataReady = (menuLoadStatus === 'succeeded' || menuLoadStatus === 'failed') && productItems.length > 0;
+  const [contentVisible, setContentVisible] = useState(dataReady);
+  const contentOpacity = useRef(new Animated.Value(dataReady ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (dataReady && !contentVisible) {
+      setContentVisible(true);
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 450,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [dataReady, contentVisible, contentOpacity]);
+
   useEffect(() => {
     let cancelled = false;
-    fetchAppHome()
-      .then((d) => {
-        if (!cancelled) setHomeAppData(d);
-      })
-      .catch((e) => {
-        console.warn("fetchAppHome", e?.message || e);
-      });
+    const handle = InteractionManager.runAfterInteractions(() => {
+      fetchAppHome()
+        .then((d) => {
+          if (!cancelled) setHomeAppData(d);
+        })
+        .catch((e) => {
+          console.warn("fetchAppHome", e?.message || e);
+        });
+    });
     return () => {
       cancelled = true;
+      handle.cancel();
     };
   }, []);
 
@@ -496,17 +472,15 @@ function Home() {
   const categoryObject = {};
 
   productItems.forEach((item) => {
+    if (item?.availability === false) return;
     const category = item.category;
 
     if (!categoryObject[category]) {
-      // If the category key doesn't exist, create it with an array containing the current item
       categoryObject[category] = [item];
     } else {
-      // If the category key already exists, push the current item to the existing array
       categoryObject[category].push(item);
     }
   });
-  // console.log(categoryObject)
   const [selected, setSelected] = useState([])
   function toggleNumberInArray(number) {
     setSelected((prev) => {
@@ -772,7 +746,7 @@ function Home() {
         type: "success",
         title: "Item added to cart",
         actionLabel: "View Cart →",
-        onAction: () => navigation.navigate("CartShow"),
+        onAction: () => navigation.navigate("Cart"),
       });
       // const deliveringOrders = orders.filter(order => order.status === "Delivering");
 
@@ -805,16 +779,25 @@ function Home() {
     headerScrollY.setValue(y);
   }
   reg?.current?.scrollTo(-1 * height / 4.7)
+
+  if (!contentVisible) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+        <FalseHomeScreen />
+      </GestureHandlerRootView>
+    );
+  }
+
   return (
-      <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#f8faf8' }}>
-        <View
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+        <Animated.View
           onTouchStart={() => { ref?.current?.scrollTo(0); setBlink(true) }}
           style={[
             styles.homeSafeRoot,
-            { paddingTop: insets.top, paddingBottom: 0, marginBottom: 0 },
+            { paddingTop: insets.top, paddingBottom: 0, marginBottom: 0, opacity: contentOpacity, backgroundColor: colors.background },
           ]}
         >
-          <FloatingCartFab count={cartItems.length} onPress={cartHandler} bottomOffset={102} />
+          <FloatingCartFab count={cartCount} onPress={cartHandler} bottomOffset={102} />
           <View style={{ flex: 1, }}>
             <ScrollView
               stickyHeaderIndices={[1]}
@@ -840,26 +823,26 @@ function Home() {
                   <Animated.View style={headerPrimaryBlockStyle}>
                     <View style={styles.headerTopRow}>
                       <Pressable style={styles.locationPill} onPress={() => { navigation.navigate("Address") }}>
-                        <Text style={styles.locationPillText} numberOfLines={1}>
+                        <Text style={[styles.locationPillText, { color: colors.text }]} numberOfLines={1}>
                           {addressHeadline || "Locate me..."}
                         </Text>
-                        <MaterialIcons name="keyboard-arrow-down" size={18} color="#111827" />
+                        <MaterialIcons name="keyboard-arrow-down" size={18} color={colors.text} />
                       </Pressable>
                       <View style={styles.headerRightActions}>
                         <Pressable style={styles.headerIconButton} onPress={notifyHandler}>
-                          <Feather name="bell" size={18} color="#111827" />
-                          {deliveringOrdersCount > 0 && (
+                          <Feather name="bell" size={18} color={colors.text} />
+                          {notificationCount > 0 && (
                             <View style={styles.headerCountBadge}>
-                              <Text style={styles.headerCountText}>{deliveringOrdersCount}</Text>
+                              <Text style={styles.headerCountText}>{notificationCount > 99 ? "99+" : notificationCount}</Text>
                             </View>
                           )}
                         </Pressable>
 
                         <Pressable style={styles.headerIconButton} onPress={cartHandler}>
-                          <Feather name="shopping-cart" size={18} color="#111827" />
-                          {cartItems.length > 0 && (
+                          <Feather name="shopping-cart" size={18} color={colors.text} />
+                          {cartCount > 0 && (
                             <View style={styles.headerCountBadge}>
-                              <Text style={styles.headerCountText}>{cartItems.length}</Text>
+                              <Text style={styles.headerCountText}>{cartCount}</Text>
                             </View>
                           )}
                         </Pressable>
@@ -874,10 +857,10 @@ function Home() {
                 </View>
               </View>
               <Animated.View style={greetingAnimatedStyle}>
-                      <Text style={styles.headerGreetingText}>{`${greeting}, ${firstName}`}</Text>
-                      <Text style={styles.headerGreetingSubText}>
+                      <Text style={[styles.headerGreetingText, { color: colors.text }]}>{`${greeting}, ${firstName}`}</Text>
+                      <Text style={[styles.headerGreetingSubText, { color: colors.textSecondary }]}>
                         {getDynamicGreetingSubline({
-                          cartCount: cartItems.length,
+                          cartCount: cartCount,
                           activeDeliveryCount: deliveringOrdersCount,
                           orders: orders || [],
                           firstName,
@@ -914,7 +897,7 @@ function Home() {
                         <Feather
                           name="search"
                           size={19}
-                          color="#111827"
+                          color={colors.text}
                           style={styles.headerSearchIconMinimal}
                         />
                         <Animated.View
@@ -1039,12 +1022,11 @@ function Home() {
               </Pressable>
               <View>
                 <Text style={{ fontWeight: 900, fontSize: 16, color: 'white', textAlign: 'center' }}>{`You have ${deliveringOrdersCount} ${deliveringOrdersCount > 1 ? 'orders' : "order"} being delivered \nsit tight!!`}</Text>
-                {/* <View style={{height: 40, width: 124, alignSelf: 'flex-end',}}><FlexButton onPress={} color={'white'}  background={"white"} ><Text style={{fontSize: 12, fontWeight: 900, color: 'black'}}>View Orders</Text></FlexButton></View> */}
               </View>
             </Pressable>}</LinearGradient>
 
           </TransparentSheet>}
-        </View>
+        </Animated.View>
         </GestureHandlerRootView>
   );
 }

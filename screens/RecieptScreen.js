@@ -1,514 +1,377 @@
-import { StyleSheet, View, Pressable, ScrollView, Dimensions, Image } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
-import { SafeAreaView } from "react-native-safe-area-context";
-import FlexButton from "../components/Buttons/FlexButton";
-import ProductAction from "../components/Product/ProductAction";
-import { FontAwesome } from '@expo/vector-icons';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Fontisto } from '@expo/vector-icons';
-import AddressEditable from "../components/AddressEditable";
-import DeliveryMode from "../components/DeliveryMode";
-import {useSelector, useDispatch} from 'react-redux'
-import {clearCart} from '../Data/cart'
-import {completeOrder} from "../Data/order"
-import { useNavigation , useRoute} from "@react-navigation/native";
-import * as Print from 'expo-print';
-import { shareAsync } from 'expo-sharing';
-import Text from '../components/Text';
+import {
+  StyleSheet, View, Pressable, ScrollView, Dimensions, Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { clearCart } from "../Data/cart";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Print from "expo-print";
+import { shareAsync } from "expo-sharing";
+import Text from "../components/Text";
+import AppImage from "../components/AppImage";
+import { cartLineTotal } from "../utils/productCartForm";
 
-const { width, height } = Dimensions.get("window");
+const { width: SW } = Dimensions.get("window");
+const ACCENT = "#283618";
+
 function RecieptScreen() {
-    const dispatch = useDispatch();
-    const route = useRoute()
-    
-    
-    const [cartItems, setCartItems] = useState(Array.isArray(route.params?.items) ? [...route.params.items] : [])
-    const calculateTotalPrice = (formObject) => {
-        const productQuantity = formObject.products.length; // The quantity of the main product
-        let totalPrice = formObject.products[0].price * productQuantity; // Start with the base product price times the quantity
-      
-        // Calculate the total price of extra items
-        formObject.extra?.forEach((extraItem) => {
-          totalPrice += extraItem.price * productQuantity;
-        });
-      
-        // Calculate the total price of selected options
-        formObject.options.forEach((optionCategory) => {
-          if (optionCategory.required) {
-            // If the option category is required, multiply the price of each selected option by the product quantity
-            optionCategory.values.forEach((selectedOption) => {
-              totalPrice += selectedOption.price * productQuantity;
-          });
-          } else {
-            // If the option category is not required, just add the price of each selected option
-            optionCategory.values.forEach((selectedOption) => {
-                totalPrice += selectedOption.price;
-            });
-          }
-        });
-      
-        return totalPrice;
-      };
-    function getTotalSum() {
-        var totalPrice = 0;
-    cartItems.forEach(obj => {
-      const title = Object.keys(obj)[0];
-        const titleArray = Object.values(obj)[0];
-        
-        titleArray.forEach(item => {
-            totalPrice += item.oldPrice;
-        });
-        cost[title] = totalPrice
-    });
-    return totalPrice
-      } 
-      const cost = {}
-      function getItems(inputList){
-        const titleCountMap = [];
+  const dispatch = useDispatch();
+  const route = useRoute();
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
-        const result = {};
-      inputList.forEach(obj => {
-          const title = obj[Object.keys(obj)[0]];
-         titleCountMap.push(...title)
+  const [cartItems] = useState(Array.isArray(route.params?.items) ? [...route.params.items] : []);
+  const orderId = route.params?.id || "—";
+  const paramTotal = route.params?.total;
+  const deliveryFee = Number(route.params?.deliveryFee ?? 0);
+  const orderDate = route.params?.date || null;
+  const orderType = route.params?.orderType || "Delivery";
+  const orderStatus = route.params?.status || "";
+  const isPickup = (orderType || "").toLowerCase() === "pickup";
+  const isCancelled = ["cancelled", "canceled", "refunded"].includes((orderStatus || "").toLowerCase());
+  const cancelLabel = (orderStatus || "").toLowerCase() === "refunded" ? "Refunded" : "Cancelled";
 
-      });
-        // Loop through the inputList to count occurrences of each title
-    //     inputList.forEach((obj) => {
-    //         const title = obj.title;
-  
-    //         // Increment the count for the title or initialize to 1 if it doesn't exist
-    //         titleCountMap[title] = (titleCountMap[title] || 0) + 1;
-    //     });
-        
-        
-    //   inputList.forEach(obj => {
-    //     var totalPrice = 0;
-    //     const title = Object.keys(obj)[0];
-    //       const titleArray = Object.values(obj)[0];
-          
-    //       titleArray.forEach(item => {
-    //           totalPrice += item.oldPrice;
-    //       });
-    //       cost[title] = totalPrice
-    //   });
-    //     // Loop through the inputList again to create a new list with quantity key
-    //     const newList = inputList.map((obj) => {
-    //         const title = Object.keys(obj)[0];
-    //         const quantity = result[title];
-  
-    //         // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
-    //         titleCountMap[title] = 0;
-  
-    //         return { ...obj[title][0], ['oldPrice'] : cost[title], quantity };
-    //     });
-    //     const filteredList = newList.filter((obj) => obj.quantity !== 0);
-  
-        return titleCountMap;
-      }
-      function addQuantityToObjects(inputList) {
-        const titleCountMap = {};
+  const calculateTotalPrice = (formObject) => cartLineTotal(formObject);
 
-        const result = {};
-      inputList.forEach(obj => {
-          const title = Object.keys(obj)[0];
-          const arrayLength = obj[title].length;
-          result[title] = arrayLength;
-      });
-        // Loop through the inputList to count occurrences of each title
-        inputList.forEach((obj) => {
-            const title = obj.title;
-  
-            // Increment the count for the title or initialize to 1 if it doesn't exist
-            titleCountMap[title] = (titleCountMap[title] || 0) + 1;
-        });
-        
-        
-      inputList.forEach(obj => {
-        var totalPrice = 0;
-        const title = Object.keys(obj)[0];
-          const titleArray = Object.values(obj)[0];
-          
-          titleArray.forEach(item => {
-              totalPrice += item.oldPrice;
-          });
-          cost[title] = totalPrice
-      });
-        // Loop through the inputList again to create a new list with quantity key
-        const newList = inputList.map((obj) => {
-            const title = Object.keys(obj)[0];
-            const quantity = result[title];
-  
-            // Remove duplicates by setting quantity to 0 for subsequent occurrences of the same title
-            titleCountMap[title] = 0;
-  
-            return { ...obj[title][0], ['oldPrice'] : cost[title], quantity };
-        });
-        const filteredList = newList.filter((obj) => obj.quantity !== 0);
-  
-        return filteredList;
-    }
-    console.log(cartItems, 'error')
-    const calculateSubtotal = () => {
-        return cartItems?.reduce((total, item) => {
-          const productPrice = calculateTotalPrice(item)
-          return total + productPrice 
-        }, 0);
-      };
-      const taxesAndFees = 0.3 * calculateSubtotal();
-    function getFormattedDate() {
-        const today = new Date();
-    
-        // Extract year, month, and day
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-        const day = String(today.getDate()).padStart(2, '0');
-    
-        // Format the date as mm/dd/yyyy
-        const formattedDate = `${month}/${day}/${year}`;
-    
-        return formattedDate;
-    }
-    let show = false
-    if (route.params.total != calculateSubtotal() + taxesAndFees){
-        show = true
+  const subtotal = cartItems.reduce((sum, item) => sum + calculateTotalPrice(item), 0);
+  const taxesAndFees = 0.3 * subtotal;
+  const rawTotal = paramTotal != null ? Number(String(paramTotal).replace(/[^0-9.]/g, "")) : subtotal + taxesAndFees + deliveryFee;
+  const grandTotal = isNaN(rawTotal) ? subtotal + taxesAndFees + deliveryFee : rawTotal;
 
-    }
-    function handleClearCart(){
-        dispatch(clearCart({id : cartItems}))
-        setCartItems([])
-    }
-    function handleComplete(){
-        dispatch(clearCart({id : cartItems}))
-    }
-    handleComplete()
+  function getFormattedDate() {
+    const d = orderDate ? new Date(orderDate) : new Date();
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  }
 
-    
-    // Example usage:
-    const todayFormatted = getFormattedDate();
-    let cnst = cartItems?.map(({ components, extra, instructions, options, products }, idx) =>`
-    <tr>
-    <td>
-            <div style="display: flex; align-items: start; flex-direction: column;">
-            <img src="${products[0].images[0]}" alt="Product Image" style="width: 100px; height: auto; margin-bottom: 10px;">
-                    <h2 style="font-size: 25px; font-weight: bolder; font-family: Georgia, 'Times New Roman', Times, serif; font-style: oblique;">${products[0].title}</h2>
-                ${components ? `<p>${components}</p>` : ''}
-                ${`<p>Quantity: ${products?.length}</p>`}
-            </div>
-        </td>
-        <td style="padding-top: 20px;">
-        ${extra?.length ? `
-        <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
-            <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Extras</p>
-            ${extra.map(ex => `<p style="font-size: large; font-weight: 200; text-align: center; font-style: oblique;">${ex.name} - $${ex.price.toFixed(2)}</p>`).join('')}
-        </div>
-    ` : ''}
-    ${options[0]?.values?.length ? `
-    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding-bottom: 20px;">
-        <p style="font-size: large; font-style: oblique; font-weight: 900; font-family: Georgia, 'Times New Roman', Times, serif; text-align: center; text-transform: uppercase;">Options</p>
-        ${options.map(option => `
-            <div style="padding-left: 10px;">
-                <p style="font-size: large; font-weight: 200; text-align: left; font-style: oblique;">${option.name}</p>
-                ${option.values.map(val => `<p style="font-size: large; font-weight: 200; text-align: left; font-style: oblique;">${val.name} - $${val.price.toFixed(2)}</p>`).join('')}
-            </div>
-        `).join('')}
-    </div>
-` : ''}
-        </td>
-                <td style="display: flex; align-items: center; justify-content: center;padding-top: 20px;"><p style="font-size: large; font-style: oblique;font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;">$${calculateTotalPrice(cartItems[idx]).toFixed(2)}</p></div></td>
-              </tr>
-                <td></td>
-    </tr>
-  `)
-    let content =  ''
-    if (show){
-        content = `<tr>
-        <td colspan="3" class="sum-up">Faster Delivery</td>
-        <td class="price">$5.00</td>
-    </tr>`
-    }
-    const html = `
-    <!DOCTYPE html>
-<html lang="en">
+  function fmtDate() {
+    const d = orderDate ? new Date(orderDate) : new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${pad(d.getMonth() + 1)}/${pad(d.getDate())}/${d.getFullYear()}  ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
 
-<head>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display:flex;
-            height: 100vh;
-            width: 100vw;
-            flex-direction: column;
-            gap: 20px
-        }
+  function fmtPrice(n) {
+    return `$${Number(n).toFixed(2)}`;
+  }
 
-        @page {
-            margin-top: 1cm;
-            margin-left: 1cm;
-            margin-right: 1cm;
-        }
+  useEffect(() => {
+    if (cartItems.length) dispatch(clearCart({ id: cartItems }));
+  }, []);
 
-        table {
-            width: 100%;
-        }
+  const html = buildReceiptHtml(cartItems, calculateTotalPrice, subtotal, taxesAndFees, deliveryFee, grandTotal, orderId, fmtDate(), isCancelled, cancelLabel);
 
-        tr {
-            width: 100%;
+  const printToFile = async () => {
+    const { uri } = await Print.printToFileAsync({ html, width: 380, height: 900 });
+    await shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" });
+  };
 
-        }
+  function goBack() {
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.navigate("HomeTabs");
+  }
 
-        h1 {
-            text-align: center;
-            vertical-align: middle;
-        }
+  if (cartItems.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.heroBar, { paddingTop: insets.top + 12 }]}>
+          <Pressable onPress={goBack} hitSlop={8} style={styles.backCircle}>
+            <Ionicons name="chevron-back" size={18} color="#fff" />
+          </Pressable>
+          <Text style={styles.heroTitle}>Order Receipt</Text>
+          <View style={{ width: 36 }} />
+        </View>
+        <View style={styles.emptyWrap}>
+          <Ionicons name="receipt-outline" size={56} color="#9CA3AF" />
+          <Text style={styles.emptyText}>No items on this receipt</Text>
+          <Pressable onPress={() => navigation.navigate("HomeTabs")} style={styles.emptyBtn}>
+            <Text style={styles.emptyBtnText}>Go home</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
 
-        #logo {
-            width: 60%;
-            text-align: center;
-            -webkit-align-content: center;
-            align-content: center;
-            padding: 5px;
-            margin: 2px;
-            display: block;
-            margin: 0 auto;
-        }
-
-        header {
-            width: 100%;
-            text-align: center;
-            -webkit-align-content: center;
-            align-content: center;
-            vertical-align: middle;
-        }
-
-        .items thead {
-            text-align: left;
-        }
-
-        .bill-details td {
-            font-size: 25px;
-        }
-
-
-        .items .heading {
-            font-size: 23px;
-            /* text-transform: uppercase; */
-            font-weight: 900;
-            font-style: oblique;
-            margin-bottom: 4px;
-            border-bottom: 1px solid black;
-            vertical-align: middle;
-        }
-
-        /* .items thead tr th:first-child,
-        .items tbody tr td:first-child {
-            width: 47%;
-            min-width: 47%;
-            max-width: 47%;
-            word-break: break-all;
-            text-align: left;
-        } */
-
-        .items td {
-            font-size: 15px;
-            /* text-align: right; */
-            vertical-align: bottom;
-        }
-
-        .price {
-            font-style: oblique;
-            font-size: 26px; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;
-            text-align: right;
-        }
-
-        .sum-up {
-            text-align: right !important;
-            font-style: oblique;
-            font-size: large; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;
-        }
-        .total {
-            font-size: 22px;
-            font-style: oblique;
-            font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;
-            border-top:1px ridge black !important;
-        }
-        .total.text, .total.price {
-            text-align: right;
-        }
-        .line {
-            border-top: 1px solid black !important;
-        }
-        .heading.rate {
-            width: 25%;
-            text-align: center;
-        }
-        .heading.amount {
-            width: 35%;
-            text-align: center;
-        }
-        .heading.qty {
-            width: 25%;
-        }
-        p {
-            padding: 1px;
-            margin: 0;
-        }
-        section, footer {
-            font-size: 16px;
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <div id="logo" class="media" data-src="logo.png" src="./logo.png"></div>
-
-    </header>
-    <p style="font-size: large;margin-left: 5px; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif; font-style: oblique;"> Order ID: ${route.params.id}</p>
-    <table class="bill-details">
-        <tbody>
-            <tr>
-                <th class="center-align" colspan="2"><span style="font-size: xx-large;font-style: oblique; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;" class="receipt">Order Receipt</span></th>
-            </tr>
-        </tbody>
-    </table>
-    
-    <table class="items" style="border: 2px  solid black; outline: 2px ridge  wheat; padding: 0 10px 0 10px;margin-right: 5px ;border-radius: 20px;">
-        <thead>
-            <tr>
-                <th class="heading qty">Item</th>
-                <th class="heading rate">Extras</th>
-                <th class="heading name" style="text-align: 'center'"><p style="text-align: center;">Price</p></th>
-                <th class="heading amount">Instruction</th>
-                
-            </tr>
-        </thead>
-       
-        <tbody>
-${cnst}
-                <td colspan="3" class="sum-up line">Subtotal</td>
-                <td class="line price">$${calculateSubtotal().toFixed(2)}</td>
-            </tr>
-            <tr>
-                <td colspan="3" class="sum-up">Taxes & Fees</td>
-                <td class="price">$${taxesAndFees.toFixed(2)}</td>
-            </tr>
-            ${content}
-            <tr>
-                <th colspan="3" class="total text">Total</th>
-                <th class="total price">${route.params.total}</th>
-            </tr>
-        </tbody>
-    </table>
-    <section >
-        <p style="text-align:center ; font-style: oblique;font-size: large; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;">
-            Thank you for your visit!
-        </p>
-    </section>
-    <footer style="font-style: oblique; font-size: 31px; font-weight: 900; font-family:Georgia, 'Times New Roman', Times, serif;text-align:center">
-        <p>RoomService</p>
-    </footer>
-</body>
-
-</html>
-`;
-    
-const [selectedPrinter, setSelectedPrinter] = useState();
-
-const print = async () => {
-  // On iOS/android prints the given html. On web prints the HTML from the current page.
-  await Print.printAsync({
-    html,
-    printerUrl: selectedPrinter?.url, // iOS only
-  });
-};
-
-const printToFile = async () => {
-  // On iOS/android prints the given html. On web prints the HTML from the current page.
-  const { uri } = await Print.printToFileAsync({ html });
-  console.log('File has been saved to:', uri);
-  await shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
-};
-const selectPrinter = async () => {
-  const printer = await Print.selectPrinterAsync(); // iOS only
-  setSelectedPrinter(printer);
-};
   return (
-    <View style ={{flex: 1}}>
-        {cartItems?.length == 0 && <View  style={[styles.recommendedView,{gap: 50, marginVertical: 45}]}><View><Image style={styles.image} source={require('../assets/cartEmpty.png')}/></View><Text style={{textAlign: 'center'}}>Your cart is currently empty, Check out people’s favorite items!</Text></View>}
-        {cartItems?.length > 0 && <><View style={{flex: 0.5}}>
+    <View style={styles.container}>
+      {/* Green header */}
+      <View style={[styles.heroBar, { paddingTop: insets.top + 12 }]}>
+        <Pressable onPress={goBack} hitSlop={8} style={styles.backCircle}>
+          <Ionicons name="chevron-back" size={18} color="#fff" />
+        </Pressable>
+        <Text style={styles.heroTitle}>Order Receipt</Text>
+        <Pressable onPress={printToFile} hitSlop={8} style={styles.backCircle}>
+          <Ionicons name="share-outline" size={17} color="#fff" />
+        </Pressable>
+      </View>
+
+      <View style={styles.heroBottom}>
+        <View style={styles.heroIdRow}>
+          <Text style={styles.heroIdLabel}>Order ID</Text>
+          <Text style={styles.heroIdValue} numberOfLines={1}>{orderId}</Text>
         </View>
-        <View>
-            <ScrollView style= {{marginBottom: '25%'}}>
-            <View style={styles.recommendedView}>
-            <View style={{gap: 20}}>
-            {cartItems.map((item, idx)=><ProductAction key={idx}component={item.components} instruction={item.instructions} title={item.products[0].title} options={item.options} side={item.extra} image={item.products[0].images[0]}  price={calculateTotalPrice(item)}><View style={{backgroundColor: 'rgba(0,0,0,0.05)', paddingHorizontal: 25, paddingVertical: 8, borderRadius: 80, alignSelf: 'flex-end'}}>
-                    <Text style ={{fontWeight: 'bold', fontSize: 18}}
-                    >{item.products?.length}</Text>
-                </View></ProductAction>)}
-            </View>
+        <View style={styles.heroIdRow}>
+          <Text style={styles.heroIdLabel}>Date</Text>
+          <Text style={styles.heroIdValue}>{getFormattedDate()}</Text>
         </View>
-        
-        <View style={[styles.recommendedView,{marginVertical: '10%', marginTop: '5%', marginHorizontal: '5%', paddingBottom: '2%',borderWidth: 2, borderColor: 'rgba(0,0,0,0.05)', borderRadius: 20,justifyContent: 'space-between'}]}>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            <Text style={[styles.text, {fontSize: 13}]}>Items Amount</Text>
-            <Text style={[styles.text, {color : 'black'}]}>{`$${calculateSubtotal().toFixed(2)}`}</Text>
+        {isPickup && (
+          <View style={styles.pickupBadgeRow}>
+            <View style={styles.pickupBadge}>
+              <Ionicons name="bag-handle-outline" size={14} color="#283618" style={{ marginRight: 5 }} />
+              <Text style={styles.pickupBadgeText}>Pickup Order</Text>
             </View>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            <Text style={[styles.text, {fontSize: 13}]}>Shipping</Text>
-            <Text style={[styles.text, {color : 'black'}]}>$2.62</Text>
+          </View>
+        )}
+        {isCancelled && (
+          <View style={styles.pickupBadgeRow}>
+            <View style={styles.cancelledBadge}>
+              <Ionicons name="close-circle" size={14} color="#EF4444" style={{ marginRight: 5 }} />
+              <Text style={styles.cancelledBadgeText}>{cancelLabel}</Text>
             </View>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            {show && <><Text style={[styles.text, {fontSize: 13}]}>Faster Delivery</Text>
-            <Text style={[styles.text, {color : 'black'}]}>$2.00</Text></>}
-            </View>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)', paddingTop: 20, paddingBottom: 30 }}>
-            <Text style={[styles.text, {fontSize: 13}]}>Total Paid</Text>
-            <Text style={[styles.text, {color : 'black'}]}>{route.params.total}</Text>
-            </View>
-        </View>
-        <View style={[styles.recommendedView,{marginVertical: '10%', marginTop: '5%', marginHorizontal: '5%', paddingBottom: '2%',borderWidth: 2, borderColor: 'rgba(0,0,0,0.05)', borderRadius: 20,justifyContent: 'space-between'}]}>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            </View>
-            <View style={{flexDirection: 'row',alignItems: 'center', justifyContent: 'space-between', flex: 1}}>
-            <Text style={[styles.text, {fontSize: 13}]}>Order Id</Text>
-            <Text style={[styles.text, {color : 'black', fontSize: 13}]}>{route.params.id}</Text>
-            </View>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', flex: 1}}>
-            <Text style={[styles.text, {fontSize: 13}]}>Date</Text>
-            <Text style={[styles.text, {color : 'black', fontSize: 13}]}>{todayFormatted}</Text>
-            </View>
-        </View>
-        </ScrollView>
-        </View>
-        
-        <View style={{flex: 1, width: '100%', height: '10%', paddingHorizontal: '5%', position: "absolute",bottom: 0, zIndex: 2, backgroundColor: 'white' ,  justifyContent: "space-around",}}>
-            
-                <View style={[{height: '85%'}]}>
-                    <FlexButton onPress={printToFile} background={'#283618'}><FontAwesome name="send" size={24} color="white" /><Text style={{color: 'white', fontSize: 18}}> Share receipt</Text></FlexButton>
+          </View>
+        )}
+      </View>
+
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        {/* Items */}
+        <View style={styles.section}>
+          {/* <Text style={styles.sectionTitle}>Items</Text> */}
+          {cartItems.map((item, idx) => {
+            const product = item.products?.[0];
+            const qty = item.products?.length || 1;
+            const linePrice = calculateTotalPrice(item);
+            const allChips = [
+              ...(item.extra || []).map((e) => ({ label: e.name, price: e.price })),
+              ...(item.options || []).flatMap((o) => (o.values || []).map((v) => ({ label: v.name, price: v.price }))),
+              ...(item.variantSelections || []).flatMap((g) => (g.selected || []).map((c) => ({ label: c.name, price: c.priceDelta }))),
+              ...(item.schemaAddonsSelected || []).map((a) => ({ label: a.name, price: a.price })),
+            ];
+            return (
+              <View key={idx} style={styles.itemCard}>
+                <AppImage uri={product?.images?.[0]} style={styles.itemImage} resizeMode="cover" />
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemTitle} numberOfLines={2}>{product?.title}</Text>
+                  {qty > 1 && <Text style={styles.itemQty}>Qty: {qty}</Text>}
+                  {item.components ? <Text style={styles.itemQty}>{item.components}</Text> : null}
+                  {allChips.length > 0 && (
+                    <View style={styles.chipRow}>
+                      {allChips.map((c, i) => (
+                        <View key={i} style={styles.chip}>
+                          <Text style={styles.chipText}>{c.label}{Number(c.price) ? ` (+${fmtPrice(Number(c.price))})` : ""}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                  {item.instructions ? <Text style={styles.itemNote}>Note: {item.instructions}</Text> : null}
                 </View>
-            
-                
-        </View></>}
+                <Text style={styles.itemPrice}>{fmtPrice(linePrice)}</Text>
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Summary */}
+        <View style={styles.section}>
+          {/* <Text style={styles.sectionTitle}>Summary</Text> */}
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryValue}>{fmtPrice(subtotal)}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Taxes & Fees</Text>
+              <Text style={styles.summaryValue}>{fmtPrice(taxesAndFees)}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Delivery</Text>
+              <Text style={[styles.summaryValue, deliveryFee === 0 && { color: "#16A34A" }]}>{deliveryFee === 0 ? "Free" : fmtPrice(deliveryFee)}</Text>
+            </View>
+            <View style={[styles.summaryRow, styles.summaryTotalRow]}>
+              <Text style={styles.summaryTotalLabel}>{isCancelled ? cancelLabel : "Total Paid"}</Text>
+              <Text style={[styles.summaryTotalValue, isCancelled && { color: "#EF4444", textDecorationLine: "line-through" }]}>{fmtPrice(grandTotal)}</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
     </View>
   );
 }
-export default RecieptScreen
+
+function buildReceiptHtml(cartItems, calculateTotalPrice, subtotal, taxesAndFees, deliveryFee, grandTotal, orderId, dateStr, isCancelled, cancelLabel) {
+  const totalQty = cartItems.reduce((s, it) => s + (it.products?.length || 1), 0);
+  const rows = cartItems.map((item) => {
+    const p = item.products?.[0];
+    const qty = item.products?.length || 1;
+    const details = [
+      ...(item.extra || []).map((e) => e.name + (e.price ? ` +$${Number(e.price).toFixed(2)}` : "")),
+      ...(item.options || []).flatMap((o) => (o.values || []).map((v) => v.name + (v.price ? ` +$${Number(v.price).toFixed(2)}` : ""))),
+      ...(item.variantSelections || []).flatMap((g) => (g.selected || []).map((c) => c.name + (c.priceDelta ? ` +$${Number(c.priceDelta).toFixed(2)}` : ""))),
+      ...(item.schemaAddonsSelected || []).map((a) => a.name + (a.price ? ` +$${Number(a.price).toFixed(2)}` : "")),
+    ];
+    const comp = item.components ? `<br/><span class="item-extras">${item.components}</span>` : "";
+    const detailStr = details.length ? `<br/><span class="item-extras">+ ${details.join(", ")}</span>` : "";
+    const noteStr = item.instructions ? `<br/><span class="item-note">Note: ${item.instructions}</span>` : "";
+    return `<tr>
+      <td class="item-cell">
+        <span class="item-name">${p?.title || "Item"}</span>${comp}${detailStr}${noteStr}
+      </td>
+      <td class="c">${qty}</td>
+      <td class="r">$${calculateTotalPrice(item).toFixed(2)}</td>
+    </tr>`;
+  }).join("");
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"/><style>
+  @page { margin: 0; size: 380px auto; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    color: #111;
+    background: #f5f5f0;
+    padding: 12px;
+  }
+  .receipt {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 20px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .header { text-align: center; padding: 16px 0 8px; }
+  .brand { font-size: 26px; font-weight: bold; letter-spacing: 3px; color: #283618; }
+    .tagline { font-size: 10px; color: #333; margin-top: 2px; }
+  .line { border-bottom: 1px dashed #bbb; margin: 10px 0; }
+  .double-line { border-bottom: 3px double #222; margin: 10px 0; }
+  .info-table { width: 100%; }
+  .info-table td { padding: 2px 0; }
+    .info-table .label { color: #333; }
+  .info-table .value { text-align: right; font-weight: bold; }
+    .col-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; letter-spacing: 1px; color: #333; padding: 4px 0; }
+  table.items { width: 100%; border-collapse: collapse; }
+  table.items td { padding: 6px 0; vertical-align: top; }
+  .item-cell { width: 60%; }
+  .item-name { font-weight: bold; font-size: 12px; }
+    .item-extras { font-size: 10px; color: #444; }
+    .item-note { font-size: 10px; color: #555; font-style: italic; }
+  .c { text-align: center; width: 15%; }
+  .r { text-align: right; width: 25%; }
+  table.totals { width: 100%; border-collapse: collapse; }
+  table.totals td { padding: 3px 0; }
+    table.totals .label { color: #222; }
+  table.totals .value { text-align: right; }
+  .grand-row td {
+    padding-top: 10px;
+    border-top: 3px double #222;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+  .grand-row .value { color: #283618; }
+  .stamp {
+    text-align: center;
+    margin: 20px 0 8px;
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 6px;
+    color: #283618;
+    border: 3px solid #283618;
+    border-radius: 8px;
+    display: inline-block;
+    padding: 4px 20px;
+  }
+  .stamp-wrap { text-align: center; }
+  .footer { text-align: center; font-size: 10px; color: #444; margin-top: 10px; padding-bottom: 10px; }
+  .barcode { text-align: center; font-size: 28px; letter-spacing: 4px; color: #222; margin: 12px 0 4px; font-family: 'Libre Barcode 39', monospace; }
+  .order-id-small { text-align: center; font-size: 10px; color: #333; }
+  .cancelled-badge { text-align: center; margin: 8px 0; }
+  .cancelled-badge span { display: inline-block; background: #FEE2E2; color: #EF4444; font-weight: bold; font-size: 11px; padding: 3px 14px; border-radius: 20px; letter-spacing: 1px; }
+  .cancelled-total { text-decoration: line-through; color: #999 !important; }
+  .stamp-cancelled { color: #EF4444; border-color: #EF4444; }
+</style></head><body>
+  <div class="receipt">
+  <div class="header">
+    <div class="brand">ROOMSERVICE</div>
+    <div class="tagline">Thank you for your order!</div>
+  </div>
+  <div class="double-line"></div>
+
+  <table class="info-table">
+    <tr><td class="label">Order</td><td class="value">#${orderId}</td></tr>
+    <tr><td class="label">Date</td><td class="value">${dateStr}</td></tr>
+    <tr><td class="label">Items</td><td class="value">${totalQty}</td></tr>
+  </table>
+  ${isCancelled ? `<div class="cancelled-badge"><span>${cancelLabel.toUpperCase()}</span></div>` : ""}
+  <div class="line"></div>
+
+  <table class="items">
+    <tr style="font-size:11px;color:#222;letter-spacing:1px;">
+      <td><b>ITEM</b></td><td class="c"><b>QTY</b></td><td class="r"><b>PRICE</b></td>
+    </tr>
+  </table>
+  <div class="line"></div>
+  <table class="items">${rows}</table>
+  <div class="line"></div>
+
+  <table class="totals">
+    <tr><td class="label">Subtotal</td><td class="value">$${subtotal.toFixed(2)}</td></tr>
+    <tr><td class="label">Tax & Fees</td><td class="value">$${taxesAndFees.toFixed(2)}</td></tr>
+    <tr><td class="label">Delivery</td><td class="value">${deliveryFee === 0 ? "FREE" : "$" + deliveryFee.toFixed(2)}</td></tr>
+    <tr class="grand-row"><td>TOTAL</td><td class="value${isCancelled ? " cancelled-total" : ""}">$${grandTotal.toFixed(2)}</td></tr>
+  </table>
+
+  <div class="stamp-wrap"><div class="stamp${isCancelled ? " stamp-cancelled" : ""}">${isCancelled ? cancelLabel.toUpperCase() : "PAID"}</div></div>
+
+  <div class="order-id-small">${orderId}</div>
+  <div class="footer">We appreciate your business<br/>RoomService &copy; ${new Date().getFullYear()}</div>
+  </div>
+
+</body></html>`;
+}
+
+export default RecieptScreen;
 
 const styles = StyleSheet.create({
-    catHead: {
-        justifyContent: "space-between",
-        gap: 19
-      },
-      
-      image: {
-        height: height / 3,
-        alignSelf: "center",
-        resizeMode: 'contain'
-      },
-      text: { fontWeight: "600", fontSize: 20, marginBottom: 20, color: '#aaa' },
-  recommendedView: {
-    paddingHorizontal: '5%', paddingTop: '5%',
-  }
-})
+  container: { flex: 1, backgroundColor: "#f8f6f2" },
+
+  heroBar: { backgroundColor: ACCENT, flexDirection: "row", alignItems: "center", paddingHorizontal: 10, paddingBottom: 14 },
+  backCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
+  heroTitle: { flex: 1, textAlign: "center", fontFamily: "Poppins-SemiBold", fontSize: 18, color: "#fff" },
+  heroBottom: { backgroundColor: ACCENT, paddingHorizontal: 20, paddingBottom: 20 },
+  heroIdRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
+  heroIdLabel: { fontFamily: "Poppins-Regular", fontSize: 13, color: "rgba(255,255,255,0.65)" },
+  heroIdValue: { fontFamily: "Poppins-SemiBold", fontSize: 13, color: "#fff", maxWidth: "60%", textAlign: "right" },
+  pickupBadgeRow: { alignItems: "center", marginTop: 10 },
+  pickupBadge: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.92)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 },
+  pickupBadgeText: { fontFamily: "Poppins-SemiBold", fontSize: 12, color: "#283618" },
+  cancelledBadge: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(239,68,68,0.12)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 },
+  cancelledBadgeText: { fontFamily: "Poppins-SemiBold", fontSize: 12, color: "#EF4444" },
+
+  section: { paddingHorizontal: 16, marginTop: 20 },
+  sectionTitle: { fontFamily: "Poppins-SemiBold", fontSize: 16, color: "#111827", marginBottom: 12 },
+
+  itemCard: { flexDirection: "row", backgroundColor: "#fff", borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: "rgba(0,0,0,0.05)" },
+  itemImage: { width: 60, height: 60, borderRadius: 12, backgroundColor: "#EDEAE5" },
+  itemInfo: { flex: 1, marginLeft: 12, justifyContent: "center" },
+  itemTitle: { fontFamily: "Poppins-SemiBold", fontSize: 14, color: "#111827" },
+  itemQty: { fontFamily: "Poppins-Regular", fontSize: 12, color: "#6B7280", marginTop: 2 },
+  itemNote: { fontFamily: "Poppins-Regular", fontSize: 11, color: "#9CA3AF", fontStyle: "italic", marginTop: 3 },
+  itemPrice: { fontFamily: "Poppins-SemiBold", fontSize: 15, color: ACCENT, alignSelf: "center", marginLeft: 8 },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 4 },
+  chip: { backgroundColor: "rgba(188,108,37,0.08)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  chipText: { fontFamily: "Poppins-Regular", fontSize: 11, color: "#6B7280" },
+
+  summaryCard: { backgroundColor: "#fff", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "rgba(0,0,0,0.05)" },
+  summaryRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
+  summaryLabel: { fontFamily: "Poppins-Regular", fontSize: 14, color: "#6B7280" },
+  summaryValue: { fontFamily: "Poppins-Medium", fontSize: 14, color: "#111827" },
+  summaryTotalRow: { marginBottom: 0, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.06)" },
+  summaryTotalLabel: { fontFamily: "Poppins-SemiBold", fontSize: 16, color: "#111827" },
+  summaryTotalValue: { fontFamily: "Poppins-SemiBold", fontSize: 18, color: ACCENT },
+
+  emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, gap: 16 },
+  emptyText: { fontFamily: "Poppins-Medium", fontSize: 16, color: "#6B7280" },
+  emptyBtn: { backgroundColor: ACCENT, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 32 },
+  emptyBtnText: { fontFamily: "Poppins-SemiBold", fontSize: 15, color: "#fff" },
+});

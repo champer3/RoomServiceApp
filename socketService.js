@@ -1,43 +1,48 @@
 import io from 'socket.io-client';
-
 import { SERVER_URL } from './config';
 
-let socket;
+let socket = null;
 
-const initializeSocket = async (token) => {
-  try {
-    if (!socket) {
-      socket = io(SERVER_URL, {
-        query: { token },
-        transports: ['websocket'], 
-      });
-
-      socket.on('connect', () => {
-        console.log('Connected to server');
-      });
-
-      socket.on('disconnect', () => {
-        console.log('Disconnected from server');
-      });
-
-    }
-  } catch (error) {
-    console.error('Error initializing socket:', error);
+export const initializeSocket = (token) => {
+  console.log('[SocketService] initializeSocket called, existing socket:', socket ? 'yes' : 'no');
+  if (socket) {
+    console.log('[SocketService] Socket already exists, connected:', socket.connected);
+    return;
   }
+  
+  console.log('[SocketService] Creating new socket to:', SERVER_URL);
+  socket = io(SERVER_URL, {
+    query: { token },
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+  });
+
+  socket.on('connect', () => {
+    console.log('[SocketService] CONNECTED, id:', socket.id);
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('[SocketService] DISCONNECTED, reason:', reason);
+  });
+
+  socket.on('connect_error', (err) => {
+    console.log('[SocketService] CONNECTION ERROR:', err.message);
+  });
+
+  socket.onAny((event, ...args) => {
+    console.log('[SocketService] RECEIVED event:', event, args);
+  });
 };
 
-const getSocket = () => {
-  if (!socket) {
-    console.warn('Socket is not initialized. Please call initializeSocket first.');
-  }
+export const getSocket = () => {
+  console.log('[SocketService] getSocket called, socket:', socket ? 'exists' : 'NULL', ', connected:', socket?.connected);
   return socket;
 };
 
-const disconnectSocket = () => {
+export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
   }
 };
-
-export { initializeSocket, getSocket, disconnectSocket };

@@ -6,11 +6,14 @@ import {fetchProducts} from "../Data/Items"
 import { registerPushNotifications } from '../Data/notify';
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../Data/profile";
+import { setCart } from "../Data/cart";
+import { setFavorites } from "../Data/favorites";
 import { store } from "../Data/Store";
 import FalseHomeScreen from "./FalseHomeScreen";
 import { fetchOrders } from "../Data/order";
 import * as Notifications from 'expo-notifications';
 import { saveNotification, loadNotifications, setExpoPushToken } from '../Data/notify';
+import { fetchAddresses, fetchCart, fetchFavorites } from "../api/syncService";
 
 
 function LoadScreen() {
@@ -23,9 +26,31 @@ function LoadScreen() {
     // Register for push notifications
     dispatch(registerPushNotifications());
     dispatch(loadNotifications());
-    // Listen for incoming notifications
-   
-  }, []); // Dependency array includes dispatch
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      dispatch(saveNotification({
+        request: { content: notification.request.content },
+        date: new Date().toISOString(),
+        type: 'received',
+      }));
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      if (data?.orderId) {
+        navigation.navigate('Order History');
+      }
+    });
+
+    return () => {
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
+    };
+  }, []);
 
 
 
@@ -44,14 +69,37 @@ function LoadScreen() {
  const retrieveTokenFromAsyncStorage = async () => {
   try {
     let profile = await AsyncStorage.getItem("profile");
-    let storedToken = await AsyncStorage.getItem("essential");
-    storedToken = JSON.parse(storedToken)
     if (profile) {
       profile = JSON.parse(profile)
         
         dispatch(fetchOrders());
           dispatch(registerPushNotifications());
-      dispatch(updateProfile({ id: {firstName: profile.firstName, lastName: profile.lastName,phoneNumber : profile.phoneNumber, email: profile.email, address: storedToken.address}}));
+
+      let addresses = [];
+      let cartItems = [];
+      let favs = [];
+      try {
+        const serverAddresses = await fetchAddresses();
+        if (serverAddresses && serverAddresses.length > 0) {
+          addresses = serverAddresses;
+        }
+        const serverCart = await fetchCart();
+        if (serverCart && serverCart.length > 0) {
+          cartItems = serverCart;
+        }
+        const serverFavs = await fetchFavorites();
+        if (serverFavs && serverFavs.length > 0) {
+          favs = serverFavs;
+        }
+      } catch (e) {}
+
+      dispatch(updateProfile({ id: {firstName: profile.firstName, lastName: profile.lastName, phoneNumber: profile.phoneNumber, email: profile.email, address: addresses}}));
+      if (cartItems.length > 0) {
+        dispatch(setCart(cartItems));
+      }
+      if (favs.length > 0) {
+        dispatch(setFavorites(favs));
+      }
      setIsLoading(true)
      
       if (isLoading) { 
@@ -67,9 +115,8 @@ function LoadScreen() {
 };
  const retrieveNewFromAsyncStorage = async () => {
   try {
-    let storedToken = await AsyncStorage.getItem("essential");
-    storedToken = JSON.parse(storedToken)
-    if (storedToken == null) {
+    let onboarded = await AsyncStorage.getItem("onboarded");
+    if (!onboarded) {
       navigation.replace('OnBoarding')
     } else {
       retrieveTokenFromAsyncStorage()

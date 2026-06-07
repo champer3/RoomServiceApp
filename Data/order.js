@@ -6,16 +6,9 @@ import { SERVER_URL } from '../config';
 // Helper function to retrieve token from AsyncStorage
 const retrieveTokenFromAsyncStorage = async () => {
   try {
-    console.log('Retrieving token...');
     const storedToken = await AsyncStorage.getItem("authToken");
-    if (storedToken !== null) {
-      return storedToken;
-    } else {
-      console.log("Token not found in AsyncStorage.");
-      return null;
-    }
+    return storedToken || null;
   } catch (error) {
-    console.error("Error retrieving token:", error);
     return null;
   }
 };
@@ -104,12 +97,9 @@ export const fetchOrders = createAsyncThunk(
   'order/fetchOrders',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('Fetching orders...');
       const token = await retrieveTokenFromAsyncStorage();
-      console.log("Retrieved Token:", token);
       
       if (!token) {
-        console.log("User not logged in, returning empty orders.");
         return [];
       }
 
@@ -122,11 +112,9 @@ export const fetchOrders = createAsyncThunk(
         }
       );
 
-      console.log("Full Response:", response.data);
-
       return transformOrderData(response.data.data);
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error("Error fetching orders:", error.message);
       return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
@@ -150,8 +138,12 @@ const order = createSlice({
         const order = state.ids[index];
         const act = action.payload.id.act;
         order[act] = action.payload.id.perform; 
-        console.log("Delivery time added successfully:", order);
       }
+    },
+    resetOrders: (state) => {
+      state.ids = [];
+      state.status = 'idle';
+      state.error = null;
     }
   },
   extraReducers: (builder) => {
@@ -172,4 +164,5 @@ const order = createSlice({
 
 export const updateOrder = order.actions.updateOrder;
 export const completeOrder = order.actions.completeOrder;
+export const resetOrders = order.actions.resetOrders;
 export default order.reducer;

@@ -1,42 +1,54 @@
-// src/components/Placeholder.js
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const SHIMMER_WIDTH = 300;
 
 const Placeholder = ({ style }) => {
-  const fadeAnim = useRef(new Animated.Value(0))?.current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(
-      Animated.sequence([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1400,
+        useNativeDriver: true,
+      })
     ).start();
-  }, [fadeAnim]);
+  }, [shimmerAnim]);
+
+  const translateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-SHIMMER_WIDTH, SHIMMER_WIDTH],
+  });
 
   return (
-    <Animated.View
-      style={[
-        styles.placeholder,
-        { opacity: fadeAnim },
-        style,
-      ]}
-    />
+    <View style={[styles.placeholder, style]}>
+      <Animated.View
+        style={[styles.shimmerStrip, { transform: [{ translateX }] }]}
+      >
+        <LinearGradient
+          colors={['transparent', 'rgba(255,255,255,0.45)', 'transparent']}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </Animated.View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   placeholder: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#e8e4de',
     borderRadius: 8,
+    overflow: 'hidden',
+  },
+  shimmerStrip: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: SHIMMER_WIDTH,
   },
 });
 

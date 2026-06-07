@@ -1,5 +1,6 @@
 import { View, Pressable, Image, StyleSheet } from 'react-native';
 import Text from '../Text';
+import AppImage from '../AppImage';
 import { PROMO_CARD, PROMO_GREEN, toneToColor } from './promoTheme';
 import { handlePromotionCtaPress } from '../../utils/promotionCtaNavigation';
 
@@ -16,7 +17,7 @@ export default function DepartmentTopBannerPromotion({ promotion, navigation, pr
   return (
     <View style={styles.card}>
       <View style={styles.row}>
-        {img ? <Image source={{ uri: img }} style={styles.thumb} /> : <View style={styles.thumb} />}
+        <AppImage uri={img || null} style={styles.thumb} />
         <View style={styles.textCol}>
           {(badge?.label || discount) && (
             <View style={[styles.badge, { backgroundColor: toneToColor(badge?.tone || 'sale') }]}>

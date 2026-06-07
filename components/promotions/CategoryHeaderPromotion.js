@@ -1,5 +1,6 @@
 import { View, Pressable, Image, StyleSheet } from 'react-native';
 import Text from '../Text';
+import AppImage from '../AppImage';
 import { PROMO_GREEN, toneToColor } from './promoTheme';
 import { handlePromotionCtaPress } from '../../utils/promotionCtaNavigation';
 
@@ -15,11 +16,7 @@ export default function CategoryHeaderPromotion({ promotion, navigation, product
 
   return (
     <View style={styles.banner}>
-      {img ? (
-        <Image source={{ uri: img }} style={styles.bg} resizeMode="cover" />
-      ) : (
-        <View style={[styles.bg, { backgroundColor: '#354820' }]} />
-      )}
+      <AppImage uri={img || null} style={[styles.bg, !img && { backgroundColor: '#354820' }]} resizeMode="cover" />
       <View style={styles.overlay}>
         {(badge?.label || discount) && (
           <View style={[styles.badge, { backgroundColor: toneToColor(badge?.tone || 'special') }]}>

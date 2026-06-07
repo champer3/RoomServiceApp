@@ -37,6 +37,7 @@ function CompleteProfile() {
   const saveTokenAndProfile = async (token, userData) => {
     try {
       await AsyncStorage.setItem("authToken", token);
+      await AsyncStorage.setItem("onboarded", "true");
       const profileData = {
         firstName: userData.firstName,
         lastName: userData.lastName,

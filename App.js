@@ -37,6 +37,7 @@ import StartScreen from "./screens/StartScreen";
 import CreateAccount from "./screens/CreateAccount";
 import EmailSignUp from "./screens/EmailSignUp";
 import { registerPushNotifications } from './Data/notify';
+import NotificationsScreen from "./screens/NotificationsScreen";
 import AddNumber from "./screens/AddNumber";
 import CreatePassword from "./screens/CreatePassword";
 import AccountDisplay from "./screens/AccountDisplay";
@@ -58,6 +59,7 @@ import RecieptScreen from "./screens/RecieptScreen";
 import AddressConfirm from "./screens/AddressConfirm";
 import CheckoutScreen from "./screens/CheckoutScreen";
 import AddAddressScreen from "./screens/AddAddressScreen";
+import FavoritesDisplay from "./screens/FavoritesDisplay";
 import { store } from "./Data/Store";
 import { cart } from "./Data/cart";
 import { profile } from "./Data/profile";
@@ -67,14 +69,21 @@ import LoaderScreen from "./screens/LoaderScreen";
 import LoadScreen from "./screens/LoadScreen";
 import CompleteProfile from "./screens/CompleteProfile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import io from 'socket.io-client';
 import * as Font from 'expo-font';
-// import AppLoading from 'expo-app-loading';
-import FalseHomeScreen from "./screens/FalseHomeScreen";
+import * as SplashScreen from 'expo-splash-screen';
 import CartShow from "./screens/CartShow";
+
+SplashScreen.preventAutoHideAsync();
 import { ToastProvider } from "./context/ToastContext";
+import NetworkProvider from "./context/NetworkProvider";
+import { ThemeProvider, useTheme } from "./theme/ThemeContext";
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+function ThemedStatusBar() {
+  const { isDark } = useTheme();
+  return <StatusBar style={isDark ? "light" : "dark"} />;
+}
 
 function OnBoarding() {
   return (
@@ -242,8 +251,8 @@ function Account() {
     <Stack.Navigator screenOptions={{headerBackTitle: 'Custom Back'}}>
       <Stack.Screen
         name="Profile"
-        component={{ ProfileDisplay }}
-        options={{ headerShadowVisible: false, title: "My Profile", headerBackTitle: '', headerBackTitleVisible: false}}
+        component={ProfileDisplay}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Payment"
@@ -263,36 +272,13 @@ function Account() {
     </Stack.Navigator>
   );
 }
-function Notification() {
-  const dispatch = useDispatch();
-  const expoPushToken = useSelector((state) => state.notifications.expoPushToken);
-  const notificationList = useSelector((state) => state.notifications.notification);
-  const lastNotification = Array.isArray(notificationList) && notificationList.length > 0
-    ? notificationList[notificationList.length - 1]
-    : null;
-  const content = lastNotification?.request?.content;
-  useEffect(() => {
-    dispatch(registerPushNotifications());
-  }, [dispatch]);
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
-      <Text>Your Expo push token: {expoPushToken}</Text>
-      {content && (
-        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-          <Text>Title: {content.title ?? ''}</Text>
-          <Text>Body: {content.body ?? ''}</Text>
-          <Text>Data: {content.data ? JSON.stringify(content.data) : ''}</Text>
-        </View>
-      )}
-    </View>
-  );
-}
 function HomeTabs() {
   return (
     <Tab.Navigator
       tabBar={(props) => <FloatingPillTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        tabBarStyle: { position: 'absolute', elevation: 0, borderTopWidth: 0, backgroundColor: 'transparent' },
       }}
     >
       <Tab.Screen name="Home" component={Home2} />
@@ -305,23 +291,10 @@ function HomeTabs() {
 
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
-useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 5000); // 5 seconds
-
-    return () => clearTimeout(timer);
-  }, []);
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  console.log("fontsLoading", fontsLoaded)
-  useEffect(() => {
-    loadFonts().then(() => setFontsLoaded(true));
-  }, []);
 
-  console.log("Here we go", STRIPE_PUBLISHABLE_KEY)
-  const loadFonts = () => {
-    return Font.loadAsync({
+  useEffect(() => {
+    Font.loadAsync({
       'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
       'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
       'Poppins-SemiBold': require('./assets/fonts/Poppins-SemiBold.ttf'),
@@ -329,19 +302,23 @@ useEffect(() => {
       'SFPRO-Regular': require('./assets/fonts/SFPRODISPLAYREGULAR.ttf'),
       'SFPRO-Medium': require('./assets/fonts/SFPRODISPLAYMEDIUM.ttf'),
       'SFPRO-Bold': require('./assets/fonts/SFPRODISPLAYBOLD.ttf'),
-      
-      // Add other Poppins font styles if needed
+    }).then(() => {
+      setFontsLoaded(true);
+      SplashScreen.hideAsync();
     });
-  };
-  // if (!fontsLoaded) {
-  //   return <AppLoadin
+  }, []);
+
+  if (!fontsLoaded) return null;
+
   return (
     <Provider store={store}>
+      <ThemeProvider>
       <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
         <SafeAreaProvider>
         <NavigationContainer>
+          <NetworkProvider>
           <ToastProvider>
-          <StatusBar style="light" />
+          <ThemedStatusBar />
           <Stack.Navigator>
             <Stack.Screen
               name="Begin"
@@ -358,15 +335,11 @@ useEffect(() => {
               component={Authentication}
               options={{ headerShown: false }}
             />
-             {isLoading ? (
-              <Stack.Screen name="HomeTabs" component={FalseHomeScreen} options={{ headerShown: false }} />
-        
-            ) : (
             <Stack.Screen
               name="HomeTabs"
               component={HomeTabs}
               options={{ headerShown: false }}
-            />)}
+            />
             <Stack.Screen
               name="Product"
               component={ProductDisplay}
@@ -377,7 +350,7 @@ useEffect(() => {
             />
             <Stack.Screen
               name="Notifications"
-              component={Notification}
+              component={NotificationsScreen}
               options={{ headerShown: false, title: "", headerMode: 'screen',  }}
             />
             <Stack.Screen
@@ -394,41 +367,42 @@ useEffect(() => {
             <Stack.Screen
               name="Profile"
               component={ProfileDisplay}
-              options={{ headerShadowVisible: false, title: "My Profile",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Settings"
               component={Settings}
-              options={{ headerShadowVisible: false, title: "My Settings",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Payment"
               component={PaymentsDisplay}
-              options={{ headerShadowVisible: false, title: "Payments",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Favorites"
+              component={FavoritesDisplay}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Order History"
               component={OrderDisplay}
-              options={{ headerShadowVisible: false, title: "Orders",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Address"
               component={AddressDisplay}
-              options={{ headerShadowVisible: false, title: "Address",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Checkout"
               component={CheckoutScreen}
-              options={{ headerShadowVisible: false, title: "Checkout",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Confirm Address"
               component={AddressConfirm}
-              options={{
-                headerShadowVisible: false,
-                title: "Shipping Address",
-                headerBackTitle: '', headerBackTitleVisible: false
-              }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Make Payment"
@@ -443,22 +417,22 @@ useEffect(() => {
             <Stack.Screen
               name="Order Receipt"
               component={RecieptScreen}
-              options={{ headerShadowVisible: false, title: "Order Receipt",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Map"
               component={MapScreen}
-              options={{ headerShadowVisible: false, title: "Address",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Add Address"
               component={AddAddressScreen}
-              options={{ headerShadowVisible: false, title: "New Address",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Delivery Status"
               component={Delivery}
-              options={{ headerShadowVisible: false, title: "Status",  headerBackTitle: '', headerBackTitleVisible: false }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Loader"
@@ -467,9 +441,11 @@ useEffect(() => {
             />
           </Stack.Navigator>
           </ToastProvider>
+          </NetworkProvider>
         </NavigationContainer>
         </SafeAreaProvider>
       </StripeProvider>
+      </ThemeProvider>
     </Provider>
   );
 }

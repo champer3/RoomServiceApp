@@ -1,26 +1,56 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native"
-import BoxedItem from "../Item/BoxedItem"
-import Product from "../Product/Product"
+import React, { memo, useCallback } from "react";
+import { FlatList, StyleSheet, View } from "react-native";
+import Product from "../Product/Product";
 
+function ProductCategory({ items, onTouch, bottomPadding = 0, scrollEnabled = true }) {
+  const available = (Array.isArray(items) ? items : []).filter(
+    (p) => p?.availability !== false
+  );
 
+  const renderItem = useCallback(
+    ({ item }) => (
+      <View style={styles.itemWrap}>
+        <Product product={item} />
+      </View>
+    ),
+    []
+  );
 
-function ProductCategory({items,  onTouch}){
+  const keyExtractor = useCallback(
+    (item, index) =>
+      item._id != null ? String(item._id) : item.id != null ? String(item.id) : `pc-${index}`,
+    []
+  );
 
-    return <ScrollView onTouchStart={onTouch} style={{flex: 1}}>
-        <View style={styles.container}>
-        {items.map((product, index) =><View key={index} style={{width: '50%', marginBottom: 15}}>
-        <Product key={product.id} product={product} /></View>)}
-    </View>
-    </ScrollView>
+  return (
+    <FlatList
+      data={available}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
+      numColumns={2}
+      onTouchStart={onTouch}
+      scrollEnabled={scrollEnabled}
+      style={styles.list}
+      contentContainerStyle={[styles.container, bottomPadding > 0 && { paddingBottom: bottomPadding }]}
+      initialNumToRender={6}
+      maxToRenderPerBatch={6}
+      windowSize={5}
+      removeClippedSubviews
+    />
+  );
 }
 
-export default ProductCategory
+export default memo(ProductCategory);
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'row',
-        // alignItems: "flex-start",
-        flexWrap: 'wrap',
-    }
-})
+  list: {
+    flex: 1,
+  },
+  container: {
+    paddingBottom: 15,
+  },
+  itemWrap: {
+    width: "50%",
+    marginBottom: 15,
+  },
+});

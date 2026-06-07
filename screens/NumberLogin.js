@@ -42,6 +42,7 @@ function NumberLogin() {
   const saveTokenToAsyncStorage = async (authToken) => {
     try {
       await AsyncStorage.setItem("authToken", authToken);
+      await AsyncStorage.setItem("onboarded", "true");
     } catch (error) {
       console.error("Error saving token:", error);
     }

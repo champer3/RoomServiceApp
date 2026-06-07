@@ -46,6 +46,7 @@ export function groupProductsByCategoryOrder(products, departmentMeta, categorie
   const deptSlug = departmentMeta?.slug ? String(departmentMeta.slug).toLowerCase().trim() : "";
 
   const inDept = products.filter((p) => {
+    if (p?.availability === false) return false;
     const pid = productDepartmentId(p);
     const pslug = productDepartmentSlug(p);
     if (deptId && pid === deptId) return true;

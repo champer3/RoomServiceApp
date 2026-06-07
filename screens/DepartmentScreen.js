@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   ScrollView,
@@ -11,6 +11,8 @@ import {
   Animated,
   Easing,
   Image,
+  ImageBackground,
+  InteractionManager,
 } from "react-native";
 import Text from "../components/Text";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -19,6 +21,7 @@ import { Feather, MaterialIcons, Ionicons, EvilIcons } from "@expo/vector-icons"
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSelector } from "react-redux";
+import { selectTotalCartCount } from "../Data/cart";
 import { fetchAppDepartment } from "../api/appPromotions";
 import {
   groupProductsByCategoryOrder,
@@ -30,6 +33,8 @@ import Product from "../components/Product/Product";
 import ProductCategory from "../components/Category/ProductCategory";
 import ProductHorizontal from "../components/Category/ProductHorizontal";
 import FloatingCartFab from "../components/FloatingCartFab";
+import AppImage from "../components/AppImage";
+import SkeletonDepartment from "../components/SkeletonDepartment";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const DEPT_SEARCH_RADIUS = 15;
@@ -38,6 +43,136 @@ const FOOD_TABS_VISIBILITY_HYSTERESIS = 14;
 /** Match home search bar rotation cadence */
 const DEPT_SEARCH_BAR_ROTATION_MS = 4600;
 const DEPT_FOOD_COLUMNS_PER_ROW = SCREEN_W >= 420 ? 5 : SCREEN_W >= 380 ? 4 : 3;
+const FOOD_CAT_PALETTE = ["#BC6C25", "#283618", "#E07A5F", "#3D405B", "#81B29A", "#F2CC8F"];
+const FOOD_DECO_ICONS = [
+  "restaurant-outline", "pizza-outline", "cafe-outline", "nutrition-outline",
+  "leaf-outline", "ice-cream-outline", "fish-outline", "beer-outline",
+  "fast-food-outline", "wine-outline", "flame-outline", "water-outline",
+];
+const FOOD_DECO_POSITIONS = [
+  { top: 4, right: 12, rotate: "-15deg", size: 30 },
+  { top: 8, right: 75, rotate: "22deg", size: 22 },
+  { top: 6, right: 140, rotate: "-8deg", size: 26 },
+  { top: 32, right: 8, rotate: "18deg", size: 18 },
+  { top: 28, right: 50, rotate: "-30deg", size: 24 },
+  { top: 36, right: 110, rotate: "12deg", size: 20 },
+  { bottom: 30, right: 16, rotate: "25deg", size: 22 },
+  { bottom: 28, right: 80, rotate: "-20deg", size: 28 },
+  { bottom: 32, right: 145, rotate: "8deg", size: 18 },
+  { bottom: 6, right: 35, rotate: "-12deg", size: 26 },
+  { bottom: 8, right: 105, rotate: "30deg", size: 20 },
+  { bottom: 10, left: 14, rotate: "-18deg", size: 22 },
+  { top: 10, left: 10, rotate: "15deg", size: 20 },
+  { top: 38, left: 8, rotate: "-25deg", size: 16 },
+  { bottom: 30, left: 10, rotate: "10deg", size: 18 },
+];
+
+const FoodDecoIcons = React.memo(({ index }) => {
+  const offset = (index * 4) % FOOD_DECO_ICONS.length;
+  return (
+    <>
+      {FOOD_DECO_POSITIONS.map((pos, i) => {
+        const iconName = FOOD_DECO_ICONS[(offset + i) % FOOD_DECO_ICONS.length];
+        return (
+          <View
+            key={i}
+            style={[
+              styles.decoIcon,
+              {
+                ...(pos.top != null && { top: pos.top }),
+                ...(pos.bottom != null && { bottom: pos.bottom }),
+                ...(pos.right != null && { right: pos.right }),
+                ...(pos.left != null && { left: pos.left }),
+                transform: [{ rotate: pos.rotate }],
+              },
+            ]}
+          >
+            <Ionicons name={iconName} size={pos.size} color="rgba(255,255,255,0.13)" />
+          </View>
+        );
+      })}
+    </>
+  );
+});
+
+const FoodSectionAnimated = React.memo(({ index, children, style, onLayout }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 500,
+      delay: index * 120,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+  return (
+    <Animated.View
+      onLayout={onLayout}
+      style={[
+        style,
+        {
+          opacity: anim,
+          transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+});
+
+const FoodCatNameAnimated = React.memo(({ delay, children }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 450,
+      delay,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+  return (
+    <Animated.View
+      style={{
+        opacity: anim,
+        transform: [{ translateX: anim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+});
+
+const FoodCardAnimated = React.memo(({ index, children, style }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(anim, {
+      toValue: 1,
+      delay: 200 + index * 80,
+      friction: 6,
+      tension: 80,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          opacity: anim,
+          transform: [
+            { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) },
+            { translateX: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) },
+          ],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+});
 
 /**
  * @param {string} departmentName
@@ -154,8 +289,12 @@ export default function DepartmentScreen() {
   const [foodTabsViewportWidth, setFoodTabsViewportWidth] = useState(0);
   const [foodTabsContentWidth, setFoodTabsContentWidth] = useState(0);
 
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  const [hasRevealed, setHasRevealed] = useState(false);
+
   const scrollRef = useRef(null);
   const sectionYRef = useRef({});
+  const isUserTapScrolling = useRef(false);
   const foodTabsScrollRef = useRef(null);
   const foodTabsScrollXRef = useRef(0);
   const foodTabLayoutsRef = useRef({});
@@ -242,28 +381,48 @@ export default function DepartmentScreen() {
     }
     setLoading(true);
     setLoadError(null);
-    fetchAppDepartment(slug)
-      .then((d) => {
-        if (!cancelled) {
-          setPayload(d);
-          const cats = d?.categories || [];
-          if (cats[0]?.slug) setActiveCategorySlug(String(cats[0].slug).toLowerCase());
-          else if (cats[0]?.name) setActiveCategorySlug(guessCategorySlug(cats[0].name));
-        }
-      })
-      .catch((e) => {
-        if (!cancelled) setLoadError(e?.message || "Could not load department");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const handle = InteractionManager.runAfterInteractions(() => {
+      fetchAppDepartment(slug)
+        .then((d) => {
+          if (!cancelled) {
+            setPayload(d);
+            const cats = d?.categories || [];
+            if (cats[0]?.slug) setActiveCategorySlug(String(cats[0].slug).toLowerCase());
+            else if (cats[0]?.name) setActiveCategorySlug(guessCategorySlug(cats[0].name));
+          }
+        })
+        .catch((e) => {
+          if (!cancelled) setLoadError(e?.message || "Could not load department");
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    });
     return () => {
       cancelled = true;
+      handle.cancel();
     };
   }, [slug]);
 
+  useEffect(() => {
+    if (!loading && payload && !hasRevealed) {
+      setHasRevealed(true);
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [loading, payload, hasRevealed, contentOpacity]);
+
   const departmentMeta = payload?.department;
-  const layoutPreset = departmentMeta?.layoutPreset === "grocery" ? "grocery" : "food";
+  const layoutPreset =
+    departmentMeta?.categoryNavStyle === "grid"
+      ? "catalog"
+      : departmentMeta?.layoutPreset === "grocery"
+        ? "grocery"
+        : "food";
   const categoryNavStyle = departmentMeta?.categoryNavStyle || "tabs";
 
   const sections = useMemo(() => {
@@ -319,32 +478,33 @@ export default function DepartmentScreen() {
       }
     }
 
-    // Auto-activate tab based on scroll position near the sticky header.
-    const probeY = y + STICKY_HEADER_ESTIMATE + 6;
-    let nextActive = null;
-    for (let i = 0; i < sections.length; i += 1) {
-      const sec = sections[i];
-      if (!sec.products.length) continue;
-      const key =
-        (sec.category.slug && String(sec.category.slug).toLowerCase()) ||
-        guessCategorySlug(sec.category.name);
-      const sy = sectionYRef.current[key];
-      if (sy != null && sy <= probeY) {
-        nextActive = key;
-      }
-    }
-    if (!nextActive) {
+    if (!isUserTapScrolling.current) {
+      const probeY = y + STICKY_HEADER_ESTIMATE + 6;
+      let nextActive = null;
       for (let i = 0; i < sections.length; i += 1) {
         const sec = sections[i];
         if (!sec.products.length) continue;
-        nextActive =
+        const key =
           (sec.category.slug && String(sec.category.slug).toLowerCase()) ||
           guessCategorySlug(sec.category.name);
-        break;
+        const sy = sectionYRef.current[key];
+        if (sy != null && sy <= probeY) {
+          nextActive = key;
+        }
       }
-    }
-    if (nextActive && nextActive !== activeCategorySlug) {
-      setActiveCategorySlug(nextActive);
+      if (!nextActive) {
+        for (let i = 0; i < sections.length; i += 1) {
+          const sec = sections[i];
+          if (!sec.products.length) continue;
+          nextActive =
+            (sec.category.slug && String(sec.category.slug).toLowerCase()) ||
+            guessCategorySlug(sec.category.name);
+          break;
+        }
+      }
+      if (nextActive && nextActive !== activeCategorySlug) {
+        setActiveCategorySlug(nextActive);
+      }
     }
   };
 
@@ -366,20 +526,25 @@ export default function DepartmentScreen() {
   }, [activeCategorySlug, showFoodStickyTabs, foodTabsContentWidth, foodTabsViewportWidth]);
 
   const scrollToCategory = (catSlug) => {
+    isUserTapScrolling.current = true;
     setActiveCategorySlug(catSlug);
     const y = sectionYRef.current[catSlug];
-    if (y == null) return;
+    if (y == null) {
+      isUserTapScrolling.current = false;
+      return;
+    }
     scrollRef.current?.scrollTo({
       y: Math.max(0, y - STICKY_HEADER_ESTIMATE + 36),
       animated: true,
     });
+    setTimeout(() => { isUserTapScrolling.current = false; }, 600);
   };
 
   const promosOverride = useMemo(() => {
     const p = payload?.promotions || {};
     const layout = payload?.department?.layoutPreset === "grocery" ? "grocery" : "food";
     const hero =
-      layout === "grocery"
+      layout === "grocery" || layoutPreset === "catalog"
         ? p.topBanner || []
         : mergeDepartmentHeroPromos(p.hero, p.topBanner);
     return {
@@ -388,14 +553,10 @@ export default function DepartmentScreen() {
     };
   }, [payload?.promotions, payload?.department?.layoutPreset]);
 
-  const cartCount = cartItems?.length ?? 0;
+  const cartCount = useSelector(selectTotalCartCount);
 
   if (loading) {
-    return (
-      <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#425928" />
-      </View>
-    );
+    return <SkeletonDepartment />;
   }
 
   if (loadError || !departmentMeta) {
@@ -410,7 +571,7 @@ export default function DepartmentScreen() {
   }
 
   const title = departmentMeta.name || "Department";
-  const heroVariant = layoutPreset === "grocery" ? "departmentSlim" : "departmentLarge";
+  const heroVariant = layoutPreset === "grocery" || layoutPreset === "catalog" ? "departmentSlim" : "departmentLarge";
   const deptPhraseLen = Math.max(deptSearchPhrases.length, 1);
   const activeDeptSearchLead =
     deptSearchPhrases[deptSearchPhraseIndex % deptPhraseLen]?.lead || `Search ${title}`;
@@ -435,7 +596,7 @@ export default function DepartmentScreen() {
           style={styles.deptSearchInnerFloor}
         />
         <View style={styles.deptSearchRow}>
-          {layoutPreset === "grocery" ? (
+          {layoutPreset === "grocery" || layoutPreset === "catalog" ? (
             <View style={styles.deptSearchMainHit}>
               <Feather name="search" size={18} color="#111827" style={styles.deptSearchIcon} />
               <View style={styles.deptGroceryInputWrap}>
@@ -575,37 +736,42 @@ export default function DepartmentScreen() {
   );
 
   const categoryNavFood = (
-    <ScrollView
-      ref={foodTabsScrollRef}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.tabsRow}
-      onLayout={(e) => setFoodTabsViewportWidth(e.nativeEvent.layout.width)}
-      onContentSizeChange={(w) => setFoodTabsContentWidth(w)}
-      onScroll={(e) => {
-        foodTabsScrollXRef.current = e.nativeEvent.contentOffset.x;
-      }}
-      scrollEventThrottle={16}
-    >
-      {(payload?.categories || []).map((cat) => {
-        const key = (cat.slug && String(cat.slug).toLowerCase()) || guessCategorySlug(cat.name);
-        const active = activeCategorySlug === key;
-        return (
-          <Pressable
-            key={cat.id || key}
-            onPress={() => scrollToCategory(key)}
-            style={styles.tabHit}
-            onLayout={(e) => {
-              const { x, width } = e.nativeEvent.layout;
-              foodTabLayoutsRef.current[key] = { x, width };
-            }}
-          >
-            <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{cat.name}</Text>
-            {active ? <View style={styles.tabUnderline} /> : <View style={styles.tabUnderlineSpacer} />}
-          </Pressable>
-        );
-      })}
-    </ScrollView>
+    <View style={styles.foodTabsContainer}>
+      <ScrollView
+        ref={foodTabsScrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabsRow}
+        onLayout={(e) => setFoodTabsViewportWidth(e.nativeEvent.layout.width)}
+        onContentSizeChange={(w) => setFoodTabsContentWidth(w)}
+        onScroll={(e) => {
+          foodTabsScrollXRef.current = e.nativeEvent.contentOffset.x;
+        }}
+        scrollEventThrottle={16}
+      >
+        {(payload?.categories || []).map((cat, catIdx) => {
+          const key = (cat.slug && String(cat.slug).toLowerCase()) || guessCategorySlug(cat.name);
+          const active = activeCategorySlug === key;
+          const pillColor = FOOD_CAT_PALETTE[catIdx % FOOD_CAT_PALETTE.length];
+          return (
+            <Pressable
+              key={cat.id || key}
+              onPress={() => scrollToCategory(key)}
+              style={[styles.tabPill, active && { backgroundColor: pillColor }]}
+              onLayout={(e) => {
+                const { x, width } = e.nativeEvent.layout;
+                foodTabLayoutsRef.current[key] = { x, width };
+              }}
+            >
+              {active && (
+                <Ionicons name="ellipse" size={6} color="rgba(255,255,255,0.8)" style={{ marginRight: 5 }} />
+              )}
+              <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{cat.name}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 
   const showFoodStickyTabs =
@@ -696,8 +862,8 @@ export default function DepartmentScreen() {
       navigation={navigation}
       products={productItems}
       heroVariant={heroVariant}
-      featuredCardWidth={layoutPreset === "grocery" ? 168 : 175}
-      featuredCompact={layoutPreset === "grocery"}
+      featuredCardWidth={layoutPreset !== "food" ? 168 : 175}
+      featuredCompact={layoutPreset !== "food"}
     />
   ) : null;
 
@@ -707,9 +873,18 @@ export default function DepartmentScreen() {
     paddingRight: insets.right,
   };
 
-  if (layoutPreset === "grocery") {
+  if (layoutPreset === "catalog") {
+    const catalogCats = (payload?.categories || []).filter((cat) => {
+      const catKey = (cat.slug && String(cat.slug).toLowerCase()) || guessCategorySlug(cat.name);
+      const sec = sections.find((s) => {
+        const sk = (s.category.slug && String(s.category.slug).toLowerCase()) || guessCategorySlug(s.category.name);
+        return sk === catKey;
+      });
+      return sec && sec.products.filter((p) => p?.availability !== false).length > 0;
+    });
+
     return (
-      <View style={[styles.root, rootInsetStyle]}>
+      <Animated.View style={[styles.root, rootInsetStyle, { opacity: contentOpacity }]}>
         <ScrollView
           ref={scrollRef}
           stickyHeaderIndices={[1]}
@@ -719,26 +894,267 @@ export default function DepartmentScreen() {
           {titleHeaderBlock}
           {stickySearchBlock}
           {promoBlock}
-          {renderCategoryNavGrocery()}
-          <View style={styles.gridWrap}>
-            {groceryList.map((p) => (
-              <View key={p._id != null ? String(p._id) : p.title} style={styles.gridCell}>
-                <Product product={p} layout="grid" />
+
+          {groceryQuery.trim().length > 0 ? (
+            groceryList.filter((p) => p?.availability !== false).length > 0 ? (
+              <View style={styles.gridWrap}>
+                {groceryList.filter((p) => p?.availability !== false).map((p) => (
+                  <View key={p._id != null ? String(p._id) : p.title} style={styles.gridCell}>
+                    <Product product={p} layout="grid" />
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-          {groceryList.length === 0 ? (
-            <Text style={styles.emptyText}>No products in this department yet.</Text>
-          ) : null}
+            ) : (
+              <View style={styles.emptyWrap}>
+                <View style={styles.emptyIconCircle}>
+                  <Ionicons name="search-outline" size={40} color="#BC6C25" />
+                </View>
+                <Text style={styles.emptyTitle}>No results found</Text>
+                <Text style={styles.emptyHint}>Try a different search term or browse our categories</Text>
+              </View>
+            )
+          ) : catalogCats.length > 0 ? (
+            <View style={styles.catalogGrid}>
+              {catalogCats.map((cat, catIdx) => {
+                const catKey = (cat.slug && String(cat.slug).toLowerCase()) || guessCategorySlug(cat.name);
+                const rawImg = cat.imageUrl || cat.iconUrl;
+                const catImg = typeof rawImg === "string" && rawImg.startsWith("http") ? rawImg : null;
+                const fbColor = FOOD_CAT_PALETTE[catIdx % FOOD_CAT_PALETTE.length];
+
+                const cardContent = (
+                  <>
+                    {catImg && <View style={styles.catalogCardOverlay} />}
+                    <FoodDecoIcons index={catIdx} />
+                    <View style={styles.catalogCardBottom}>
+                      <Text style={styles.catalogCardName} numberOfLines={2}>{cat.name}</Text>
+                      <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.7)" />
+                    </View>
+                  </>
+                );
+
+                return (
+                  <FoodCardAnimated key={cat.id || catKey} index={catIdx} style={styles.catalogCardWrap}>
+                    <Pressable
+                      onPress={() => navigation.navigate("Category", {
+                        cat: cat.name,
+                        categorySlug: catKey,
+                        departmentSlug: slug,
+                        departmentName: payload?.department?.name || "",
+                        imageUrl: cat.imageUrl,
+                        iconUrl: cat.iconUrl,
+                      })}
+                      style={styles.catalogCard}
+                    >
+                      {catImg ? (
+                        <ImageBackground
+                          source={{ uri: catImg }}
+                          style={styles.catalogCardBg}
+                          imageStyle={styles.catalogCardBgImage}
+                          resizeMode="cover"
+                        >
+                          {cardContent}
+                        </ImageBackground>
+                      ) : (
+                        <LinearGradient
+                          colors={[`${fbColor}EE`, fbColor, `${fbColor}CC`]}
+                          locations={[0, 0.5, 1]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={styles.catalogCardBg}
+                        >
+                          {cardContent}
+                        </LinearGradient>
+                      )}
+                    </Pressable>
+                  </FoodCardAnimated>
+                );
+              })}
+            </View>
+          ) : (
+            <View style={styles.emptyWrap}>
+              <View style={styles.emptyIconCircle}>
+                <Ionicons name="bag-outline" size={40} color="#BC6C25" />
+              </View>
+              <Text style={styles.emptyTitle}>No categories here yet</Text>
+              <Text style={styles.emptyHint}>Check back soon — we're adding items all the time</Text>
+              <Pressable onPress={() => navigation.navigate("HomeTabs")} style={styles.emptyBtn}>
+                <Ionicons name="arrow-back" size={16} color="#fff" style={{ marginRight: 6 }} />
+                <Text style={styles.emptyBtnText}>Browse other items</Text>
+              </Pressable>
+            </View>
+          )}
         </ScrollView>
         <FloatingCartFab count={cartCount} onPress={() => navigation.navigate("Cart")} bottomOffset={102} />
-      </View>
+      </Animated.View>
+    );
+  }
+
+  if (layoutPreset === "grocery") {
+    return (
+      <Animated.View style={[styles.root, rootInsetStyle, { opacity: contentOpacity }]}>
+        <ScrollView
+          ref={scrollRef}
+          stickyHeaderIndices={[1]}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        >
+          {titleHeaderBlock}
+          {stickySearchBlock}
+          {promoBlock}
+
+          {groceryQuery.trim().length > 0 ? (
+            groceryList.filter((p) => p?.availability !== false).length > 0 ? (
+              <View style={styles.gridWrap}>
+                {groceryList.filter((p) => p?.availability !== false).map((p) => (
+                  <View key={p._id != null ? String(p._id) : p.title} style={styles.gridCell}>
+                    <Product product={p} layout="grid" />
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyWrap}>
+                <View style={styles.emptyIconCircle}>
+                  <Ionicons name="search-outline" size={40} color="#BC6C25" />
+                </View>
+                <Text style={styles.emptyTitle}>No results found</Text>
+                <Text style={styles.emptyHint}>Try a different search term or browse our categories</Text>
+              </View>
+            )
+          ) : (
+            <>
+              {/* Category card carousel */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.groceryCarouselContent}
+                style={styles.groceryCarousel}
+              >
+                {sections.map((sec, secIdx) => {
+                  const catKey =
+                    (sec.category.slug && String(sec.category.slug).toLowerCase()) ||
+                    guessCategorySlug(sec.category.name);
+                  const available = sec.products.filter((p) => p?.availability !== false);
+                  if (!available.length) return null;
+                  const rawImg = sec.category.imageUrl || sec.category.iconUrl;
+                  const catImg = typeof rawImg === "string" && rawImg.startsWith("http") ? rawImg : null;
+                  const fbColor = FOOD_CAT_PALETTE[secIdx % FOOD_CAT_PALETTE.length];
+                  const isActive = groceryCategorySlug === catKey;
+
+                  const cardContent = (
+                    <>
+                      {catImg && <View style={styles.groceryCardOverlay} />}
+                      <FoodDecoIcons index={secIdx} />
+                      <Text style={styles.groceryCardName} numberOfLines={2}>{sec.category.name}</Text>
+                      <Text style={styles.groceryCardCount}>{available.length} items</Text>
+                    </>
+                  );
+
+                  return (
+                    <FoodCardAnimated
+                      key={sec.category.id || catKey}
+                      index={secIdx}
+                      style={styles.groceryCardAnimWrap}
+                    >
+                      <Pressable
+                        onPress={() => setGroceryCategorySlug(isActive ? null : catKey)}
+                        style={[styles.groceryCard, isActive && styles.groceryCardActive]}
+                      >
+                        {catImg ? (
+                          <ImageBackground
+                            source={{ uri: catImg }}
+                            style={styles.groceryCardBg}
+                            imageStyle={styles.groceryCardBgImage}
+                            resizeMode="cover"
+                          >
+                            {cardContent}
+                          </ImageBackground>
+                        ) : (
+                          <LinearGradient
+                            colors={[`${fbColor}EE`, fbColor, `${fbColor}CC`]}
+                            locations={[0, 0.5, 1]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.groceryCardBg}
+                          >
+                            {cardContent}
+                          </LinearGradient>
+                        )}
+                      </Pressable>
+                    </FoodCardAnimated>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Selected category products */}
+              {(() => {
+                const activeSec = groceryCategorySlug
+                  ? sections.find((s) => {
+                      const k = (s.category.slug && String(s.category.slug).toLowerCase()) || guessCategorySlug(s.category.name);
+                      return k === groceryCategorySlug;
+                    })
+                  : sections[0];
+                if (!activeSec) return null;
+                const activeKey = (activeSec.category.slug && String(activeSec.category.slug).toLowerCase()) || guessCategorySlug(activeSec.category.name);
+                const activeProducts = activeSec.products.filter((p) => p?.availability !== false);
+                if (!activeProducts.length) return null;
+                return (
+                  <FoodSectionAnimated index={0} style={styles.groceryProductsSection} key={activeKey}>
+                    <View style={styles.groceryProductsHeader}>
+                      <Text style={styles.groceryProductsTitle}>{activeSec.category.name}</Text>
+                      <Pressable
+                        onPress={() => navigation.navigate("Category", {
+                          cat: activeSec.category.name,
+                          categorySlug: activeKey,
+                          departmentSlug: slug,
+                          departmentName: payload?.department?.name || "",
+                          imageUrl: activeSec.category.imageUrl,
+                          iconUrl: activeSec.category.iconUrl,
+                        })}
+                        style={styles.grocerySeeAllBtn}
+                      >
+                        <Text style={styles.grocerySeeAllText}>See all</Text>
+                        <Ionicons name="arrow-forward" size={14} color="#BC6C25" />
+                      </Pressable>
+                    </View>
+                    <View style={styles.gridWrap}>
+                      {activeProducts.slice(0, 6).map((p, pIdx) => (
+                        <FoodCardAnimated
+                          key={p._id != null ? String(p._id) : p.id != null ? String(p.id) : `gsel-${pIdx}`}
+                          index={pIdx}
+                          style={styles.gridCell}
+                        >
+                          <Product product={p} layout="grid" />
+                        </FoodCardAnimated>
+                      ))}
+                    </View>
+                  </FoodSectionAnimated>
+                );
+              })()}
+
+              {sections.every((s) => s.products.filter((p) => p?.availability !== false).length === 0) && (
+                <View style={styles.emptyWrap}>
+                  <View style={styles.emptyIconCircle}>
+                    <Ionicons name="bag-outline" size={40} color="#BC6C25" />
+                  </View>
+                  <Text style={styles.emptyTitle}>No products here yet</Text>
+                  <Text style={styles.emptyHint}>Check back soon — we're adding items all the time</Text>
+                  <Pressable onPress={() => navigation.navigate("HomeTabs")} style={styles.emptyBtn}>
+                    <Ionicons name="arrow-back" size={16} color="#fff" style={{ marginRight: 6 }} />
+                    <Text style={styles.emptyBtnText}>Browse other items</Text>
+                  </Pressable>
+                </View>
+              )}
+            </>
+          )}
+        </ScrollView>
+        <FloatingCartFab count={cartCount} onPress={() => navigation.navigate("Cart")} bottomOffset={102} />
+      </Animated.View>
     );
   }
 
   /* —— Food layout —— */
   return (
-    <View style={[styles.root, rootInsetStyle]}>
+    <Animated.View style={[styles.root, rootInsetStyle, { opacity: contentOpacity }]}>
       <ScrollView
         ref={scrollRef}
         stickyHeaderIndices={[1]}
@@ -759,9 +1175,12 @@ export default function DepartmentScreen() {
               items={foodSearchResults}
             />
           ) : (
-            <View style={styles.deptFoodSearchEmpty}>
-              <Image style={styles.deptFoodSearchEmptyImg} source={require("../assets/empty.png")} />
-              <Text style={styles.deptFoodSearchEmptyText}>We don't have this item yet 😥😥.</Text>
+            <View style={styles.emptyWrap}>
+              <View style={styles.emptyIconCircle}>
+                <Ionicons name="search-outline" size={40} color="#BC6C25" />
+              </View>
+              <Text style={styles.emptyTitle}>No results found</Text>
+              <Text style={styles.emptyHint}>Try a different search term or browse our categories</Text>
             </View>
           )
         ) : (
@@ -772,35 +1191,120 @@ export default function DepartmentScreen() {
               onLayout={(e) => setFoodCategoryBlockY(e.nativeEvent.layout.y)}
               style={styles.foodCategorySectionsMarker}
             />
-            {sections.map((sec) => {
+            {sections.map((sec, secIdx) => {
               const key =
                 (sec.category.slug && String(sec.category.slug).toLowerCase()) ||
                 guessCategorySlug(sec.category.name);
-              if (!sec.products.length) return null;
+              const availableProducts = sec.products.filter((p) => p?.availability !== false);
+              if (!availableProducts.length) return null;
+              const rawImage = sec.category.imageUrl || sec.category.iconUrl;
+              const catImage = typeof rawImage === "string" && rawImage.startsWith("http") ? rawImage : null;
+              const fallbackColor = FOOD_CAT_PALETTE[secIdx % FOOD_CAT_PALETTE.length];
+              const sectionInner = (
+                <>
+                  {catImage && <View style={styles.foodSectionOverlay} />}
+                  <FoodDecoIcons index={secIdx} />
+
+                  {/* Category header row */}
+                  <FoodCatNameAnimated delay={secIdx * 120 + 100}>
+                    <Pressable
+                      onPress={() => navigation.navigate("Category", {
+                        cat: sec.category.name,
+                        categorySlug: key,
+                        departmentSlug: slug,
+                        departmentName: payload?.department?.name || "",
+                        imageUrl: sec.category.imageUrl,
+                        iconUrl: sec.category.iconUrl,
+                      })}
+                      style={styles.foodCatHeaderRow}
+                    >
+                      <Text style={styles.foodCatName}>{sec.category.name}</Text>
+                      <View style={styles.foodCatBadge}>
+                        <Text style={styles.foodCatBadgeText}>{availableProducts.length}</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.6)" />
+                    </Pressable>
+                    <View style={styles.foodCatDivider} />
+                  </FoodCatNameAnimated>
+
+                  {/* Floating product rail */}
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.foodRailContent}
+                  >
+                    {availableProducts.map((product, pIdx) => (
+                      <FoodCardAnimated
+                        key={product._id != null ? String(product._id) : product.id != null ? String(product.id) : `fp-${secIdx}-${pIdx}`}
+                        index={pIdx}
+                        style={styles.foodRailCard}
+                      >
+                        <Product product={product} layout="rail" />
+                      </FoodCardAnimated>
+                    ))}
+                  </ScrollView>
+                </>
+              );
+
               return (
-                <View
+                <FoodSectionAnimated
                   key={sec.category.id || key}
+                  index={secIdx}
+                  style={styles.foodSectionWrap}
                   onLayout={(e) => {
                     sectionYRef.current[key] = e.nativeEvent.layout.y;
                   }}
                 >
-                  <ProductHorizontal
-                    categoryName={sec.category.name}
-                    items={sec.products}
-                    columnsPerRow={DEPT_FOOD_COLUMNS_PER_ROW}
-                    productLayout="rail"
-                  />
-                </View>
+                  <View>
+                    {catImage ? (
+                      <ImageBackground
+                        source={{ uri: catImage }}
+                        style={styles.foodSectionBg}
+                        imageStyle={styles.foodSectionBgImage}
+                        resizeMode="cover"
+                      >
+                        {sectionInner}
+                      </ImageBackground>
+                    ) : (
+                      <LinearGradient
+                        colors={[`${fallbackColor}EE`, fallbackColor, `${fallbackColor}CC`]}
+                        locations={[0, 0.5, 1]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.foodSectionBg}
+                      >
+                        <LinearGradient
+                          colors={["rgba(0,0,0,0.12)", "rgba(0,0,0,0.03)", "rgba(0,0,0,0.18)"]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={StyleSheet.absoluteFill}
+                        />
+                        <FoodDecoIcons index={secIdx} />
+                        {sectionInner}
+                      </LinearGradient>
+                    )}
+                  </View>
+                </FoodSectionAnimated>
               );
             })}
             {sections.every((s) => s.products.length === 0) ? (
-              <Text style={styles.emptyText}>No products in this department yet.</Text>
+              <View style={styles.emptyWrap}>
+                <View style={styles.emptyIconCircle}>
+                  <Ionicons name="restaurant-outline" size={40} color="#BC6C25" />
+                </View>
+                <Text style={styles.emptyTitle}>No products here yet</Text>
+                <Text style={styles.emptyHint}>Check back soon — we're adding items all the time</Text>
+                <Pressable onPress={() => navigation.navigate("HomeTabs")} style={styles.emptyBtn}>
+                  <Ionicons name="arrow-back" size={16} color="#fff" style={{ marginRight: 6 }} />
+                  <Text style={styles.emptyBtnText}>Browse other items</Text>
+                </Pressable>
+              </View>
             ) : null}
           </>
         )}
       </ScrollView>
       <FloatingCartFab count={cartCount} onPress={() => navigation.navigate("Cart")} bottomOffset={102} />
-    </View>
+    </Animated.View>
   );
 }
 
@@ -855,13 +1359,16 @@ const styles = StyleSheet.create({
   },
   stickyFoodTabsWrap: {
     backgroundColor: "#f8f6f2",
+    borderBottomWidth: 1,
+    borderColor: "rgba(17,24,39,0.05)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
   },
   stickyFoodTabsVisible: {
-    // paddingTop: 8,
-    // paddingBottom: 4,
-    
-    borderBottomWidth: 1,
-    borderColor: "rgba(17,24,39,0.06)",
+    paddingTop: 6,
+    paddingBottom: 8,
   },
   stickyFoodTabsHidden: {
     height: 0,
@@ -1083,36 +1590,30 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Poppins-SemiBold",
   },
-  tabsRow: {
-    // paddingHorizontal: 22,
-    // gap: 4,
-    alignItems: "flex-end",
+  foodTabsContainer: {
+    paddingVertical: 4,
   },
-  tabHit: {
-    // marginRight: 16,
-    paddingHorizontal: 22
-    // paddingBottom: 4,
+  tabsRow: {
+    paddingHorizontal: 14,
+    alignItems: "center",
+    gap: 8,
+  },
+  tabPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(17,24,39,0.06)",
   },
   tabLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "Poppins-Medium",
     color: "#6b7280",
   },
   tabLabelActive: {
-    color: "#111827",
-  },
-  tabUnderline: {
-    height: 3,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-    backgroundColor: "#425928",
-    marginTop: 6,
-    
-  },
-  tabUnderlineSpacer: {
-    height: 3,
-    marginTop: 6,
-    opacity: 0,
+    color: "#fff",
+    fontFamily: "Poppins-SemiBold",
   },
   chipsRow: {
     paddingHorizontal: 12,
@@ -1195,26 +1696,194 @@ const styles = StyleSheet.create({
     width: (SCREEN_W - 32 - 10) / 2,
     marginBottom: 12,
   },
-  deptFoodSearchEmpty: {
-    gap: 19,
-    marginBottom: 45,
-    paddingHorizontal: 16,
+  emptyWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+    paddingVertical: 48,
+    gap: 10,
   },
-  deptFoodSearchEmptyImg: {
-    height: SCREEN_H / 3,
-    alignSelf: "center",
-    resizeMode: "contain",
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(188,108,37,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
   },
-  deptFoodSearchEmptyText: {
+  emptyTitle: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 18,
+    color: "#111827",
     textAlign: "center",
+  },
+  emptyHint: {
     fontFamily: "Poppins-Regular",
-    color: "#374151",
-  },
-  emptyText: {
+    fontSize: 14,
+    color: "#9CA3AF",
     textAlign: "center",
-    marginTop: 32,
-    color: "#9ca3af",
-    fontFamily: "Poppins-Medium",
-    paddingHorizontal: 24,
+    lineHeight: 20,
   },
+  emptyBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#283618",
+    borderRadius: 999,
+    paddingVertical: 13,
+    paddingHorizontal: 28,
+    marginTop: 12,
+  },
+  emptyBtnText: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 14,
+    color: "#fff",
+  },
+
+  catalogGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 14,
+    gap: 12,
+    marginTop: 12,
+  },
+  catalogCardWrap: {
+    width: (SCREEN_W - 28 - 12) / 2,
+  },
+  catalogCard: {
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  catalogCardBg: {
+    borderRadius: 20,
+    overflow: "hidden",
+    height: 230,
+    justifyContent: "flex-end",
+  },
+  catalogCardBgImage: { borderRadius: 20 },
+  catalogCardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    borderRadius: 20,
+  },
+  catalogCardBottom: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+  },
+  catalogCardName: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 16,
+    color: "#fff",
+    flex: 1,
+    lineHeight: 20,
+  },
+
+  groceryCardAnimWrap: {},
+  groceryCarousel: { marginTop: 8 },
+  groceryCarouselContent: { paddingHorizontal: 14, gap: 10 },
+  groceryCard: {
+    width: 130,
+    borderRadius: 18,
+    overflow: "hidden",
+    borderWidth: 2.5,
+    borderColor: "transparent",
+  },
+  groceryCardActive: {
+    borderColor: "#BC6C25",
+  },
+  groceryCardBg: {
+    borderRadius: 16,
+    overflow: "hidden",
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    height: 110,
+    justifyContent: "flex-end",
+  },
+  groceryCardBgImage: { borderRadius: 16 },
+  groceryCardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    borderRadius: 16,
+  },
+  groceryCardName: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 14,
+    color: "#fff",
+    lineHeight: 18,
+  },
+  groceryCardCount: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 11,
+    color: "rgba(255,255,255,0.7)",
+    marginTop: 2,
+  },
+  groceryProductsSection: { marginTop: 20 },
+  groceryProductsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  groceryProductsTitle: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 18,
+    color: "#111827",
+    flex: 1,
+  },
+  grocerySeeAllBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  grocerySeeAllText: {
+    fontFamily: "Poppins-Medium",
+    fontSize: 13,
+    color: "#BC6C25",
+  },
+
+  foodSectionWrap: { marginBottom: 20, marginHorizontal: 14 },
+  foodSectionBg: { borderRadius: 22, overflow: "hidden", paddingTop: 18, paddingBottom: 16 },
+  foodSectionBgImage: { borderRadius: 22 },
+  foodSectionOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.38)",
+    borderRadius: 22,
+  },
+  foodCatHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+  },
+  foodCatName: {
+    fontFamily: "Poppins-Medium",
+    fontSize: 16,
+    color: "#fff",
+    flex: 1,
+  },
+  foodCatBadge: {
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginRight: 6,
+  },
+  foodCatBadgeText: {
+    fontFamily: "Poppins-Medium",
+    fontSize: 12,
+    color: "#fff",
+  },
+  foodCatDivider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    marginHorizontal: 18,
+    marginTop: 10,
+    marginBottom: 14,
+    borderRadius: 1,
+  },
+  decoIcon: { position: "absolute", zIndex: 0 },
+  foodRailContent: { paddingHorizontal: 14 },
+  foodRailCard: { marginRight: 6 },
 });

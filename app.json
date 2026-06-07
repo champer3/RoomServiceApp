@@ -62,7 +62,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#FF0000"
+          "color": "#BC6C25"
         }
       ],
       "expo-font",

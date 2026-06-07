@@ -1,5 +1,6 @@
 import { View, Pressable, Image, StyleSheet, Dimensions, Platform } from 'react-native';
 import Text from '../Text';
+import AppImage from '../AppImage';
 import { PROMO_CARD, PROMO_GREEN, toneToColor } from './promoTheme';
 import { handlePromotionCtaPress } from '../../utils/promotionCtaNavigation';
 
@@ -23,7 +24,7 @@ export default function GenericPromotionCard({ promotion, onCtaPress, navigation
   return (
     <View style={styles.card}>
       {!!img && (
-        <Image source={{ uri: img }} style={styles.image} resizeMode="cover" />
+        <AppImage uri={img} style={styles.image} resizeMode="cover" />
       )}
       <View style={styles.body}>
         {badge?.label ? (

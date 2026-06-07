@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../theme/ThemeContext";
 
 const ACTIVE_PILL = "rgba(188, 108, 37, 0.94)";
 const ICON_INACTIVE = "#425928";
@@ -69,6 +70,7 @@ function tabLabel(routeName) {
  */
 export default function FloatingPillTabBar({ state, descriptors, navigation }) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
   const bottomPad = insets.bottom + 12;
 
   return (
@@ -76,27 +78,31 @@ export default function FloatingPillTabBar({ state, descriptors, navigation }) {
       pointerEvents="box-none"
       style={[styles.screenPad, { paddingBottom: bottomPad }]}
     >
-      <View style={styles.barOuter}>
-        <BlurView
-          intensity={Platform.OS === "ios" ? 82 : 58}
-          tint="light"
-          style={styles.barBlur}
-        />
-        <LinearGradient
-          pointerEvents="none"
-          colors={[
-            "rgba(255, 255, 255, 0.78)",
-            "rgba(252, 252, 251, 0.52)",
-            "rgba(248, 249, 246, 0.44)",
-          ]}
-          locations={[0, 0.45, 1]}
-          style={styles.barGradientWash}
-        />
-        <LinearGradient
-          pointerEvents="none"
-          colors={["rgba(255, 255, 255, 0.35)", "transparent"]}
-          style={styles.barGradientHighlight}
-        />
+      <View style={[styles.barOuter, isDark && { borderColor: "rgba(255,255,255,0.1)", backgroundColor: "rgba(30,30,30,0.92)" }]}>
+        {!isDark && (
+          <>
+            <BlurView
+              intensity={Platform.OS === "ios" ? 82 : 58}
+              tint="light"
+              style={styles.barBlur}
+            />
+            <LinearGradient
+              pointerEvents="none"
+              colors={[
+                "rgba(255, 255, 255, 0.78)",
+                "rgba(252, 252, 251, 0.52)",
+                "rgba(248, 249, 246, 0.44)",
+              ]}
+              locations={[0, 0.45, 1]}
+              style={styles.barGradientWash}
+            />
+            <LinearGradient
+              pointerEvents="none"
+              colors={["rgba(255, 255, 255, 0.35)", "transparent"]}
+              style={styles.barGradientHighlight}
+            />
+          </>
+        )}
         <View style={styles.bar}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
@@ -137,7 +143,7 @@ export default function FloatingPillTabBar({ state, descriptors, navigation }) {
                       routeName={route.name}
                       focused
                       size={17}
-                      color={ICON_ON_WHITE}
+                      color={isDark ? "#1E1E1E" : ICON_ON_WHITE}
                     />
                   </View>
                   <Text style={styles.activeLabel} numberOfLines={1}>
@@ -145,12 +151,12 @@ export default function FloatingPillTabBar({ state, descriptors, navigation }) {
                   </Text>
                 </View>
               ) : (
-                <View style={styles.inactiveCircle}>
+                <View style={[styles.inactiveCircle, isDark && { backgroundColor: "rgba(255,255,255,0.08)" }]}>
                   <TabIcon
                     routeName={route.name}
                     focused={false}
                     size={22}
-                    color={ICON_INACTIVE}
+                    color={isDark ? colors.textSecondary : ICON_INACTIVE}
                   />
                 </View>
               )}

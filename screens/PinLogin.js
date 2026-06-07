@@ -144,6 +144,7 @@ function PinLogin() {
   const saveTokenToAsyncStorage = async () => {
     try {
       await AsyncStorage.setItem("authToken", authToken);
+      await AsyncStorage.setItem("onboarded", "true");
     } catch (error) {
       console.error("Error saving token:", error);
     }

@@ -51,6 +51,7 @@ function EmailLogin() {
   const saveTokenToAsyncStorage = async (authToken) => {
     try {
       await AsyncStorage.setItem("authToken", authToken);
+      await AsyncStorage.setItem("onboarded", "true");
     } catch (error) {
       console.error("Error saving token:", error);
     }
@@ -186,6 +187,7 @@ function EmailLogin() {
   const saveTokenToAsyncStorageLocal = async (authToken) => {
     try {
       await AsyncStorage.setItem("authToken", authToken);
+      await AsyncStorage.setItem("onboarded", "true");
     } catch (error) {
       console.error("Error saving token:", error);
     }

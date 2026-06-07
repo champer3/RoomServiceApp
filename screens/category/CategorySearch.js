@@ -7,6 +7,7 @@ import {
   Image,
   Platform,
   StatusBar,
+  ScrollView,
 } from "react-native";
 import Text from '../../components/Text';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +23,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import {addToCart, removeFromCart} from '../../Data/cart'
 import {useSelector, useDispatch} from 'react-redux'
 import BottomSheet from '../../components/Modals/BottomSheet';
-import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
+import { GestureHandlerRootView, ScrollView as GHScrollView } from "react-native-gesture-handler";
 import IncrementDecrementBtn from "../../components/Buttons/IncrementDecrementBtn";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { fetchAppCategory } from "../../api/appPromotions";
@@ -33,6 +34,51 @@ const { height } = Dimensions.get("window");
 const HERO_HEIGHT = Math.min(Math.round(height * 0.38), 130);
 const CAT_SEARCH_RADIUS = 15;
 const PLACEHOLDER_BG = require("../../assets/categoryPic.png");
+
+const HERO_DECO_ICONS = [
+  "restaurant-outline", "pizza-outline", "cafe-outline", "nutrition-outline",
+  "leaf-outline", "ice-cream-outline", "fish-outline", "beer-outline",
+  "fast-food-outline", "wine-outline", "flame-outline", "water-outline",
+];
+const HERO_DECO_POSITIONS = [
+  { top: 8, right: 12, rotate: "-15deg", size: 26 },
+  { top: 6, right: 70, rotate: "22deg", size: 20 },
+  { top: 10, right: 130, rotate: "-8deg", size: 24 },
+  { top: 30, right: 8, rotate: "18deg", size: 16 },
+  { top: 28, right: 55, rotate: "-28deg", size: 22 },
+  { bottom: 12, right: 20, rotate: "12deg", size: 24 },
+  { bottom: 14, right: 85, rotate: "-18deg", size: 20 },
+  { bottom: 10, right: 145, rotate: "25deg", size: 16 },
+  { top: 12, left: 12, rotate: "15deg", size: 18 },
+  { top: 35, left: 8, rotate: "-22deg", size: 14 },
+  { bottom: 10, left: 14, rotate: "10deg", size: 20 },
+  { bottom: 30, left: 8, rotate: "-15deg", size: 16 },
+];
+
+function HeroDecoIcons() {
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {HERO_DECO_POSITIONS.map((pos, i) => {
+        const iconName = HERO_DECO_ICONS[i % HERO_DECO_ICONS.length];
+        return (
+          <View
+            key={i}
+            style={{
+              position: "absolute",
+              ...(pos.top != null && { top: pos.top }),
+              ...(pos.bottom != null && { bottom: pos.bottom }),
+              ...(pos.right != null && { right: pos.right }),
+              ...(pos.left != null && { left: pos.left }),
+              transform: [{ rotate: pos.rotate }],
+            }}
+          >
+            <Ionicons name={iconName} size={pos.size} color="rgba(255,255,255,0.18)" />
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 function mediaUri(url) {
  return url
@@ -387,6 +433,7 @@ const result = searchTitles(filteredItems, value);
             </View>
             <View style={styles.heroNavSide} />
           </View>
+          <HeroDecoIcons />
         </View>
 
         <View style={[styles.searchOverlap, { marginTop: 16 }]}>
@@ -442,7 +489,13 @@ const result = searchTitles(filteredItems, value);
           </View>
         </View>
 
-        <View style={[styles.body, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+        <ScrollView
+          style={styles.body}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 12) + 140 }}
+          nestedScrollEnabled
+        >
         {categoryAppPromos?.topBanner?.length ? (
           <View style={styles.promoBlock}>
             {categoryAppPromos.topBanner.map((p) => (
@@ -468,16 +521,17 @@ const result = searchTitles(filteredItems, value);
           </View>
         ) : null}
         {result.length > 0 ? (
-          <ProductCategory onTouch={dismissSheets} items={result} onPress={handleAddToCart} />
+          <ProductCategory onTouch={dismissSheets} items={result} onPress={handleAddToCart} scrollEnabled={false} />
         ) : (
           <View style={styles.emptyWrap}>
-            <View>
-              <Image style={styles.image} source={require('../../assets/empty.png')} />
+            <View style={styles.emptyIconCircle}>
+              <Ionicons name="search-outline" size={40} color="#BC6C25" />
             </View>
-            <Text style={styles.emptyText}>We don’t have this item yet 😥😥.</Text>
+            <Text style={styles.emptyTitle}>No results found</Text>
+            <Text style={styles.emptyHint}>Try a different search term or browse our categories</Text>
           </View>
         )}
-        </View>
+        </ScrollView>
         {/* {visible && <View style ={{
     justifyContent: 'flex-end',
     marginHorizontal: 10,
@@ -501,7 +555,7 @@ const result = searchTitles(filteredItems, value);
         </View> */}
 
       <BottomSheet ref={ref}>
-        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 ,}} >
+        <GHScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 ,}} >
           <View style={{ paddingBottom: 250}}>
             {Object.keys(filter).map((item, idx)=><View style ={{ marginBottom: 19}} key={idx}><View style={{flexDirection: 'row', justifyContent: 'space-between',}}>
                                 <Text style={{color: "black",fontWeight: "900",fontSize: 19,}}>{item}</Text>
@@ -516,12 +570,12 @@ const result = searchTitles(filteredItems, value);
                                 </Pressable>
                             </View>)}</View>)}
                </View>
-          </ScrollView>
+          </GHScrollView>
         
             
         </BottomSheet>
         <BottomSheet ref={ref2}>
-        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
+        <GHScrollView style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: '5%', gap: 20 }} >
           <View style={{ marginBottom: 230}}>
         {pro.addOn && <View style={{gap: 25, paddingTop: 30, marginBottom: 50}}>
                             <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -578,7 +632,7 @@ const result = searchTitles(filteredItems, value);
         style={{paddingHorizontal: 10}}
       /></View>
       }</View>
-        </ScrollView>
+        </GHScrollView>
         </BottomSheet>
 
 
@@ -770,15 +824,33 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptyWrap: {
-    gap: 19,
-    marginBottom: 45,
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+    paddingVertical: 48,
+    gap: 10,
   },
-  emptyText: {
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(188,108,37,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 18,
+    color: "#111827",
     textAlign: "center",
+  },
+  emptyHint: {
     fontFamily: "Poppins-Regular",
-    fontSize: 15,
-    color: "#4b5563",
+    fontSize: 14,
+    color: "#9CA3AF",
+    textAlign: "center",
+    lineHeight: 20,
   },
   image: {
     height: height / 3,

@@ -1,4 +1,5 @@
-import { Image, StyleSheet, Text, View, Dimensions,Animated } from "react-native"
+import { Image, StyleSheet, Text, View, Dimensions, Animated } from "react-native"
+import AppImage from "../AppImage";
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import React, { useState } from 'react'
 
@@ -13,14 +14,7 @@ const ItemPreview = ({ item, index }) => {
       : item?.image ?? item?.uri ?? item?.url ?? "";
   return (
     <View style={styles.container} key={index}>
-      {uri ? (
-        <Image
-          style={{ width: "100%", height: "100%", resizeMode: "contain" }}
-          source={{ uri }}
-        />
-      ) : (
-        <View style={{ width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.03)" }} />
-      )}
+      <AppImage uri={uri || null} style={{ width: "100%", height: "100%" }} resizeMode="contain" />
     </View>
   )
 }

@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Svg, {Path} from 'react-native-svg';
 import Text from '../Text';
+import AppImage from '../AppImage';
 import { useState } from "react";
 const { width, height } = Dimensions.get("window");
 
@@ -47,9 +48,9 @@ function ProductAction({title, image, price, reviews, category, component, instr
             borderRadius: 50,
             paddingVertical: 10,
             paddingHorizontal: 10,}}>
-          {image && isValidURL(image) && <Image
+          {image && isValidURL(image) && <AppImage
+              uri={image}
               style={styles.image}
-              source={{uri:image}}
             />}
           </TouchableOpacity>
           <View>

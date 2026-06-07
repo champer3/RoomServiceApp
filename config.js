@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
 const extra = Constants.expoConfig?.extra ?? {};
-const serverUrl = (extra.serverUrl || 'https://roomservicebackend-6fdac2e35a8e.herokuapp.com').replace(/\/$/, '');
+const serverUrl = (extra.serverUrl || 'http://192.168.1.80:3000').replace(/\/$/, '');
 
 export const SERVER_URL = serverUrl;
 export const STRIPE_PUBLISHABLE_KEY = extra.stripePublishableKey || '';

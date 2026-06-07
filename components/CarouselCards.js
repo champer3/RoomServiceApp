@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, Text, StyleSheet, Dimensions, Image, Pressable } from "react-native"
+import AppImage from './AppImage';
 import Carousel, { Pagination } from 'react-native-snap-carousel'
 
 const SLIDER_WIDTH = Dimensions.get('window').width
@@ -16,9 +17,9 @@ const CarouselCardItem = ({item, index, onPress }) => {
     console.log('item',item)
   return (
     <Pressable onPress={onPress} style ={{width: width, alignItems: 'center' }} key={index}>
-       {item && isValidURL(item) && <Image
-        source={{uri: item}}
-        style ={{width: width, height: height/2 }} 
+       {item && isValidURL(item) && <AppImage
+        uri={item}
+        style={{width: width, height: height/2 }} 
       />}
     </Pressable>
   )

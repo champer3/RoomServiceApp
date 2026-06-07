@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, View, Dimensions } from "react-native";
+import React, { memo } from "react";
+import { FlatList, StyleSheet, View, Dimensions } from "react-native";
 import Text from "../Text";
 import Product from "../Product/Product";
 
@@ -9,11 +10,14 @@ function clamp(n, min, max) {
 }
 
 function computeDefaultColumns() {
-  // Keeps "3-5 columns" behavior stable across devices.
   if (SCREEN_W >= 420) return 5;
   if (SCREEN_W >= 380) return 4;
   return 3;
 }
+
+const MemoProduct = memo(({ product, layout }) => (
+  <Product product={product} layout={layout} />
+));
 
 function ProductHorizontal({
   items,
@@ -23,49 +27,58 @@ function ProductHorizontal({
   productLayout = "rail",
 }) {
   const cols = clamp(columnsPerRow ?? computeDefaultColumns(), 3, 5);
-  const safeItems = Array.isArray(items) ? items : [];
+  const safeItems = (Array.isArray(items) ? items : []).filter(
+    (p) => p?.availability !== false
+  );
 
-  // Split the items into rows with N items each.
   const rows = [];
   for (let i = 0; i < safeItems.length; i += cols) {
     rows.push(safeItems.slice(i, i + cols));
   }
 
+  const renderRow = ({ item: row, index: rowIndex }) => (
+    <FlatList
+      data={row}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.listContainer}
+      keyExtractor={(product, index) =>
+        product._id != null
+          ? String(product._id)
+          : product.id != null
+            ? String(product.id)
+            : `p-${rowIndex}-${index}`
+      }
+      renderItem={({ item: product }) => (
+        <MemoProduct product={product} layout={productLayout} />
+      )}
+      initialNumToRender={cols}
+      maxToRenderPerBatch={cols}
+      windowSize={2}
+      removeClippedSubviews
+    />
+  );
+
   return (
     <View style={styles.sectionWrap}>
       <Text style={styles.sectionTitle}>{titleOverride || categoryName}</Text>
 
-      <View style={styles.railWrap}>
-        {rows.map((row, rowIndex) => (
-          <ScrollView
-            key={rowIndex}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.listContainer}
-            horizontal
-          >
-            <View key={rowIndex} style={styles.rowContainer}>
-              {row.map((product, index) => (
-                <Product
-                  key={
-                    product._id != null
-                      ? String(product._id)
-                      : product.id != null
-                        ? String(product.id)
-                        : `p-${rowIndex}-${index}`
-                  }
-                  product={product}
-                  layout={productLayout}
-                />
-              ))}
-            </View>
-          </ScrollView>
-        ))}
-      </View>
+      <FlatList
+        data={rows}
+        renderItem={renderRow}
+        keyExtractor={(_, index) => `row-${index}`}
+        scrollEnabled={false}
+        initialNumToRender={2}
+        maxToRenderPerBatch={2}
+        windowSize={3}
+        removeClippedSubviews
+      />
     </View>
   );
 }
 
-export default ProductHorizontal
+export default memo(ProductHorizontal);
+
 const styles = StyleSheet.create({
   sectionWrap: {
     marginBottom: 20,
@@ -79,22 +92,9 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Medium",
     letterSpacing: 0.2,
   },
-  railWrap: {
-    backgroundColor: 'transparent',
-  },
   listContainer: {
     backgroundColor: 'transparent',
     paddingLeft: 10,
     paddingRight: 12,
   },
-  rowContainer: {
-    flexDirection: 'row',
-    // justifyContent: 'space-between',
-  },
 });
-
-{/* <ScrollView showsHorizontalScrollIndicator={false} style={styles.container} horizontal={true}>
-{items?.map((item, index) =><View  key={index}  style={{width: width / 3}} >
-        <Product product={item} onAdd = {onPress}/>
-        </View>)}
-</ScrollView> */}
