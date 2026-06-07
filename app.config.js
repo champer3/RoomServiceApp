@@ -9,13 +9,25 @@ const serverUrl = process.env.SERVER_URL || 'http://192.168.1.80:3000';
 const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || '';
 const googleIosClientId = process.env.GOOGLE_IOS_CLIENT_ID || '';
 const googleWebClientId = process.env.GOOGLE_WEB_CLIENT_ID || '';
-const googleIosUrlScheme = process.env.GOOGLE_IOS_URL_SCHEME || '';
+function getIosUrlScheme(iosClientId, explicitScheme) {
+  if (explicitScheme) return explicitScheme;
+  if (!iosClientId) return '';
+  const prefix = iosClientId.replace('.apps.googleusercontent.com', '');
+  return `com.googleusercontent.apps.${prefix}`;
+}
+
+// .env is not on EAS — derive scheme from client ID or use committed app.json plugin value
+const googleIosUrlScheme = getIosUrlScheme(
+  googleIosClientId,
+  process.env.GOOGLE_IOS_URL_SCHEME
+);
 
 const plugins = (base.plugins || []).map((plugin) => {
-  if (Array.isArray(plugin) && plugin[0] === '@react-native-google-signin/google-signin') {
+  if (plugin === '@react-native-google-signin/google-signin' || (Array.isArray(plugin) && plugin[0] === '@react-native-google-signin/google-signin')) {
+    const existingScheme = Array.isArray(plugin) ? plugin[1]?.iosUrlScheme : '';
     return [
       '@react-native-google-signin/google-signin',
-      { iosUrlScheme: googleIosUrlScheme },
+      { iosUrlScheme: googleIosUrlScheme || existingScheme },
     ];
   }
   return plugin;
@@ -25,6 +37,13 @@ module.exports = {
   expo: {
     ...base,
     plugins,
+    ios: {
+      ...base.ios,
+      infoPlist: {
+        ...(base.ios?.infoPlist || {}),
+        ITSAppUsesNonExemptEncryption: false,
+      },
+    },
     android: {
       ...base.android,
       config: {

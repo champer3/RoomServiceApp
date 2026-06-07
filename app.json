@@ -18,10 +18,11 @@
 
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.RS",
+      "bundleIdentifier": "com.roomservicers.app",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to take photos for user profile customization.",
-        "NSLocationWhenInUseUsageDescription": "This app would like to access your location in order to make the delivery to you"
+        "NSLocationWhenInUseUsageDescription": "This app would like to access your location in order to make the delivery to you",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
 
@@ -73,7 +74,12 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "@react-native-google-signin/google-signin"
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.620214111770-cqb7ioh3t6eora8l9bm9bj1plq6tils3"
+        }
+      ]
     ],
 
     "platforms": ["ios", "android", "web"]

@@ -6,7 +6,12 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "GOOGLE_IOS_CLIENT_ID": "620214111770-cqb7ioh3t6eora8l9bm9bj1plq6tils3.apps.googleusercontent.com",
+        "GOOGLE_WEB_CLIENT_ID": "620214111770-8ium16ludpm4o04ngt9jvjpoue1ug5sj.apps.googleusercontent.com",
+        "GOOGLE_IOS_URL_SCHEME": "com.googleusercontent.apps.620214111770-cqb7ioh3t6eora8l9bm9bj1plq6tils3"
+      }
     },
     "preview": {
       "distribution": "internal",
